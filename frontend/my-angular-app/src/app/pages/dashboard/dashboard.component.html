@@ -1,0 +1,254 @@
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <div class="sidebar" [class.sidebar-collapsed]="!sidebarOpen">
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="logo-text" *ngIf="sidebarOpen">Admin Panel</span>
+      </div>
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li class="nav-item" [class.active]="currentPage === 'dashboard'">
+          <a (click)="navigateTo('dashboard')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Dashboard</span>
+          </a>
+        </li>
+        
+        <li class="nav-item" [class.active]="currentPage === 'buses'">
+          <a (click)="navigateTo('buses')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 16C4 17.1 4.9 18 6 18H18C19.1 18 20 17.1 20 16V8C20 6.9 19.1 6 18 6H6C4.9 6 4 6.9 4 8V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 6V4C8 2.9 8.9 2 10 2H14C15.1 2 16 2.9 16 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 12V12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Bus Management</span>
+          </a>
+        </li>
+        
+        <li class="nav-item" [class.active]="currentPage === 'drivers'">
+  <a (click)="navigateTo('drivers')" class="nav-link">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Head -->
+      <circle cx="12" cy="7" r="3" stroke="currentColor" stroke-width="2"/>
+      <!-- Body -->
+      <path d="M5 21C5 17 7 14 12 14C17 14 19 17 19 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Steering wheel -->
+      <circle cx="12" cy="14" r="4" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 10V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M8 14H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span *ngIf="sidebarOpen">Drivers</span>
+  </a>
+</li>
+
+
+            <li class="nav-item" [class.active]="currentPage === 'drivers'">
+          <a (click)="navigateTo('drivers')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Passengers</span>
+          </a>
+        </li>
+        
+        
+        <li class="nav-item" [class.active]="currentPage === 'lounges'">
+          <a (click)="navigateTo('lounges')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Lounges</span>
+          </a>
+        </li>
+        
+        <li class="nav-item" [class.active]="currentPage === 'scheduling'">
+          <a (click)="navigateTo('scheduling')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Passenger Bookings & Reports</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="16,17 21,12 16,7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span *ngIf="sidebarOpen">Logout</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [class.main-content-expanded]="!sidebarOpen">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <h1>Dashboard</h1>
+        <p>Welcome back! Here's what's happening with your bus operations.</p>
+      </div>
+      <div class="header-right">
+        <div class="user-info">
+          <div class="user-avatar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="user-details">
+            <span class="user-name">Admin User</span>
+            <span class="user-role">System Administrator</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-content" *ngIf="currentPage === 'dashboard'">
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 16C4 17.1 4.9 18 6 18H18C19.1 18 20 17.1 20 16V8C20 6.9 19.1 6 18 6H6C4.9 6 4 6.9 4 8V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>{{ busStats.totalBuses }}</h3>
+            <p>Total Buses</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>{{ busStats.activeBuses }}</h3>
+            <p>Active Buses</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon maintenance">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14.7 6.3C14.3 5.9 13.7 5.9 13.3 6.3L12 7.6L10.7 6.3C10.3 5.9 9.7 5.9 9.3 6.3C8.9 6.7 8.9 7.3 9.3 7.7L10.6 9L9.3 10.3C8.9 10.7 8.9 11.3 9.3 11.7C9.7 12.1 10.3 12.1 10.7 11.7L12 10.4L13.3 11.7C13.7 12.1 14.3 12.1 14.7 11.7C15.1 11.3 15.1 10.7 14.7 10.3L13.4 9L14.7 7.7C15.1 7.3 15.1 6.7 14.7 6.3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>{{ busStats.maintenanceBuses }}</h3>
+            <p>Under Maintenance</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon available">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>{{ busStats.availableBuses }}</h3>
+            <p>Available</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Bus Status Overview</h3>
+            <p>Current distribution of bus fleet</p>
+          </div>
+          <div class="chart-content">
+            <div class="pie-chart">
+              <div class="pie-slice active" [style.--percentage]="(busStats.activeBuses / busStats.totalBuses) * 100">
+                <span class="slice-label">Active</span>
+                <span class="slice-value">{{ busStats.activeBuses }}</span>
+              </div>
+              <div class="pie-slice maintenance" [style.--percentage]="(busStats.maintenanceBuses / busStats.totalBuses) * 100">
+                <span class="slice-label">Maintenance</span>
+                <span class="slice-value">{{ busStats.maintenanceBuses }}</span>
+              </div>
+              <div class="pie-slice available" [style.--percentage]="(busStats.availableBuses / busStats.totalBuses) * 100">
+                <span class="slice-label">Available</span>
+                <span class="slice-value">{{ busStats.availableBuses }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Monthly Revenue</h3>
+            <p>Revenue trends over the last 6 months</p>
+          </div>
+          <div class="chart-content">
+            <div class="bar-chart">
+              <div class="bar" *ngFor="let data of monthlyRevenue" [style.--height]="(data.revenue / 70000) * 100">
+                <span class="bar-value">${{ data.revenue / 1000 }}k</span>
+                <span class="bar-label">{{ data.month }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Bookings -->
+      <div class="recent-bookings">
+        <div class="section-header">
+          <h3>Recent Bookings</h3>
+          <button class="view-all-btn">View All</button>
+        </div>
+        <div class="bookings-table">
+          <div class="booking-row header">
+            <div class="col">Booking ID</div>
+            <div class="col">Route</div>
+            <div class="col">Time</div>
+            <div class="col">Status</div>
+          </div>
+          <div class="booking-row" *ngFor="let booking of recentBookings">
+            <div class="col booking-id">{{ booking.id }}</div>
+            <div class="col route">{{ booking.route }}</div>
+            <div class="col time">{{ booking.time }}</div>
+            <div class="col status">
+              <span class="status-badge" [class]="booking.status.toLowerCase()">{{ booking.status }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

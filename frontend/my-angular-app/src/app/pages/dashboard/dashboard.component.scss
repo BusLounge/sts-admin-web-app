@@ -1,0 +1,554 @@
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+// Sidebar Styles
+.sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+  color: white;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+
+  &.sidebar-collapsed {
+    width: 80px;
+
+    .logo-text,
+    .nav-link span,
+    .logout-btn span {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+  }
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+
+    svg {
+      color: #3b82f6;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+  }
+
+  .toggle-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-item {
+    margin: 0.25rem 0;
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+
+      span {
+        transition: all 0.3s ease;
+      }
+    }
+
+    &.active .nav-link {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border-left-color: #3b82f6;
+    }
+  }
+}
+
+.sidebar-footer {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    background: rgba(239, 68, 68, 0.1);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: #fca5a5;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    span {
+      transition: all 0.3s ease;
+    }
+  }
+}
+
+// Main Content Styles
+.main-content {
+  flex: 1;
+  transition: all 0.3s ease;
+  margin-left: 0;
+
+  &.main-content-expanded {
+    margin-left: -200px;
+  }
+}
+
+.dashboard-header {
+  background: white;
+  padding: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .header-left {
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 0.5rem 0;
+    }
+
+    p {
+      color: #64748b;
+      margin: 0;
+    }
+  }
+
+  .header-right {
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .user-avatar {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+
+      .user-details {
+        display: flex;
+        flex-direction: column;
+
+        .user-name {
+          font-weight: 600;
+          color: #1e293b;
+        }
+
+        .user-role {
+          font-size: 0.875rem;
+          color: #64748b;
+        }
+      }
+    }
+  }
+}
+
+.dashboard-content {
+  padding: 2rem;
+}
+
+// Stats Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.total {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    &.maintenance {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    &.available {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+    }
+  }
+
+  .stat-content {
+    h3 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 0.25rem 0;
+    }
+
+    p {
+      color: #64748b;
+      margin: 0;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Charts Section
+.charts-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-container {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+
+  .chart-header {
+    margin-bottom: 1.5rem;
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 0.5rem 0;
+    }
+
+    p {
+      color: #64748b;
+      margin: 0;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Pie Chart
+.pie-chart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  position: relative;
+
+  .pie-slice {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+
+    &.active {
+      background: conic-gradient(#10b981 0deg, #10b981 calc(var(--percentage) * 3.6deg), #e5e7eb calc(var(--percentage) * 3.6deg));
+    }
+
+    &.maintenance {
+      background: conic-gradient(#f59e0b 0deg, #f59e0b calc(var(--percentage) * 3.6deg), #e5e7eb calc(var(--percentage) * 3.6deg));
+    }
+
+    &.available {
+      background: conic-gradient(#8b5cf6 0deg, #8b5cf6 calc(var(--percentage) * 3.6deg), #e5e7eb calc(var(--percentage) * 3.6deg));
+    }
+
+    .slice-label {
+      font-size: 0.75rem;
+      opacity: 0.9;
+    }
+
+    .slice-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+  }
+}
+
+// Bar Chart
+.bar-chart {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  height: 200px;
+  gap: 0.5rem;
+
+  .bar {
+    flex: 1;
+    background: linear-gradient(to top, #3b82f6, #60a5fa);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    height: var(--height);
+    min-height: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+
+    .bar-value {
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: -1.5rem;
+    }
+
+    .bar-label {
+      color: #64748b;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: -1.5rem;
+    }
+  }
+}
+
+// Recent Bookings
+.recent-bookings {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .view-all-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #2563eb;
+      }
+    }
+  }
+
+  .bookings-table {
+    .booking-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr 1fr;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e2e8f0;
+
+      &.header {
+        font-weight: 600;
+        color: #64748b;
+        border-bottom: 2px solid #e2e8f0;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .col {
+        display: flex;
+        align-items: center;
+
+        &.booking-id {
+          font-weight: 600;
+          color: #3b82f6;
+        }
+
+        &.route {
+          color: #1e293b;
+        }
+
+        &.time {
+          color: #64748b;
+        }
+
+        .status-badge {
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+
+          &.confirmed {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+          }
+
+          &.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+          }
+
+          &.cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    z-index: 1000;
+    height: 100vh;
+
+    &.sidebar-open {
+      left: 0;
+    }
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+
+  .dashboard-header {
+    padding: 1rem;
+
+    .header-left h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .dashboard-content {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
+
+  .bookings-table .booking-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+
+    &.header {
+      display: none;
+    }
+
+    .col {
+      justify-content: space-between;
+      padding: 0.5rem 0;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+      }
+    }
+  }
+}
