@@ -1,0 +1,102 @@
+<div class="bus-page">
+  <div class="page-header">
+    <h2>Bus Management</h2>
+    <button class="add-bus-btn" (click)="addBus()">Add Bus</button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-title">Total Buses</div>
+      <div class="stat-value">{{ getTotalBuses() }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Active</div>
+      <div class="stat-value">{{ getActiveCount() }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Inactive</div>
+      <div class="stat-value">{{ getInactiveCount() }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Average Capacity</div>
+      <div class="stat-value">{{ getAverageCapacity() }}</div>
+    </div>
+  </div>
+
+  <div class="charts-section">
+    <div class="chart">
+      <div class="chart-header">
+        <h3>Status Overview</h3>
+        <p>Distribution of bus activity</p>
+      </div>
+      <div class="pie-chart">
+        <div class="pie-slice active" [style.--percentage]="getActivePercentage()">
+          <span class="slice-label">Active</span>
+          <span class="slice-value">{{ getActiveCount() }}</span>
+        </div>
+        <div class="pie-slice inactive" [style.--percentage]="getInactivePercentage()">
+          <span class="slice-label">Inactive</span>
+          <span class="slice-value">{{ getInactiveCount() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <div class="chart-header">
+        <h3>Capacity by Type</h3>
+        <p>Sum of capacities per type</p>
+      </div>
+      <div class="bar-chart">
+        <div class="bar" *ngFor="let t of ['AC','Non-AC','Luxury']" [style.--height]="getCapacityByTypePercentage(t)">
+          <span class="bar-value">{{ getCapacityByType(t) }}</span>
+          <span class="bar-label">{{ t }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-container">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search buses by number, ID, type, route, or capacity..." 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchChange()"
+      />
+      <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+    </div>
+    <button class="export-btn" (click)="exportHistoryPdf()">Export Buses History (PDF)</button>
+  </div>
+
+  <table class="bus-table">
+    <thead>
+      <tr>
+        <th>Bus ID</th>
+        <th>Bus Number</th>
+        <th>Capacity</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Route ID</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let bus of filteredBuses">
+        <td>{{ bus.bus_id }}</td>
+        <td>{{ bus.bus_number }}</td>
+        <td>{{ bus.capacity }}</td>
+        <td>{{ bus.type }}</td>
+        <td>{{ bus.is_active ? 'Active' : 'Inactive' }}</td>
+        <td>{{ bus.assigned_route_id }}</td>
+        <td>
+          <button (click)="updateBus(bus)">Update</button>
+          <button (click)="toggleActive(bus)">
+            {{ bus.is_active ? 'Deactivate' : 'Activate' }}
+          </button>
+          <button (click)="deleteBus(bus)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

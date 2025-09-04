@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { BusService } from '../../core/services/bus.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,20 +14,12 @@ export class DashboardComponent implements OnInit {
   sidebarOpen = true;
   currentPage = 'dashboard';
 
-  // Mock data for charts
   busStats = {
-    totalBuses: 24,
-    activeBuses: 18,
-    maintenanceBuses: 4,
-    availableBuses: 2
+    totalBuses: 0,
+    activeBuses: 0,
+    maintenanceBuses: 0,
+    availableBuses: 0
   };
-
-  recentBookings = [
-    { id: 'BK001', route: 'City A → City B', time: '10:30 AM', status: 'Confirmed' },
-    { id: 'BK002', route: 'City C → City D', time: '2:15 PM', status: 'Pending' },
-    { id: 'BK003', route: 'City E → City F', time: '4:45 PM', status: 'Confirmed' },
-    { id: 'BK004', route: 'City G → City H', time: '6:20 PM', status: 'Cancelled' }
-  ];
 
   monthlyRevenue = [
     { month: 'Jan', revenue: 45000 },
@@ -37,25 +30,56 @@ export class DashboardComponent implements OnInit {
     { month: 'Jun', revenue: 67000 }
   ];
 
-  constructor(private router: Router) {}
+  recentBookings = [
+    { id: 'BK001', route: 'Kathmandu - Pokhara', time: '08:00 AM', status: 'Confirmed' },
+    { id: 'BK002', route: 'Pokhara - Chitwan', time: '10:30 AM', status: 'Pending' },
+    { id: 'BK003', route: 'Kathmandu - Lumbini', time: '02:15 PM', status: 'Confirmed' },
+    { id: 'BK004', route: 'Chitwan - Kathmandu', time: '04:45 PM', status: 'Cancelled' }
+  ];
 
-  ngOnInit() {
-    // Initialize dashboard
+  constructor(private router: Router, private busService: BusService) {}
+
+  ngOnInit(): void {
+    this.busService.buses$.subscribe(buses => {
+      this.busStats.totalBuses = buses.length;
+      this.busStats.activeBuses = buses.filter(bus => bus.is_active).length;
+      this.busStats.maintenanceBuses = Math.floor(buses.length * 0.1); // 10% under maintenance
+      this.busStats.availableBuses = this.busStats.activeBuses - this.busStats.maintenanceBuses;
+    });
   }
 
-  toggleSidebar() {
+  toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
-  navigateTo(page: string) {
+  navigateTo(page: string): void {
     this.currentPage = page;
-    // For now, just show alert since other pages aren't implemented yet
-    if (page !== 'dashboard') {
-      alert(`${page.charAt(0).toUpperCase() + page.slice(1)} management page will be implemented soon!`);
+    switch (page) {
+      case 'dashboard':
+        // Stay on dashboard
+        break;
+      case 'bus-management':
+        this.router.navigate(['/bus-management']);
+        break;
+      case 'driver-management':
+        this.router.navigate(['/driver-management']);
+        break;
+      case 'passengers':
+        // Navigate to passengers page when implemented
+        console.log('Passengers page not implemented yet');
+        break;
+      case 'lounges':
+        // Navigate to lounges page when implemented
+        console.log('Lounges page not implemented yet');
+        break;
+      case 'scheduling':
+        // Navigate to scheduling page when implemented
+        console.log('Scheduling page not implemented yet');
+        break;
     }
   }
 
-  logout() {
+  logout(): void {
     this.router.navigate(['/login']);
   }
 }

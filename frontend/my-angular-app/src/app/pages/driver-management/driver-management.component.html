@@ -1,0 +1,106 @@
+<div class="driver-page">
+    <div class="page-header">
+      <h2>Driver Management</h2>
+      <button class="add-driver-btn" (click)="addDriver()">Add Driver</button>
+    </div>
+  
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Total Drivers</div>
+        <div class="stat-value">{{ getTotalDrivers() }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Active</div>
+        <div class="stat-value">{{ getActiveCount() }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Inactive</div>
+        <div class="stat-value">{{ getInactiveCount() }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Avg Experience</div>
+        <div class="stat-value">{{ getAverageExperience() }}yrs</div>
+      </div>
+    </div>
+  
+    <div class="charts-section">
+      <div class="chart">
+        <div class="chart-header">
+          <h3>Status Overview</h3>
+          <p>Distribution of driver activity</p>
+        </div>
+        <div class="pie-chart">
+          <div class="pie-slice active" [style.--percentage]="getActivePercentage()">
+            <span class="slice-label">Active</span>
+            <span class="slice-value">{{ getActiveCount() }}</span>
+          </div>
+          <div class="pie-slice inactive" [style.--percentage]="getInactivePercentage()">
+            <span class="slice-label">Inactive</span>
+            <span class="slice-value">{{ getInactiveCount() }}</span>
+          </div>
+        </div>
+      </div>
+  
+      <div class="chart">
+        <div class="chart-header">
+          <h3>Experience Distribution</h3>
+          <p>Drivers by experience level</p>
+        </div>
+        <div class="bar-chart">
+          <div class="bar" *ngFor="let level of experienceLevels" [style.--height]="getExperienceLevelPercentage(level)">
+            <span class="bar-value">{{ getExperienceLevelCount(level) }}</span>
+            <span class="bar-label">{{ level }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="toolbar">
+      <div class="search-container">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search drivers by name, email, phone, license, ID, or experience..." 
+          [(ngModel)]="searchTerm" 
+          (input)="onSearchChange()"
+        />
+        <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+      </div>
+      <button class="export-btn" (click)="exportDriversPdf()">Export Drivers History (PDF)</button>
+    </div>
+  
+    <table class="driver-table">
+      <thead>
+        <tr>
+          <th>Driver ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>License No.</th>
+          <th>Experience</th>
+          <th>Status</th>
+          <th>Assigned Bus</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let driver of filteredDrivers">
+          <td>{{ driver.driver_id }}</td>
+          <td>{{ driver.first_name }} {{ driver.last_name }}</td>
+          <td>{{ driver.email }}</td>
+          <td>{{ driver.phone }}</td>
+          <td>{{ driver.license_number }}</td>
+          <td>{{ driver.experience_years }}yrs</td>
+          <td>{{ driver.is_active ? 'Active' : 'Inactive' }}</td>
+          <td>{{ driver.assigned_bus_id || 'Unassigned' }}</td>
+          <td>
+            <button (click)="updateDriver(driver)">Update</button>
+            <button (click)="toggleActive(driver)">
+              {{ driver.is_active ? 'Deactivate' : 'Activate' }}
+            </button>
+            <button (click)="deleteDriver(driver)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>

@@ -1,7 +1,7 @@
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background: #f8fafc;
+  background: #a6d3ff;
 }
 
 // Sidebar Styles
@@ -331,7 +331,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: rgb(9, 9, 9);
     font-weight: 600;
 
     &.active {
@@ -343,7 +343,7 @@
     }
 
     &.available {
-      background: conic-gradient(#8b5cf6 0deg, #8b5cf6 calc(var(--percentage) * 3.6deg), #e5e7eb calc(var(--percentage) * 3.6deg));
+      background: conic-gradient(#804bfd 0deg, #976dfb calc(var(--percentage) * 3.6deg), #bcbbbb calc(var(--percentage) * 3.6deg));
     }
 
     .slice-label {
