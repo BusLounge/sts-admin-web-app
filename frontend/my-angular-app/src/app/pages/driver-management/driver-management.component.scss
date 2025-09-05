@@ -37,7 +37,7 @@
       }
   
       .add-driver-btn {
-        background: #3b82f6;
+        background:  #2d36e2;
         color: white;
         border: none;
         padding: 0.5rem 1rem;
@@ -63,7 +63,7 @@
         border-radius: 12px;
         padding: 1rem;
   
-        .stat-title { color: #6b7280; font-weight: 600; }
+        .stat-title { color: #6b7280; font-weight: 600;font-size: 1.6rem }
         .stat-value { font-size: 1.5rem; font-weight: 700; color: #111827; }
       }
     }
@@ -108,7 +108,7 @@
               background: conic-gradient(#10b981 0deg, #10b981 calc(var(--percentage) * 3.6deg), #e5e7eb calc(var(--percentage) * 3.6deg));
             }
             &.inactive {
-              background: conic-gradient(#ef4444 0deg, #ef4444 calc(var(--percentage) * 3.6deg), #e5e7eb calc(var(--percentage) * 3.6deg));
+              background: conic-gradient(#288ee7 0deg, #1a71be calc(var(--percentage) * 3.6deg), #969ba4 calc(var(--percentage) * 3.6deg));
             }
           }
         }
@@ -122,7 +122,7 @@
           .bar {
             flex: 1;
             height: var(--height);
-            background: linear-gradient(to top, #3b82f6, #60a5fa);
+            background: linear-gradient(to top, #2e79f1, #60a5fa);
             border-radius: 4px 4px 0 0;
             display: flex;
             flex-direction: column;
@@ -130,8 +130,8 @@
             justify-content: space-between;
             padding: 0.5rem 0;
   
-            .bar-value { color: #fff; font-size: 0.75rem; font-weight: 700; }
-            .bar-label { color: #6b7280; font-size: 0.75rem; font-weight: 600; }
+            .bar-value { color: #090909; font-size: 1rem; font-weight: 700; }
+            .bar-label { color: #383838; font-size: 1rem; font-weight: 600; }
           }
         }
       }
@@ -195,7 +195,7 @@
       }
   
       .export-btn {
-        background: #8b5cf6;
+        background:  #353dd4;
         color: #fff;
         border: none;
         border-radius: 8px;
