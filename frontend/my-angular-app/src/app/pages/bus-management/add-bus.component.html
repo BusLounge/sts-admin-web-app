@@ -1,21 +1,47 @@
 <div class="add-bus-page">
+  <nav class="back-nav" (click)="goBack()" aria-label="Back">
+    <span class="arrow">‹</span>
+    <span class="label">Back</span>
+  </nav>
   <div class="page-header">
-    <h2>Add Bus</h2>
+    <h2>Add a new Bus </h2>
   </div>
 
   <form class="bus-form" #f="ngForm" (ngSubmit)="save()">
     <div class="form-row">
       <label>Bus Number<span class="req">*</span></label>
-      <input type="text" [(ngModel)]="form.bus_number" name="bus_number" placeholder="e.g., NP1234" required minlength="3" />
-      <small class="error" *ngIf="f.submitted && !form.bus_number">Bus Number is required.</small>
-      <small class="error" *ngIf="f.submitted && form.bus_number && form.bus_number.length < 3">Min 3 characters.</small>
+      <input 
+        type="text" 
+        [(ngModel)]="form.bus_number" 
+        name="bus_number" 
+        placeholder="e.g., ND1234" 
+        required 
+        #busNumberModel="ngModel"
+        (input)="onBusNumberChange()"
+        [class.error-input]="validationErrors.bus_number && (busNumberModel.dirty || busNumberModel.touched || isFormSubmitted)"
+      />
+      <small class="error" *ngIf="validationErrors.bus_number && (busNumberModel.dirty || busNumberModel.touched || isFormSubmitted)">
+        {{ validationErrors.bus_number }}
+      </small>
     </div>
 
     <div class="form-row">
       <label>Capacity<span class="req">*</span></label>
-      <input type="number" [(ngModel)]="form.capacity" name="capacity" placeholder="e.g., 50" min="1" max="120" required />
-      <small class="error" *ngIf="f.submitted && !form.capacity">Capacity is required.</small>
-      <small class="error" *ngIf="f.submitted && form.capacity && (form.capacity < 1 || form.capacity > 120)">Capacity must be 1-120.</small>
+      <input 
+        type="number" 
+        [(ngModel)]="form.capacity" 
+        name="capacity" 
+        placeholder="e.g., 50" 
+        min="1" 
+        max="54" 
+        required 
+        #capacityModel="ngModel"
+        (input)="onCapacityChange()"
+        [class.error-input]="validationErrors.capacity && (capacityModel.dirty || capacityModel.touched || isFormSubmitted)"
+      />
+      <small class="error" *ngIf="validationErrors.capacity && (capacityModel.dirty || capacityModel.touched || isFormSubmitted)">
+        {{ validationErrors.capacity }}
+      </small>
     </div>
 
     <div class="form-row">
@@ -36,13 +62,26 @@
 
     <div class="form-row">
       <label>Assigned Route ID<span class="req">*</span></label>
-      <input type="text" [(ngModel)]="form.assigned_route_id" name="assigned_route_id" placeholder="e.g., RT001" required />
-      <small class="error" *ngIf="f.submitted && !form.assigned_route_id">Route ID is required.</small>
+      <input 
+        type="text" 
+        [(ngModel)]="form.assigned_route_id" 
+        name="assigned_route_id" 
+        placeholder="e.g., RT001" 
+        required 
+        #routeIdModel="ngModel"
+        (input)="onRouteIdChange()"
+        [class.error-input]="validationErrors.assigned_route_id && (routeIdModel.dirty || routeIdModel.touched || isFormSubmitted)"
+      />
+      <small class="error" *ngIf="validationErrors.assigned_route_id && (routeIdModel.dirty || routeIdModel.touched || isFormSubmitted)">
+        {{ validationErrors.assigned_route_id }}
+      </small>
     </div>
 
     <div class="form-actions">
       <button type="button" class="btn secondary" (click)="cancel()">Cancel</button>
-      <button type="submit" class="btn primary" [disabled]="isSubmitting">{{ isSubmitting ? 'Saving...' : 'Save' }}</button>
+      <button type="submit" class="btn primary" [disabled]="isSubmitting || !isFormValid()">
+        {{ isSubmitting ? 'Saving...' : 'Save' }}
+      </button>
     </div>
   </form>
 </div>

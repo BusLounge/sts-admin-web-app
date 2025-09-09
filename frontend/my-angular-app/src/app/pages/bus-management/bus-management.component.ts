@@ -33,6 +33,10 @@ export class BusManagementComponent implements OnInit {
     this.router.navigate(['/bus-management/add']);
   }
 
+  goDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
+
   updateBus(bus: Bus) {
     this.router.navigate(['/bus-management/edit', bus.bus_id]);
   }
@@ -139,5 +143,9 @@ export class BusManagementComponent implements OnInit {
   clearSearch(): void {
     this.searchTerm = '';
     this.filteredBuses = this.buses;
+  }
+
+  goDriverManagement(): void {
+    this.router.navigate(['/driver-management']);
   }
 }

@@ -33,6 +33,10 @@ export class DriverManagementComponent implements OnInit {
     this.router.navigate(['/driver-management/add']);
   }
 
+  goDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
+
   updateDriver(driver: Driver) {
     this.router.navigate(['/driver-management/edit', driver.driver_id]);
   }
@@ -143,6 +147,10 @@ export class DriverManagementComponent implements OnInit {
   clearSearch(): void {
     this.searchTerm = '';
     this.filteredDrivers = this.drivers;
+  }
+
+  goBusManagement(): void {
+    this.router.navigate(['/bus-management']);
   }
 }
 
