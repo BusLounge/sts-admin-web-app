@@ -1,0 +1,93 @@
+<div class="management-container">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="logo-text">Admin Panel</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li class="nav-item"><a (click)="goDashboard()" class="nav-link"><span>Dashboard</span></a></li>
+        <li class="nav-item"><a (click)="goBusManagement()" class="nav-link"><span>Bus Management</span></a></li>
+        <li class="nav-item"><a (click)="goDriverManagement()" class="nav-link"><span>Driver Management</span></a></li>
+        <li class="nav-item active"><a class="nav-link"><span>Passenger Management</span></a></li>
+        <li class="nav-item active"><a class="nav-link"><span>Lounge Management</span></a></li>
+        <li class="nav-item active"><a class="nav-link"><span>Bus booking Management</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="passenger-page">
+      <nav class="quick-nav">
+        <span class="qn-root" (click)="goDashboard()">Dashboard</span>
+        <span class="qn-sep" aria-hidden="true">›</span>
+        <span class="qn-current">Passenger Management</span>
+      </nav>
+
+      <div class="page-header">
+        <h2>Passenger Management</h2>
+        <button class="add-passenger-btn" (click)="addPassenger()">Add Passenger</button>
+      </div>
+
+      <div class="charts-section">
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Monthly Registered Passengers</h3>
+            <p>This year</p>
+          </div>
+          <svg [attr.viewBox]="'0 0 600 220'" class="line-chart" preserveAspectRatio="none">
+            <polyline [attr.points]="getPoints()" fill="none" stroke="#3b82f6" stroke-width="3" />
+            <g *ngFor="let c of monthlyCounts; index as i">
+              <circle [attr.cx]="(30 + i*((600-60)/(months.length-1)))" [attr.cy]="(220-30 - (c/getMaxCount())*(220-60))" r="3" fill="#1d4ed8" />
+            </g>
+          </svg>
+          <div class="months">
+            <span *ngFor="let m of months">{{ m }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-container">
+          <input type="text" class="search-input" placeholder="Search by name, email, phone, NIC or ID..." [(ngModel)]="searchTerm" (input)="onSearchChange()" />
+          <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+        </div>
+      </div>
+
+      <table class="passenger-table">
+        <thead>
+          <tr>
+            <th>Passenger ID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>NIC</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredPassengers">
+            <td>{{ p.passenger_id }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.phone }}</td>
+            <td>{{ p.email }}</td>
+            <td>{{ p.nic }}</td>
+            <td>{{ p.created_at | date:'yyyy-MM-dd' }}</td>
+            <td class="actions-cell">
+              <button (click)="updatePassenger(p)">Update</button>
+              <button (click)="deletePassenger(p)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

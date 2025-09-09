@@ -8,6 +8,9 @@ import { EditBusComponent } from './pages/bus-management/edit-bus.component';
 import { DriverManagementComponent } from './pages/driver-management/driver-management.component';
 import { AddDriverComponent } from './pages/driver-management/add-driver.component';
 import { EditDriverComponent } from './pages/driver-management/edit-driver.component';
+import { PassengerManagementComponent } from './pages/passenger-management/passenger-management.component';
+import { AddPassengerComponent } from './pages/passenger-management/add-passenger.component';
+import { EditPassengerComponent } from './pages/passenger-management/edit-passenger.component';
 
 
 export const routes: Routes = [
@@ -21,5 +24,8 @@ export const routes: Routes = [
   { path: 'driver-management', component: DriverManagementComponent },
   { path: 'driver-management/add', component: AddDriverComponent },
   { path: 'driver-management/edit/:id', component: EditDriverComponent },
+  { path: 'passenger-management', component: PassengerManagementComponent },
+  { path: 'passenger-management/add', component: AddPassengerComponent },
+  { path: 'passenger-management/edit/:id', component: EditPassengerComponent },
   { path: '**', redirectTo: '' }
 ];

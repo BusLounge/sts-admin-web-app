@@ -148,4 +148,16 @@ export class BusManagementComponent implements OnInit {
   goDriverManagement(): void {
     this.router.navigate(['/driver-management']);
   }
+
+  goPassengerManagement(): void {
+    this.router.navigate(['/passenger-management']);
+  }
+
+  goLounges(): void {
+    this.router.navigate(['/lounges']);
+  }
+
+  goPassengerReports(): void {
+    this.router.navigate(['/scheduling']);
+  }
 }

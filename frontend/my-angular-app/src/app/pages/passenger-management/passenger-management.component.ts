@@ -1,0 +1,79 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { PassengerService } from '../../core/services/passenger.service';
+import { Passenger } from '../../core/models/passenger.model';
+
+@Component({
+  selector: 'app-passenger-management',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './passenger-management.component.html',
+  styleUrls: ['./passenger-management.component.scss']
+})
+export class PassengerManagementComponent implements OnInit {
+  passengers: Passenger[] = [];
+  filteredPassengers: Passenger[] = [];
+  searchTerm = '';
+
+  monthlyCounts: number[] = [];
+  months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  constructor(private router: Router, private passengerService: PassengerService) {}
+
+  ngOnInit(): void {
+    this.passengerService.passengers$.subscribe(ps => {
+      this.passengers = ps;
+      this.filteredPassengers = ps;
+      this.refreshChart();
+    });
+  }
+
+  goDashboard(): void { this.router.navigate(['/dashboard']); }
+  goBusManagement(): void { this.router.navigate(['/bus-management']); }
+  goDriverManagement(): void { this.router.navigate(['/driver-management']); }
+
+  addPassenger(): void {
+    this.router.navigate(['/passenger-management/add']);
+  }
+
+  updatePassenger(p: Passenger): void {
+    this.router.navigate(['/passenger-management/edit', p.passenger_id]);
+  }
+
+  deletePassenger(p: Passenger): void {
+    const ok = confirm(`Delete ${p.name}?`);
+    if (ok) this.passengerService.deletePassenger(p.passenger_id);
+  }
+
+  onSearchChange(): void {
+    const q = this.searchTerm.toLowerCase();
+    this.filteredPassengers = !q ? this.passengers : this.passengers.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.email.toLowerCase().includes(q) ||
+      p.phone.includes(q) ||
+      p.nic.toLowerCase().includes(q) ||
+      p.passenger_id.toLowerCase().includes(q)
+    );
+  }
+
+  clearSearch(): void { this.searchTerm = ''; this.filteredPassengers = this.passengers; }
+
+  refreshChart(): void { this.monthlyCounts = this.passengerService.getMonthlyCounts(new Date().getFullYear()); }
+
+  // Helpers for inline SVG chart
+  getMaxCount(): number { return Math.max(1, ...this.monthlyCounts); }
+  getPoints(): string {
+    const width = 600, height = 220, padding = 30;
+    const max = this.getMaxCount();
+    const stepX = (width - padding * 2) / (this.months.length - 1);
+    return this.monthlyCounts
+      .map((c, i) => {
+        const x = padding + i * stepX;
+        const y = height - padding - (c / max) * (height - padding * 2);
+        return `${x},${y}`;
+      })
+      .join(' ');
+  }
+}

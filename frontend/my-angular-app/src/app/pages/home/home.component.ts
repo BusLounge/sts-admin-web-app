@@ -14,4 +14,8 @@ export class HomeComponent {
   onLoginClick() {
     this.router.navigate(['/login']);
   }
+
+  onAddPassengerClick() {
+    this.router.navigate(['/passenger-management/add']);
+  }
 }
