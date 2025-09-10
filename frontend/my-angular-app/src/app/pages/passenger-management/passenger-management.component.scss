@@ -6,7 +6,7 @@
 .sidebar-nav .nav-item { margin: .25rem 0; }
 .sidebar-nav .nav-link { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.5rem; color: rgba(255,255,255,.85); text-decoration: none; border-left: 3px solid transparent; cursor: pointer; }
 .sidebar-nav .nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
-.sidebar-nav .nav-item.active .nav-link { background: rgba(59,130,246,.2); color: #60a5fa; border-left-color: #3b82f6; }
+.sidebar-nav .nav-item.active .nav-link, .nav-link:hover { background: rgba(248, 250, 252, 0.2); color: #60a5fa; border-left-color: #f4f6f9; }
 .main-content { flex: 1; }
 
 .quick-nav { display: flex; align-items: center; gap: .5rem; margin: .5rem 0 0 .5rem; color: #334155; }

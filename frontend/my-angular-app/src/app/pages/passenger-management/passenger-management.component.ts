@@ -22,7 +22,7 @@ export class PassengerManagementComponent implements OnInit {
   currentPage: string = 'passenger-management';  // default page
   sidebarOpen: boolean = true;      // controls sidebar visibility
 
-  navigateTo(page: string) {
+  onNavigate(page: string) {
     this.currentPage = page;
     this.router.navigate([page]); 
   }
@@ -110,5 +110,11 @@ export class PassengerManagementComponent implements OnInit {
         return `${x},${y}`;
       })
       .join(' ');
+  }
+
+  onLogout() {
+    // Example logout logic
+    localStorage.removeItem('token');
+    this.router.navigate(['/login']);
   }
 }
