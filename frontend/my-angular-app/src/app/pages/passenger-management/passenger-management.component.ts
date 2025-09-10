@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PassengerService } from '../../core/services/passenger.service';
 import { Passenger } from '../../core/models/passenger.model';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-passenger-management',
@@ -61,6 +63,30 @@ export class PassengerManagementComponent implements OnInit {
   clearSearch(): void { this.searchTerm = ''; this.filteredPassengers = this.passengers; }
 
   refreshChart(): void { this.monthlyCounts = this.passengerService.getMonthlyCounts(new Date().getFullYear()); }
+    // 🚀 Export PDF Function
+  exportHistoryPdf() {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Passenger History Report', 14, 15);
+
+    autoTable(doc, {
+      head: [['Passenger ID', 'Name', 'Phone', 'Email', 'NIC', 'Created']],
+      body: this.filteredPassengers.map(p => [
+        p.passenger_id,
+        p.name,
+        p.phone,
+        p.email,
+        p.nic,
+        new Date(p.created_at).toISOString().split('T')[0]
+      ]),
+      startY: 25,
+      theme: 'grid',
+      headStyles: { fillColor: [59, 130, 246] }, // blue header
+    });
+
+    doc.save('Passenger_History.pdf');
+  }
+
 
   // Helpers for inline SVG chart
   getMaxCount(): number { return Math.max(1, ...this.monthlyCounts); }

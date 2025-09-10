@@ -59,6 +59,8 @@
           <input type="text" class="search-input" placeholder="Search by name, email, phone, NIC or ID..." [(ngModel)]="searchTerm" (input)="onSearchChange()" />
           <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
         </div>
+
+        <button class="export-btn" (click)="exportHistoryPdf()">Export Passengers History (PDF)</button>
       </div>
 
       <table class="passenger-table">
