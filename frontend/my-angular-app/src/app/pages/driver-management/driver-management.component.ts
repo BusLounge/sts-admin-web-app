@@ -19,6 +19,13 @@ export class DriverManagementComponent implements OnInit {
   filteredDrivers: Driver[] = [];
   searchTerm: string = '';
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
+  currentPage: string = 'drivers';  // default page
+  sidebarOpen: boolean = true;      // controls sidebar visibility
+
+  navigateTo(page: string) {
+    this.currentPage = page;
+    console.log("Navigated to:", page);
+  }
 
   constructor(private router: Router, private driverService: DriverService) {}
 

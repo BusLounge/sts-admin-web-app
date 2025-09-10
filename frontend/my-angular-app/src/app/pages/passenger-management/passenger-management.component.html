@@ -2,27 +2,155 @@
   <div class="sidebar">
     <div class="sidebar-header">
       <div class="logo">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round"/>
+          <path d="M2 17L12 22L22 17" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round"/>
         </svg>
-        <span class="logo-text">Admin Panel</span>
+        <span class="logo-text" *ngIf="sidebarOpen">Admin Panel</span>
       </div>
     </div>
 
+    <!-- ✅ Sidebar with icons -->
     <nav class="sidebar-nav">
       <ul class="nav-list">
-        <li class="nav-item"><a (click)="goDashboard()" class="nav-link"><span>Dashboard</span></a></li>
-        <li class="nav-item"><a (click)="goBusManagement()" class="nav-link"><span>Bus Management</span></a></li>
-        <li class="nav-item"><a (click)="goDriverManagement()" class="nav-link"><span>Driver Management</span></a></li>
-        <li class="nav-item active"><a class="nav-link"><span>Passenger Management</span></a></li>
-        <li class="nav-item active"><a class="nav-link"><span>Lounge Management</span></a></li>
-        <li class="nav-item active"><a class="nav-link"><span>Bus booking Management</span></a></li>
+        <li class="nav-item" [class.active]="currentPage === 'dashboard'">
+          <a (click)="navigateTo('dashboard')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="7" height="7" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+              <rect x="14" y="3" width="7" height="7" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+              <rect x="14" y="14" width="7" height="7" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+              <rect x="3" y="14" width="7" height="7" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="currentPage === 'bus-management'">
+          <a (click)="navigateTo('bus-management')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 16C4 17.1 4.9 18 6 18H18C19.1 18 20 17.1 20 16V8C20 6.9 
+                       19.1 6 18 6H6C4.9 6 4 6.9 4 8V16Z"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 6V4C8 2.9 8.9 2 10 2H14C15.1 2 16 2.9 16 4V6"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 12V12.01" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Bus Management</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="currentPage === 'driver-management'">
+          <a (click)="navigateTo('driver-management')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21V19C20 17.9 19.6 16.9 18.8 16.2C18.1 15.4 
+                       17.1 15 16 15H8C6.9 15 5.9 15.4 5.2 16.2C4.4 16.9 
+                       4 17.9 4 19V21"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Driver Management</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="currentPage === 'passengers'">
+          <a (click)="navigateTo('passengers')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21V19C20 17.9 19.6 16.9 18.8 16.2C18.1 15.4 
+                       17.1 15 16 15H8C6.9 15 5.9 15.4 5.2 16.2C4.4 16.9 
+                       4 17.9 4 19V21"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Passenger Management</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="currentPage === 'lounges'">
+          <a (click)="navigateTo('lounges')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9L12 2L21 9V20C21 20.5 20.8 21 20.4 21.4C20 21.8 
+                       19.5 22 19 22H5C4.5 22 4 21.8 3.6 21.4C3.2 21 3 20.5 
+                       3 20V9Z"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Lounge Management</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="currentPage === 'lounge-booking'">
+          <a (click)="navigateTo('lounge-booking')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9L12 2L21 9V20C21 20.5 20.8 21 20.4 21.4C20 21.8 
+                       19.5 22 19 22H5C4.5 22 4 21.8 3.6 21.4C3.2 21 3 20.5 
+                       3 20V9Z"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Lounge Booking Management</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="currentPage === 'bus-booking'">
+          <a (click)="navigateTo('bus-booking')" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+              <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+              <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="sidebarOpen">Bus Booking Management</span>
+          </a>
+        </li>
       </ul>
     </nav>
   </div>
 
+  <!-- ✅ Your main content remains unchanged -->
   <div class="main-content">
     <div class="passenger-page">
       <nav class="quick-nav">
@@ -42,10 +170,14 @@
             <h3>Monthly Registered Passengers</h3>
             <p>This year</p>
           </div>
-          <svg [attr.viewBox]="'0 0 600 220'" class="line-chart" preserveAspectRatio="none">
-            <polyline [attr.points]="getPoints()" fill="none" stroke="#3b82f6" stroke-width="3" />
+          <svg [attr.viewBox]="'0 0 600 220'" class="line-chart"
+               preserveAspectRatio="none">
+            <polyline [attr.points]="getPoints()" fill="none"
+                      stroke="#3b82f6" stroke-width="3"/>
             <g *ngFor="let c of monthlyCounts; index as i">
-              <circle [attr.cx]="(30 + i*((600-60)/(months.length-1)))" [attr.cy]="(220-30 - (c/getMaxCount())*(220-60))" r="3" fill="#1d4ed8" />
+              <circle [attr.cx]="(30 + i*((600-60)/(months.length-1)))"
+                      [attr.cy]="(220-30 - (c/getMaxCount())*(220-60))"
+                      r="3" fill="#1d4ed8"/>
             </g>
           </svg>
           <div class="months">
@@ -56,7 +188,9 @@
 
       <div class="toolbar">
         <div class="search-container">
-          <input type="text" class="search-input" placeholder="Search by name, email, phone, NIC or ID..." [(ngModel)]="searchTerm" (input)="onSearchChange()" />
+          <input type="text" class="search-input"
+                 placeholder="Search by name, email, phone, NIC or ID..."
+                 [(ngModel)]="searchTerm" (input)="onSearchChange()"/>
           <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
         </div>
 

@@ -18,6 +18,14 @@ export class PassengerManagementComponent implements OnInit {
   passengers: Passenger[] = [];
   filteredPassengers: Passenger[] = [];
   searchTerm = '';
+  currentPage: string = 'passengers';  // default page
+  sidebarOpen: boolean = true;      // controls sidebar visibility
+
+  navigateTo(page: string) {
+    this.currentPage = page;
+    this.router.navigate([page]); 
+  }
+
 
   monthlyCounts: number[] = [];
   months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
