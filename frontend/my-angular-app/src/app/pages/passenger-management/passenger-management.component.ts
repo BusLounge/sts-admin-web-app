@@ -19,7 +19,7 @@ export class PassengerManagementComponent implements OnInit {
   passengers: Passenger[] = [];
   filteredPassengers: Passenger[] = [];
   searchTerm = '';
-  currentPage: string = 'passengers';  // default page
+  currentPage: string = 'passenger-management';  // default page
   sidebarOpen: boolean = true;      // controls sidebar visibility
 
   navigateTo(page: string) {
