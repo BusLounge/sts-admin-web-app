@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { Lounge } from '../../core/models/lounge.model';
 import { LoungeService } from '../../core/services/lounge.service';
 
 @Component({
   selector: 'app-lounges-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   templateUrl: './lounges-management.component.html',
   styleUrls: ['./lounges-management.component.scss']
 })

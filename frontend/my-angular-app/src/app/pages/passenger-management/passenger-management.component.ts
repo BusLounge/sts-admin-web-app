@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { PassengerService } from '../../core/services/passenger.service';
 import { Passenger } from '../../core/models/passenger.model';
 import jsPDF from 'jspdf';
@@ -10,7 +11,7 @@ import autoTable from 'jspdf-autotable';
 @Component({
   selector: 'app-passenger-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   templateUrl: './passenger-management.component.html',
   styleUrls: ['./passenger-management.component.scss']
 })

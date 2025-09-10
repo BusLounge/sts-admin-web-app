@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BusService } from '../../core/services/bus.service';
@@ -11,7 +12,7 @@ import { Bus } from '../../core/models/bus.model';
 @Component({
   selector: 'app-bus-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   templateUrl: './bus-management.component.html',
   styleUrls: ['./bus-management.component.scss']
 })
@@ -19,6 +20,8 @@ export class BusManagementComponent implements OnInit {
   buses: Bus[] = [];
   filteredBuses: Bus[] = [];
   searchTerm: string = '';
+  sidebarOpen: boolean = true;
+  currentPage: string = 'bus-management';
 
   constructor(private router: Router, private busService: BusService) {}
 
@@ -160,4 +163,7 @@ export class BusManagementComponent implements OnInit {
   goPassengerReports(): void {
     this.router.navigate(['/scheduling']);
   }
+
+  onNavigate(page: string): void { this.router.navigate([`/${page}`]); }
+  onLogout(): void { this.router.navigate(['/login']); }
 }

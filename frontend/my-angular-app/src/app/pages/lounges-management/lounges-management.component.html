@@ -1,4 +1,7 @@
-<div class="lounges-container">
+<div class="management-container">
+  <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="navigateTo($event)" (logout)="navigateTo('login')"></app-sidebar>
+  <div class="main-content">
+    <div class="lounges-container">
   <header class="header">
     <h2>Lounge Management</h2>
     <div class="metrics">
@@ -69,6 +72,8 @@
       </div>
     </div>
   </section>
+    </div>
+  </div>
 </div>
 
 

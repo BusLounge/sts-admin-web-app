@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { DriverService } from '../../core/services/driver.service';
@@ -10,7 +11,7 @@ import { Driver } from '../../core/models/driver.model';
 @Component({
   selector: 'app-driver-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   templateUrl: './driver-management.component.html',
   styleUrls: ['./driver-management.component.scss']
 })
@@ -19,13 +20,11 @@ export class DriverManagementComponent implements OnInit {
   filteredDrivers: Driver[] = [];
   searchTerm: string = '';
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
-  currentPage: string = 'drivers';  // default page
-  sidebarOpen: boolean = true;      // controls sidebar visibility
+  currentPage: string = 'driver-management';
+  sidebarOpen: boolean = true;
 
-  navigateTo(page: string) {
-    this.currentPage = page;
-    console.log("Navigated to:", page);
-  }
+  navigateTo(page: string) { this.router.navigate([`/${page}`]); }
+  logout() { this.router.navigate(['/login']); }
 
   constructor(private router: Router, private driverService: DriverService) {}
 
