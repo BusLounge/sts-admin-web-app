@@ -1,0 +1,74 @@
+<div class="lounges-container">
+  <header class="header">
+    <h2>Lounge Management</h2>
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-value">{{ totalLounges() }}</div>
+        <div class="metric-label">Total Lounges</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="toolbar">
+    <input type="text" placeholder="Search by owner, name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
+    <button (click)="clearSearch()">Clear</button>
+  </section>
+
+  <section class="table-section">
+    <div class="table">
+      <div class="row header">
+        <div class="col">Owner</div>
+        <div class="col">Lounge Name</div>
+        <div class="col">Address</div>
+        <div class="col">Phone</div>
+        <div class="col num">Capacity</div>
+        <div class="col num">Price / hr</div>
+        <div class="col">Operating Hrs</div>
+        <div class="col">Amenities</div>
+        <div class="col">Services</div>
+        <div class="col actions">Actions</div>
+      </div>
+
+      <div class="row" *ngFor="let l of filteredLounges">
+        <div class="col">{{ l.owner }}</div>
+        <div class="col">{{ l.name }}</div>
+        <div class="col">{{ l.address }}</div>
+        <div class="col">{{ l.phone }}</div>
+        <div class="col num">{{ l.capacity }}</div>
+        <div class="col num">${{ l.price_per_hour }}</div>
+        <div class="col">{{ l.operating_hours }}</div>
+        <div class="col">{{ l.amenities.join(', ') }}</div>
+        <div class="col">{{ l.services.join(', ') }}</div>
+        <div class="col actions">
+          <button (click)="view(l)">View</button>
+          <button (click)="update(l)">Update</button>
+          <button class="danger" (click)="delete(l)">Delete</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="charts">
+    <div class="chart-card">
+      <h3>Amenities Distribution</h3>
+      <div class="bars">
+        <div class="bar" *ngFor="let a of amenitiesCounts" [style.--height]="(a.count / (totalLounges() || 1)) * 100">
+          <span class="bar-value">{{ a.count }}</span>
+          <span class="bar-label">{{ a.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Services Distribution</h3>
+      <div class="bars">
+        <div class="bar" *ngFor="let s of servicesCounts" [style.--height]="(s.count / (totalLounges() || 1)) * 100">
+          <span class="bar-value">{{ s.count }}</span>
+          <span class="bar-label">{{ s.label }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+

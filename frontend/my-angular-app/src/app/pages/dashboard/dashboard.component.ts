@@ -68,8 +68,7 @@ export class DashboardComponent implements OnInit {
         this.router.navigate(['/passenger-management']);
         break;
       case 'lounges':
-        // Navigate to lounges page when implemented
-        console.log('Lounges page not implemented yet');
+        this.router.navigate(['/lounges-management']);
         break;
       case 'scheduling':
         // Navigate to scheduling page when implemented
