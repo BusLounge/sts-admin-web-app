@@ -1,3 +1,27 @@
+.management-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+app-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 250px; /* Adjust width as per sidebar design */
+  z-index: 1000;
+  background: #1e293b; /* Example background, adjust as needed */
+}
+
+.main-content {
+  margin-left: 265px; /* Same width as sidebar */
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
+  background: #f8fafc; /* Example background for main content */
+}
+
 .lounges-container {
   padding: 20px;
 }
@@ -81,29 +105,29 @@
 
 .col.actions {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   justify-content: flex-end;
 }
 
 .col.actions button {
-  padding: 6px 10px;
+  padding: 6px 4px;
   border-radius: 6px;
   border: 1px solid #e5e7eb;
-  background: #f1f5f9;
+  background: #f6fe03;
   cursor: pointer;
 }
 
 .col.actions .danger {
-  background: #fee2e2;
+  background: #e55f5f;
   border-color: #fecaca;
-  color: #b91c1c;
+  color: #030000;
 }
 
 .charts {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .chart-card {

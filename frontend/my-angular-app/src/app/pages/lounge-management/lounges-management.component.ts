@@ -27,6 +27,7 @@ export class LoungesManagementComponent implements OnInit {
   constructor(private router: Router, private loungeService: LoungeService) {}
 
   ngOnInit(): void {
+    this.currentPage = 'lounges-management'; // Set currentPage to match sidebar item key
     this.loungeService.lounges$.subscribe(ls => {
       this.lounges = ls;
       this.filteredLounges = ls;

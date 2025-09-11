@@ -12,6 +12,28 @@
     </div>
   </header>
 
+  <section class="charts">
+    <div class="chart-card">
+      <h3>Amenities Distribution</h3>
+      <div class="bars">
+        <div class="bar" *ngFor="let a of amenitiesCounts" [style.--height]="(a.count / (totalLounges() || 1)) * 100">
+          <span class="bar-value">{{ a.count }}</span>
+          <span class="bar-label">{{ a.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Services Distribution</h3>
+      <div class="bars">
+        <div class="bar" *ngFor="let s of servicesCounts" [style.--height]="(s.count / (totalLounges() || 1)) * 100">
+          <span class="bar-value">{{ s.count }}</span>
+          <span class="bar-label">{{ s.label }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="toolbar">
     <input type="text" placeholder="Search by owner, name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
     <button (click)="clearSearch()">Clear</button>
@@ -46,28 +68,6 @@
           <button (click)="view(l)">View</button>
           <button (click)="update(l)">Update</button>
           <button class="danger" (click)="delete(l)">Delete</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="charts">
-    <div class="chart-card">
-      <h3>Amenities Distribution</h3>
-      <div class="bars">
-        <div class="bar" *ngFor="let a of amenitiesCounts" [style.--height]="(a.count / (totalLounges() || 1)) * 100">
-          <span class="bar-value">{{ a.count }}</span>
-          <span class="bar-label">{{ a.label }}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <h3>Services Distribution</h3>
-      <div class="bars">
-        <div class="bar" *ngFor="let s of servicesCounts" [style.--height]="(s.count / (totalLounges() || 1)) * 100">
-          <span class="bar-value">{{ s.count }}</span>
-          <span class="bar-label">{{ s.label }}</span>
         </div>
       </div>
     </div>
