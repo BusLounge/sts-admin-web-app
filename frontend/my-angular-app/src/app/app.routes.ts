@@ -11,8 +11,8 @@ import { EditDriverComponent } from './pages/driver-management/edit-driver.compo
 import { PassengerManagementComponent } from './pages/passenger-management/passenger-management.component';
 import { AddPassengerComponent } from './pages/passenger-management/add-passenger.component';
 import { EditPassengerComponent } from './pages/passenger-management/edit-passenger.component';
-import { LoungesManagementComponent } from './pages/lounges-management/lounges-management.component';
-import { EditLoungeComponent } from './pages/lounges-management/edit-lounge.component';
+import { LoungesManagementComponent } from './pages/lounge-management/lounges-management.component';
+import { EditLoungeComponent } from './pages/lounge-management/edit-lounge.component';
 
 
 export const routes: Routes = [
