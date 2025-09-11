@@ -76,21 +76,37 @@ app-sidebar {
 .table {
   display: grid;
   gap: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .row {
   display: grid;
-  grid-template-columns: 1.1fr 1.1fr 1.6fr 1fr 0.6fr 0.6fr 0.9fr 1fr 1fr 0.9fr;
+  grid-template-columns: 1.1fr 1.6fr 1fr 0.6fr 0.6fr 0.9fr 1fr 1fr 0.9fr;
   align-items: center;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 10px 12px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.row:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+}
+
+.row:nth-child(even) {
+  background: #f8fafc;
 }
 
 .row.header {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .col {

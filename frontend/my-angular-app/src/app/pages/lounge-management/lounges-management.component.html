@@ -35,14 +35,13 @@
   </section>
 
   <section class="toolbar">
-    <input type="text" placeholder="Search by owner, name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
+    <input type="text" placeholder="Search by name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
     <button (click)="clearSearch()">Clear</button>
   </section>
 
   <section class="table-section">
     <div class="table">
       <div class="row header">
-        <div class="col">Owner</div>
         <div class="col">Lounge Name</div>
         <div class="col">Address</div>
         <div class="col">Phone</div>
@@ -55,7 +54,6 @@
       </div>
 
       <div class="row" *ngFor="let l of filteredLounges">
-        <div class="col">{{ l.owner }}</div>
         <div class="col">{{ l.name }}</div>
         <div class="col">{{ l.address }}</div>
         <div class="col">{{ l.phone }}</div>
