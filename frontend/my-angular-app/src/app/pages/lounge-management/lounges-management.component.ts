@@ -49,6 +49,10 @@ export class LoungesManagementComponent implements OnInit {
 
   clearSearch(): void { this.searchTerm = ''; this.filteredLounges = this.lounges; }
 
+  addLounge(): void {
+    this.router.navigate(['/lounges-management/add']);
+  }
+
   view(l: Lounge): void {
     alert(`Lounge: ${l.name}\nOwner: ${l.owner}\nPhone: ${l.phone}`);
   }

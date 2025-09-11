@@ -53,12 +53,19 @@ app-sidebar {
 
 .toolbar {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 16px;
 }
 
+.search-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .toolbar input {
-  flex: 1;
+  flex: 0 0 300px;
   padding: 8px 10px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
@@ -73,6 +80,10 @@ app-sidebar {
   cursor: pointer;
 }
 
+.add-btn {
+  background: #30ce55;
+}
+
 .table {
   display: grid;
   gap: 6px;
@@ -83,13 +94,15 @@ app-sidebar {
 
 .row {
   display: grid;
-  grid-template-columns: 1.1fr 1.6fr 1fr 0.6fr 0.6fr 0.9fr 1fr 1fr 0.9fr;
+  grid-template-columns:1.5fr 2fr 0.9fr 0.8fr 0.5fr 0.7fr 1.2fr;
+  column-gap: 20px;
   align-items: center;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 12px 16px;
   transition: background-color 0.3s ease, transform 0.2s ease;
+  min-height: 30px;
 }
 
 .row:hover {
@@ -102,11 +115,28 @@ app-sidebar {
 }
 
 .row.header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #545455 0%, #727272 100%);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-size: 14px;
+  
+}
+
+.row.header .col {
+  text-align: center;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.row.header .col.num {
+  text-align: center;
+}
+
+.row.header .col.actions {
+  text-align: center;
 }
 
 .col {
@@ -116,13 +146,13 @@ app-sidebar {
 }
 
 .col.num {
-  text-align: right;
+  text-align: center;
 }
 
 .col.actions {
   display: flex;
   gap: 5px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .col.actions button {

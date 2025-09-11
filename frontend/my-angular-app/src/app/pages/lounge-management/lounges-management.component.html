@@ -35,8 +35,11 @@
   </section>
 
   <section class="toolbar">
-    <input type="text" placeholder="Search by name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
-    <button (click)="clearSearch()">Clear</button>
+    <div class="search-group">
+      <input type="text" placeholder="Search by name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
+      <button (click)="clearSearch()">Clear</button>
+    </div>
+    <button class="add-btn" (click)="addLounge()">Add Lounge</button>
   </section>
 
   <section class="table-section">
@@ -48,8 +51,6 @@
         <div class="col num">Capacity</div>
         <div class="col num">Price / hr</div>
         <div class="col">Operating Hrs</div>
-        <div class="col">Amenities</div>
-        <div class="col">Services</div>
         <div class="col actions">Actions</div>
       </div>
 
@@ -60,10 +61,8 @@
         <div class="col num">{{ l.capacity }}</div>
         <div class="col num">${{ l.price_per_hour }}</div>
         <div class="col">{{ l.operating_hours }}</div>
-        <div class="col">{{ l.amenities.join(', ') }}</div>
-        <div class="col">{{ l.services.join(', ') }}</div>
         <div class="col actions">
-          <button (click)="view(l)">View</button>
+          <button style="width: 70px;padding: 6px 4px;background-color: rgb(19, 180, 19);"  (click)="view(l)">View</button>
           <button (click)="update(l)">Update</button>
           <button class="danger" (click)="delete(l)">Delete</button>
         </div>
