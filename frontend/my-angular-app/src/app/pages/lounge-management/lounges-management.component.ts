@@ -89,7 +89,7 @@ export class LoungesManagementComponent implements OnInit {
   clearSearch(): void { this.searchTerm = ''; this.filteredLounges = this.lounges; }
 
   addLounge(): void {
-    this.router.navigate(['/lounges-management/add']);
+    this.router.navigate(['/add-lounge']);
   }
 
   view(l: Lounge): void {

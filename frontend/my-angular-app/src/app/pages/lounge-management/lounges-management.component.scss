@@ -1,7 +1,8 @@
 .management-container {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
 }
 
 app-sidebar {
@@ -17,8 +18,8 @@ app-sidebar {
 .main-content {
   margin-left: 265px; /* Same width as sidebar */
   flex: 1;
-  overflow-y: auto;
-  height: 100vh;
+  overflow-y: visible;
+  height: auto;
   background: #f8fafc; /* Example background for main content */
 }
 
@@ -87,11 +88,12 @@ app-sidebar {
 }
 
 .table {
-  display: grid;
-  gap: 6px;
+  display: block;
+  max-height: 400px;
+  overflow-y: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .row {
@@ -174,8 +176,9 @@ app-sidebar {
 .charts {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 35px;
+  gap: 25px;
   margin-bottom: 20px;
+  padding:20px;
 }
 
 .chart-card {
@@ -224,7 +227,7 @@ app-sidebar {
 
 .bar-label {
   position: absolute;
-  bottom: -39px;
+  bottom: -47px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 14px;

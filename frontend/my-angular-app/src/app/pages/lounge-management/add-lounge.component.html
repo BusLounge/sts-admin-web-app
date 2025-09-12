@@ -1,9 +1,7 @@
 <div class="management-container">
-
-
   <div class="main-content">
-    <div class="edit-container" *ngIf="lounge; else notFoundTpl">
-      <h2>Edit Lounge</h2>
+    <div class="edit-container">
+      <h2>Add Lounge</h2>
       <form (ngSubmit)="save()">
         <div class="grid">
           <label>
@@ -35,12 +33,16 @@
             <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" />
           </label>
           <label>
-            Amenities 
-            <input [(ngModel)]="amenitiesText" name="amenities" />
+            Amenities
+            <select multiple [(ngModel)]="selectedAmenities" name="amenities">
+              <option *ngFor="let amenity of availableAmenities" [value]="amenity">{{ amenity }}</option>
+            </select>
           </label>
           <label>
-            Services 
-            <input [(ngModel)]="servicesText" name="services" />
+            Services
+            <select multiple [(ngModel)]="selectedServices" name="services">
+              <option *ngFor="let service of availableServices" [value]="service">{{ service }}</option>
+            </select>
           </label>
         </div>
         <div class="actions">
@@ -49,13 +51,5 @@
         </div>
       </form>
     </div>
-    <ng-template #notFoundTpl>
-      <div class="edit-container">
-        <h2>Lounge not found</h2>
-        <button class="secondary" (click)="cancel()">Back</button>
-      </div>
-    </ng-template>
   </div>
 </div>
-
-

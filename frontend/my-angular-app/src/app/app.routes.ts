@@ -12,6 +12,7 @@ import { PassengerManagementComponent } from './pages/passenger-management/passe
 import { AddPassengerComponent } from './pages/passenger-management/add-passenger.component';
 import { EditPassengerComponent } from './pages/passenger-management/edit-passenger.component';
 import { LoungesManagementComponent } from './pages/lounge-management/lounges-management.component';
+import { AddLoungeComponent } from './pages/lounge-management/add-lounge.component';
 import { EditLoungeComponent } from './pages/lounge-management/edit-lounge.component';
 
 
@@ -30,6 +31,7 @@ export const routes: Routes = [
   { path: 'passenger-management/add', component: AddPassengerComponent },
   { path: 'passenger-management/edit/:id', component: EditPassengerComponent },
   { path: 'lounges-management', component: LoungesManagementComponent },
+  { path: 'add-lounge', component: AddLoungeComponent },
   { path: 'lounges-management/edit/:id', component: EditLoungeComponent },
   { path: '**', redirectTo: '' }
 ];
