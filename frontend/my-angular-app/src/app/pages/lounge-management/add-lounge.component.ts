@@ -47,4 +47,22 @@ export class AddLoungeComponent implements OnInit {
   cancel(): void {
     this.router.navigate(['/lounges-management']);
   }
+
+  toggleAmenity(amenity: string) {
+    const index = this.selectedAmenities.indexOf(amenity);
+    if (index > -1) {
+      this.selectedAmenities.splice(index, 1);
+    } else {
+      this.selectedAmenities.push(amenity);
+    }
+  }
+
+  toggleService(service: string) {
+    const index = this.selectedServices.indexOf(service);
+    if (index > -1) {
+      this.selectedServices.splice(index, 1);
+    } else {
+      this.selectedServices.push(service);
+    }
+  }
 }
