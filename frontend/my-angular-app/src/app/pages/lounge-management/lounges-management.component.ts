@@ -53,15 +53,15 @@ export class LoungesManagementComponent implements OnInit {
     return filtered;
   }
 
-  // New method to get fixed amenities data
+  // New method to get data for fixed Amenities chart (WiFi, AC, TV, Charging Ports, Quiet Zone)
   getFixedAmenitiesData() {
-    return [
-      { label: 'WiFi', count: 3 },
-      { label: 'AC', count: 2 },
-      { label: 'TV', count: 1 },
-      { label: 'Charging Ports', count: 1 },
-      { label: 'Quiet Zone', count: 1 }
-    ];
+    const fixedAmenities = ['WiFi', 'AC', 'TV', 'Charging Ports', 'Quiet Zone'];
+    const amenitiesCounts = this.loungeService.getAmenitiesCounts();
+    const filtered = fixedAmenities.map(label => ({
+      label,
+      count: amenitiesCounts[label] || 0
+    }));
+    return filtered;
   }
 
   // New method to get data for Amenities & Services coverage chart
