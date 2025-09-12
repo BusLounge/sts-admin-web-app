@@ -65,14 +65,7 @@ export class LoungesManagementComponent implements OnInit {
   }
 
   // New method to get data for Amenities & Services coverage chart
-  getAmenitiesServicesData() {
-    const amenitiesCounts = this.loungeService.getAmenitiesCounts();
-    const servicesCounts = this.loungeService.getServicesCounts();
-    return {
-      amenities: Object.entries(amenitiesCounts).map(([label, count]) => ({ label, count })),
-      services: Object.entries(servicesCounts).map(([label, count]) => ({ label, count }))
-    };
-  }
+  // Removed duplicate getAmenitiesServicesData method to fix duplicate function implementation error
 
   navigateTo(page: string): void { this.router.navigate([`/${page}`]); }
 
@@ -110,6 +103,13 @@ export class LoungesManagementComponent implements OnInit {
     const sCounts = this.loungeService.getServicesCounts();
     this.amenitiesCounts = Object.entries(aCounts).map(([label, count]) => ({ label, count }));
     this.servicesCounts = Object.entries(sCounts).map(([label, count]) => ({ label, count }));
+  }
+
+  getAmenitiesServicesData() {
+    return {
+      amenities: this.amenitiesCounts,
+      services: this.servicesCounts
+    };
   }
 
   totalLounges(): number { return this.lounges.length; }

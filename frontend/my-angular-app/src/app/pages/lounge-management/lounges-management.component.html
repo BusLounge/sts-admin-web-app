@@ -31,9 +31,12 @@
 
     <div class="chart-card">
       <h3>Amenities Availability Across Lounges</h3>
-      <ul class="amenities-list">
-        <li *ngFor="let a of getFixedAmenitiesData()">{{ a.label }}: {{ a.count }}</li>
-      </ul>
+      <div class="bars">
+        <div class="bar" *ngFor="let a of amenitiesCounts" [style.--height]="(a.count / (totalLounges() || 1)) * 100">
+          <span class="bar-value">{{ a.count }}</span>
+          <span class="bar-label">{{ a.label }}</span>
+        </div>
+      </div>
     </div>
   </section>
 
