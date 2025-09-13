@@ -1,0 +1,95 @@
+.management-container { display: flex; justify-content: center; align-items: flex-start; padding: 24px; background: #f5f7fb; min-height: 100vh; }
+.main-content { width: 100%; max-width: 1200px;margin-left: 280px;; }
+.main-content-expanded { margin-left: 80px; }
+
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.page-header h1 { margin: 0; }
+
+.filters { display: flex; gap: 10px; margin-bottom: 10px; margin-top:15px }
+.filters input, .filters select { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; width: 30%; }
+.filters .btn { padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #0b0026; }
+
+.table { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+.row { display: grid; grid-template-columns: 1.1fr 1.2fr 1.1fr 1.1fr 1.2fr 1.3fr .9fr 1fr 1fr 1fr; gap: 10px; padding: 15px; align-items: center; border-bottom: 1px solid #f0f0f0; }
+.row.header { background: #9b9b9b; font-weight: 600; color: #334155; }
+.col.actions-col { display: flex; gap: 6px; }
+
+.badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+.badge.paid { background: #dcfce7; color: #166534; }
+.badge.pending { background: #fef9c3; color: #854d0e; }
+.badge.failed { background: #fee2e2; color: #b91c1c; }
+.badge.refunded { background: #e0e7ff; color: #3730a3; }
+.badge.confirmed { background: #e0f2fe; color: #075985; }
+.badge.cancelled { background: #fee2e2; color: #991b1b; }
+.badge.completed { background: #e7ffe7; color: #076807; }
+
+.btn { padding: 8px 10px; border-radius: 8px; border: 1px solid #e5e7eb; background: #3b82f6; color: #fff; }
+.btn.small { padding: 6px 8px; font-size: 12px; }
+.btn.danger { background: #ef4444; }
+
+.charts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+.chart-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 250px; }
+.bar { width: 22%; background: #e5e7eb; position: relative; border-radius: 6px; display: flex; align-items: flex-end; justify-content: center; }
+.bar span { position: absolute; bottom: -22px; font-size: 12px; text-align: center; width: 100%; }
+.bar.paid { background: #86efac; }
+.bar.pending { background: #fde68a; }
+.bar.failed { background: #fca5a5; }
+.bar.refunded { background: #a5b4fc; }
+.bar.confirmed { background: #bae6fd; }
+.bar.cancelled { background: #fecaca; }
+.bar.completed { background: #a7f3d0; }
+
+.line-chart { width: 100%; height: 247px; }
+.months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; margin-top: 6px; font-size: 12px; color: #1c1c1c; }
+
+.row > div:nth-child(6), /* Seats Booked / Seat Numbers */
+.row > div:nth-child(7), /* Total Fare */
+.row > div:nth-child(8)  /* Payment Status */
+{
+  text-align: center;
+}
+
+.status-dropdown {
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #1c1c1c;
+}
+
+.status-dropdown.paid {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-dropdown.pending {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.status-dropdown.failed {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-dropdown.refunded {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.status-dropdown.confirmed {
+  background-color: #e0f2fe;
+  color: #075985;
+}
+
+.status-dropdown.cancelled {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-dropdown.completed {
+  background-color: #e7ffe7;
+  color: #076807;
+}

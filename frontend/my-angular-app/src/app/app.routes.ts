@@ -17,6 +17,7 @@ import { EditLoungeComponent } from './pages/lounge-management/edit-lounge.compo
 import { ViewLoungeComponent } from './pages/lounge-management/view-lounge.component';
 import { LoungeBookingComponent } from './pages/lounge-booking/lounge-booking.component';
 import { EditLoungeBookingComponent } from './pages/lounge-booking/edit-lounge-booking.component';
+import { BusBookingComponent } from './pages/bus-booking/bus-booking.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -39,5 +40,6 @@ export const routes: Routes = [
   { path: 'lounges-management/view/:id', component: ViewLoungeComponent },
   { path: 'lounge-booking', component: LoungeBookingComponent },
   { path: 'lounge-booking/edit/:id', component: EditLoungeBookingComponent },
+  { path: 'bus-booking', component: BusBookingComponent },
   { path: '**', redirectTo: '' }
 ];

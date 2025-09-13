@@ -1,0 +1,131 @@
+
+<div class="management-container">
+  <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="onNavigate($event)" (logout)="onLogout()"></app-sidebar>
+
+  <div class="main-content" [class.main-content-expanded]="!sidebarOpen">
+    <header class="page-header">
+      <div>
+        <h1>Bus Booking Management</h1>
+        <p>Manage and analyze bus bookings.</p>
+      </div>
+    </header>
+
+    <section class="charts">
+      <div class="chart-card">
+        <h3>Payment Status</h3>
+        <div class="bar-chart">
+          <div class="bar paid" [style.height.%]="(getPayCount('Paid') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 100">
+            <span>Paid ({{ getPayCount('Paid') }})</span>
+          </div>
+          <div class="bar pending" [style.height.%]="(getPayCount('Pending') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 100">
+            <span>Pending ({{ getPayCount('Pending') }})</span>
+          </div>
+          <div class="bar failed" [style.height.%]="(getPayCount('Failed') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 100">
+            <span>Failed ({{ getPayCount('Failed') }})</span>
+          </div>
+          <div class="bar refunded" [style.height.%]="(getPayCount('Refunded') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 100">
+            <span>Refunded ({{ getPayCount('Refunded') }})</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Booking Status</h3>
+        <div class="bar-chart">
+          <div class="bar confirmed" [style.height.%]="(getBookCount('Confirmed') / this.Math.max(1, getBookCount('Confirmed'), getBookCount('Pending'), getBookCount('Cancelled'), getBookCount('Completed'))) * 100">
+            <span>Confirmed ({{ getBookCount('Confirmed') }})</span>
+          </div>
+          <div class="bar pending" [style.height.%]="(getBookCount('Pending') / this.Math.max(1, getBookCount('Confirmed'), getBookCount('Pending'), getBookCount('Cancelled'), getBookCount('Completed'))) * 100">
+            <span>Pending ({{ getBookCount('Pending') }})</span>
+          </div>
+          <div class="bar cancelled" [style.height.%]="(getBookCount('Cancelled') / this.Math.max(1, getBookCount('Confirmed'), getBookCount('Pending'), getBookCount('Cancelled'), getBookCount('Completed'))) * 100">
+            <span>Cancelled ({{ getBookCount('Cancelled') }})</span>
+          </div>
+          <div class="bar completed" [style.height.%]="(getBookCount('Completed') / this.Math.max(1, getBookCount('Confirmed'), getBookCount('Pending'), getBookCount('Cancelled'), getBookCount('Completed'))) * 100">
+            <span>Completed ({{ getBookCount('Completed') }})</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Monthly Paid Revenue</h3>
+        <svg viewBox="0 0 640 260" class="line-chart">
+          <polyline
+            fill="none"
+            stroke="#3b82f6"
+            stroke-width="3"
+            [attr.points]="getRevenuePoints()"
+          ></polyline>
+        </svg>
+        <div class="months">
+          <span *ngFor="let m of months">{{ m }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="filters">
+      <input type="text" placeholder="Search (ID, Passenger, Bus, Route, Seats)" [(ngModel)]="searchTerm" (input)="applyFilters()" />
+      <select [(ngModel)]="paymentFilter" (change)="applyFilters()">
+        <option>All</option>
+        <option>Pending</option>
+        <option>Paid</option>
+        <option>Failed</option>
+        <option>Refunded</option>
+      </select>
+      <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+        <option>All</option>
+        <option>Confirmed</option>
+        <option>Pending</option>
+        <option>Cancelled</option>
+        <option>Completed</option>
+      </select>
+      <button class="btn" (click)="clearSearch()">Clear</button>
+    </section>
+
+    <section class="table-section">
+      <div class="table">
+        <div class="row header">
+          <div class="col">Bus Booking ID</div>
+          <div class="col">Passenger ID </div>
+          <div class="col">Bus ID</div>
+          <div class="col">Route (From → To)</div>
+          <div class="col">Journey Date & Time</div>
+          <div class="col">Seats Booked </div>
+          <div class="col">Total Fare</div>
+          <div class="col">Payment Status</div>
+          <div class="col">Booking Status</div>
+          <div class="col actions-col">Actions</div>
+        </div>
+        <div class="row" *ngFor="let b of filtered">
+          <div class="col">{{ b.booking_id }}</div>
+          <div class="col">{{ b.passenger_id }}</div>
+          <div class="col">{{ b.bus_number }}</div>
+          <div class="col">{{ b.from }} → {{ b.to }}</div>
+          <div class="col">{{ b.journey_datetime | date: 'medium' }}</div>
+          <div class="col">{{ b.seats_booked }} / {{ b.seat_numbers.join(', ') }}</div>
+          <div class="col">{{ b.total_fare  }}</div>
+          <div class="col center-align">
+            <select [(ngModel)]="b.payment_status" (change)="onPaymentStatusChange(b)">
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+              <option value="Failed">Failed</option>
+              <option value="Refunded">Refunded</option>
+            </select>
+          </div>
+          <div class="col center-align">
+            <select [(ngModel)]="b.booking_status" (change)="onBookingStatusChange(b)">
+              <option value="Confirmed">Confirmed</option>
+              <option value="Pending">Pending</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="col actions-col">
+            <button class="btn small" (click)="updateBooking(b)">Update</button>
+            <button class="btn small danger" (click)="deleteBooking(b)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
