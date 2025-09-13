@@ -1,4 +1,4 @@
-.sidebar { background: #0b1220; color: #fff; min-height: 100%; padding: 14px; border-radius: 10px; width: 260px; position: relative; z-index: 1000; }
+.sidebar { background: #0b1220; color: #fff; height: 100vh; padding: 14px; border-radius: 10px; width: 260px; position: fixed; top: 0; left: 0; z-index: 1000; }
 .sidebar-collapsed { width: 72px; }
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; }

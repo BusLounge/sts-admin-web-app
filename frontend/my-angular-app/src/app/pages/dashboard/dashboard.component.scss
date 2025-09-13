@@ -139,11 +139,10 @@
 .main-content {
   flex: 1;
   transition: all 0.3s ease;
-  margin-left: 0;
-
-  &.main-content-expanded {
-    margin-left: -200px;
-  }
+  margin-left: 260px;
+}
+.main-content.main-content-expanded {
+  margin-left: 72px;
 }
 
 .dashboard-header {
