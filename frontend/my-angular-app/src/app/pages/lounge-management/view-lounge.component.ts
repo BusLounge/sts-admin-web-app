@@ -14,6 +14,8 @@ import { LoungeService } from '../../core/services/lounge.service';
 export class ViewLoungeComponent implements OnInit {
   lounge?: Lounge;
 
+
+
   constructor(private route: ActivatedRoute, private router: Router, private loungeService: LoungeService) {}
 
   ngOnInit(): void {
@@ -28,5 +30,21 @@ export class ViewLoungeComponent implements OnInit {
 
   back(): void {
     this.router.navigate(['/lounges-management']);
+  }
+
+  // Lightbox state
+  isLightboxOpen = false;
+  lightboxImage: string | null = null;
+
+  // Open lightbox with clicked image
+  openLightbox(img: string): void {
+    this.lightboxImage = img;
+    this.isLightboxOpen = true;
+  }
+
+  // Close lightbox
+  closeLightbox(): void {
+    this.isLightboxOpen = false;
+    this.lightboxImage = null;
   }
 }

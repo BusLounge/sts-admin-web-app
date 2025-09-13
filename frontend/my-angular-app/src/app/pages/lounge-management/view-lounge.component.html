@@ -44,6 +44,20 @@
             <label>Created At</label>
             <span>{{ lounge.created_at | date:'medium' }}</span>
           </div>
+          <div class="field full-width" *ngIf="lounge.images?.length">
+            <label>Images</label>
+            <div class="image-preview">
+              <div *ngFor="let img of lounge.images" class="image-thumb">
+                <img [src]="img" alt="Lounge Image" (click)="openLightbox(img)" />
+              </div>
+
+              <!-- Lightbox Modal -->
+              <div class="lightbox" *ngIf="isLightboxOpen" (click)="closeLightbox()">
+                <img class="lightbox-image" [src]="lightboxImage || ''" alt="Zoomed Image" (click)="$event.stopPropagation()" />
+                <button class="lightbox-close" (click)="closeLightbox()" aria-label="Close">×</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="actions">
           <button type="button" class="secondary" (click)="back()">Back</button>
