@@ -70,16 +70,28 @@ export class AddLoungeComponent implements OnInit {
     }
   }
 
-  onFileSelected(event: any): void {
-    const files = event.target.files;
-    this.imagePreviews = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+  // Keep selected files for potential upload via FormData
+  private selectedFiles: File[] = [];
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files || files.length === 0) return;
+
+    // Append to existing selections to allow multiple picks across interactions
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) continue; // skip non-images
+      this.selectedFiles.push(file);
+
       const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.imagePreviews.push(e.target.result);
+      reader.onload = (e) => {
+        const result = (e.target as FileReader).result as string;
+        this.imagePreviews.push(result);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // create base64 preview
     }
+
+    // Clear the input to allow re-selecting the same files if needed
+    input.value = '';
   }
 }

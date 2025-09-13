@@ -53,7 +53,7 @@
   <!-- Image Upload -->
   <div class="form-group half-width">
     <label for="imageUpload">Upload Images</label>
-    <input type="file" id="imageUpload" (change)="onFileSelected($event)" multiple accept="image/*" />
+    <input type="file" id="imageUpload" name="images" (change)="onFileSelected($event)" multiple accept="image/*" />
     <div class="image-preview" *ngIf="imagePreviews.length > 0">
       <div *ngFor="let img of imagePreviews" class="image-thumb">
         <img [src]="img" alt="Lounge Image" />

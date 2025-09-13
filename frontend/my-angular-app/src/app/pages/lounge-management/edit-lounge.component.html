@@ -42,6 +42,15 @@
             Services 
             <input [(ngModel)]="servicesText" name="services" />
           </label>
+          <label>
+            Upload Images
+            <input type="file" name="images" (change)="onFileSelected($event)" multiple accept="image/*" />
+          </label>
+          <div class="image-preview" *ngIf="imagePreviews.length > 0">
+            <div *ngFor="let img of imagePreviews" class="image-thumb">
+              <img [src]="img" alt="Lounge Image" />
+            </div>
+          </div>
         </div>
         <div class="actions">
           <button type="submit">Save</button>
