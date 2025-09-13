@@ -40,13 +40,27 @@
           </label>
         </div>
 
-        <!-- Fourth Row -->
-        <div class="form-row">
-          <label>
-            Operating Hours
-            <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" />
-          </label>
-        </div>
+       <!-- Fourth Row -->
+<div class="form-row">
+  <!-- Operating Hours -->
+  <div class="form-group half-width">
+    <label>
+      Operating Hours
+      <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" />
+    </label>
+  </div>
+
+  <!-- Image Upload -->
+  <div class="form-group half-width">
+    <label for="imageUpload">Upload Images</label>
+    <input type="file" id="imageUpload" (change)="onFileSelected($event)" multiple accept="image/*" />
+    <div class="image-preview" *ngIf="imagePreviews.length > 0">
+      <div *ngFor="let img of imagePreviews" class="image-thumb">
+        <img [src]="img" alt="Lounge Image" />
+      </div>
+    </div>
+  </div>
+</div>
 
         <!-- Amenities -->
         <div class="form-group">

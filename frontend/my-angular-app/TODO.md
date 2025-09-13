@@ -1,7 +1,7 @@
-# Navigation Fix: Passenger Management to Lounge Management
+# TODO: Create View Lounge Page
 
-## Tasks
-- [x] Fix sidebar.component.html lounge management navigation
-  - [x] Change navigate.emit from 'lounges' to 'lounges-management'
-  - [x] Change active class condition from 'lounge-management' to 'lounges-management'
-- [x] Test navigation from passenger management to lounge management page
+## Steps to Complete
+- [x] Create ViewLoungeComponent files (ts, html, scss)
+- [x] Add route for view lounge in app.routes.ts
+- [x] Update view method in lounges-management.component.ts to navigate
+- [x] Test navigation and display

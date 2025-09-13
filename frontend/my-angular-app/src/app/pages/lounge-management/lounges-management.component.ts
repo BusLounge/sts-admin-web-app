@@ -86,7 +86,7 @@ export class LoungesManagementComponent implements OnInit {
   }
 
   view(l: Lounge): void {
-    alert(`Lounge: ${l.name}\nOwner: ${l.owner}\nPhone: ${l.phone}`);
+    this.router.navigate(['/lounges-management/view', l.lounge_id]);
   }
 
   update(l: Lounge): void {

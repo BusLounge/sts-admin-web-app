@@ -9,6 +9,7 @@ export interface Lounge {
   operating_hours: string; // e.g., "08:00-22:00"
   amenities: string[]; // e.g., ["WiFi", "AC"]
   services: string[]; // e.g., ["Food", "Drinks"]
+  images: string[]; // base64 encoded images
   created_at: string;
 }
 

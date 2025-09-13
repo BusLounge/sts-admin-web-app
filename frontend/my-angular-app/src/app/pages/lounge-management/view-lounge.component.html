@@ -1,0 +1,61 @@
+<div class="view-lounge-page">
+  <div class="management-container">
+    <div class="main-content">
+      <div class="view-container" *ngIf="lounge; else notFoundTpl">
+        <h2>View Lounge</h2>
+        <div class="grid">
+          <div class="field">
+            <label>Owner</label>
+            <span>{{ lounge.owner }}</span>
+          </div>
+          <div class="field">
+            <label>Lounge Name</label>
+            <span>{{ lounge.name }}</span>
+          </div>
+          <div class="field">
+            <label>Address</label>
+            <span>{{ lounge.address }}</span>
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <span>{{ lounge.phone }}</span>
+          </div>
+          <div class="field">
+            <label>Capacity</label>
+            <span>{{ lounge.capacity }}</span>
+          </div>
+          <div class="field">
+            <label>Price / Hour</label>
+            <span>${{ lounge.price_per_hour }}</span>
+          </div>
+          <div class="field">
+            <label>Operating Hours</label>
+            <span>{{ lounge.operating_hours }}</span>
+          </div>
+          <div class="field">
+            <label>Amenities</label>
+            <span>{{ lounge.amenities.join(', ') }}</span>
+          </div>
+          <div class="field">
+            <label>Services</label>
+            <span>{{ lounge.services.join(', ') }}</span>
+          </div>
+          <div class="field">
+            <label>Created At</label>
+            <span>{{ lounge.created_at | date:'medium' }}</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="secondary" (click)="back()">Back</button>
+        </div>
+      </div>
+
+      <ng-template #notFoundTpl>
+        <div class="view-container">
+          <h2>Lounge not found</h2>
+          <button class="secondary" (click)="back()">Back</button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

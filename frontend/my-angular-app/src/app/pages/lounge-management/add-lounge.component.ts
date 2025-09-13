@@ -24,6 +24,7 @@ export class AddLoungeComponent implements OnInit {
     operating_hours: '',
     amenities: [],
     services: [],
+    images: [],
     created_at: new Date().toISOString()
   };
 
@@ -33,6 +34,8 @@ export class AddLoungeComponent implements OnInit {
   availableAmenities: string[] = ['WiFi', 'AC', 'TV', 'Charging Ports', 'Quiet Zone'];
   availableServices: string[] = ['Food', 'Drinks', 'Shower'];
 
+  imagePreviews: string[] = [];
+
   constructor(private router: Router, private loungeService: LoungeService) {}
 
   ngOnInit(): void {}
@@ -40,6 +43,7 @@ export class AddLoungeComponent implements OnInit {
   save(): void {
     this.lounge.amenities = this.selectedAmenities;
     this.lounge.services = this.selectedServices;
+    this.lounge.images = this.imagePreviews;
     this.loungeService.add(this.lounge);
     this.router.navigate(['/lounges-management']);
   }
@@ -63,6 +67,19 @@ export class AddLoungeComponent implements OnInit {
       this.selectedServices.splice(index, 1);
     } else {
       this.selectedServices.push(service);
+    }
+  }
+
+  onFileSelected(event: any): void {
+    const files = event.target.files;
+    this.imagePreviews = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreviews.push(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
   }
 }

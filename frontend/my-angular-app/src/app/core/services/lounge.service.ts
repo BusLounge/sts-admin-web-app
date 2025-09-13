@@ -16,6 +16,7 @@ export class LoungeService {
       operating_hours: '06:00-22:00',
       amenities: ['WiFi', 'AC', 'TV'],
       services: ['Food', 'Drinks'],
+      images: [],
       created_at: '2024-01-10T10:00:00Z'
     },
     {
@@ -29,6 +30,7 @@ export class LoungeService {
       operating_hours: '08:00-23:00',
       amenities: ['WiFi', 'AC', 'Charging Ports'],
       services: ['Food', 'Drinks', 'Shower'],
+      images: [],
       created_at: '2024-03-05T12:30:00Z'
     },
     {
@@ -42,6 +44,7 @@ export class LoungeService {
       operating_hours: '07:00-20:00',
       amenities: ['WiFi', 'Quiet Zone'],
       services: ['Drinks'],
+      images: [],
       created_at: '2024-05-20T08:15:00Z'
     }
   ]);
