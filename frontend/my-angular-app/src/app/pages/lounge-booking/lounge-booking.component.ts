@@ -73,7 +73,7 @@ export class LoungeBookingComponent implements OnInit {
 
   clearSearch() { this.searchTerm = ''; this.applyFilters(); }
 
-  updateBooking(b: LoungeBooking) { this.router.navigate(['/lounges-management']); /* placeholder */ }
+  updateBooking(b: LoungeBooking) { this.router.navigate(['/lounge-booking/edit', b.booking_id]); }
   deleteBooking(b: LoungeBooking) {
     const ok = confirm(`Delete booking ${b.booking_id}?`);
     if (ok) this.svc.delete(b.booking_id);
