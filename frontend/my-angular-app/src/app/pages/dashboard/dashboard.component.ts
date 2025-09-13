@@ -55,27 +55,7 @@ export class DashboardComponent implements OnInit {
 
   navigateTo(page: string): void {
     this.currentPage = page;
-    switch (page) {
-      case 'dashboard':
-        // Stay on dashboard
-        break;
-      case 'bus-management':
-        this.router.navigate(['/bus-management']);
-        break;
-      case 'driver-management':
-        this.router.navigate(['/driver-management']);
-        break;
-      case 'passenger-management':
-        this.router.navigate(['/passenger-management']);
-        break;
-      case 'lounges-management':
-        this.router.navigate(['/lounges-management']);
-        break;
-      case 'scheduling':
-        // Navigate to scheduling page when implemented
-        console.log('Scheduling page not implemented yet');
-        break;
-    }
+    this.router.navigate([`/${page}`]);
   }
 
   logout(): void {

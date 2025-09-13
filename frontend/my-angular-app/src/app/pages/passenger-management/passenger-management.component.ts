@@ -24,7 +24,7 @@ export class PassengerManagementComponent implements OnInit {
 
   onNavigate(page: string) {
     this.currentPage = page;
-    this.router.navigate([page]); 
+    this.router.navigate([`/${page}`]);
   }
 
 

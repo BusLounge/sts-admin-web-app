@@ -1,0 +1,146 @@
+<div class="management-container">
+  <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage"
+               (toggle)="sidebarOpen = !sidebarOpen"
+               (navigate)="onNavigate($event)"
+               (logout)="onLogout()"></app-sidebar>
+
+  <div class="main-content">
+    <div class="lb-page">
+      <nav class="quick-nav">
+        <span class="qn-root" (click)="onNavigate('dashboard')">Dashboard</span>
+        <span class="qn-sep">›</span>
+        <span class="qn-current">Lounge Booking Management</span>
+      </nav>
+
+      <header class="page-header">
+        <h2>Lounge Booking Management</h2>
+      </header>
+
+      <section class="charts-section">
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Payment Status</h3>
+          </div>
+          <div class="bars">
+            <div class="bar" [style.--height]="getPayBarHeight('Paid')">
+              <span class="bar-value">{{ getPayCount('Paid') }}</span>
+              <span class="bar-label">Paid</span>
+            </div>
+            <div class="bar" [style.--height]="getPayBarHeight('Pending')">
+              <span class="bar-value">{{ getPayCount('Pending') }}</span>
+              <span class="bar-label">Pending</span>
+            </div>
+            <div class="bar" [style.--height]="getPayBarHeight('Failed')">
+              <span class="bar-value">{{ getPayCount('Failed') }}</span>
+              <span class="bar-label">Failed</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Booking Status</h3>
+          </div>
+          <div class="bars">
+            <div class="bar" [style.--height]="getBookBarHeight('Confirmed')">
+              <span class="bar-value">{{ getBookCount('Confirmed') }}</span>
+              <span class="bar-label">Confirmed</span>
+            </div>
+            <div class="bar" [style.--height]="getBookBarHeight('Pending')">
+              <span class="bar-value">{{ getBookCount('Pending') }}</span>
+              <span class="bar-label">Pending</span>
+            </div>
+            <div class="bar" [style.--height]="getBookBarHeight('Cancelled')">
+              <span class="bar-value">{{ getBookCount('Cancelled') }}</span>
+              <span class="bar-label">Cancelled</span>
+            </div>
+            <div class="bar" [style.--height]="getBookBarHeight('Completed')">
+              <span class="bar-value">{{ getBookCount('Completed') }}</span>
+              <span class="bar-label">Completed</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Monthly Revenue (Paid)</h3>
+          </div>
+          <svg class="line-chart" [attr.viewBox]="'0 0 600 220'" preserveAspectRatio="none">
+            <polyline [attr.points]="getRevenuePoints()" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+          </svg>
+          <div class="months">
+            <span *ngFor="let m of months">{{ m }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="toolbar">
+        <div class="filters">
+          <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search by Booking ID, Passenger ID, Lounge, Amount..."
+                   [(ngModel)]="searchTerm" (input)="applyFilters()"/>
+            <button class="clear-search-btn" *ngIf="searchTerm" (click)="clearSearch()">×</button>
+          </div>
+          <select [(ngModel)]="paymentFilter" (change)="applyFilters()">
+            <option>All</option>
+            <option>Paid</option>
+            <option>Pending</option>
+            <option>Failed</option>
+          </select>
+          <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+            <option>All</option>
+            <option>Confirmed</option>
+            <option>Pending</option>
+            <option>Cancelled</option>
+            <option>Completed</option>
+          </select>
+        </div>
+      </section>
+
+      <section>
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Passenger ID</th>
+              <th>Lounge Name</th>
+              <th>Date & Time / Duration</th>
+              <th>Guests / Capacity Used</th>
+              <th>Total Amount</th>
+              <th>Payment Status</th>
+              <th>Booking Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of filtered">
+              <td>{{ b.booking_id }}</td>
+              <td>{{ b.passenger_id }}</td>
+              <td>{{ b.lounge_name }}</td>
+              <td>{{ (b.start_datetime | date:'yyyy-MM-dd HH:mm') }} / {{ b.duration_hours }}h</td>
+              <td>{{ b.guests }} / {{ b.capacity_used }}</td>
+              <td>${{ b.total_amount }}</td>
+              <td>
+                <select [ngModel]="b.payment_status" (ngModelChange)="changePaymentStatus(b, $event)">
+                  <option value="Paid">Paid</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Failed">Failed</option>
+                </select>
+              </td>
+              <td>
+                <select [ngModel]="b.booking_status" (ngModelChange)="changeBookingStatus(b, $event)">
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </td>
+              <td class="actions-cell">
+                <button (click)="updateBooking(b)">Update</button>
+                <button (click)="deleteBooking(b)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+</div>
