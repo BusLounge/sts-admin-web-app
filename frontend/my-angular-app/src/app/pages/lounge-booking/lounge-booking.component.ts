@@ -30,6 +30,11 @@ export class LoungeBookingComponent implements OnInit {
   revenueMonths: number[] = [];
   months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+  // Monthly (current month) paid revenue grouped by lounge
+  private currentYear = new Date().getFullYear();
+  private currentMonth = new Date().getMonth(); // 0-11
+  revenueByLounge: { name: string; total: number }[] = [];
+
   constructor(private router: Router, private svc: LoungeBookingService) {}
 
   ngOnInit(): void {
@@ -37,6 +42,7 @@ export class LoungeBookingComponent implements OnInit {
       this.bookings = bs;
       this.applyFilters();
       this.refreshCharts();
+      this.refreshRevenueByLounge();
     });
   }
 
@@ -84,6 +90,31 @@ export class LoungeBookingComponent implements OnInit {
     this.payStatusCounts = this.svc.countByPaymentStatus();
     this.bookStatusCounts = this.svc.countByBookingStatus();
     this.revenueMonths = this.svc.monthlyRevenue(new Date().getFullYear());
+  }
+
+  // Aggregate paid revenue by lounge for current month
+  refreshRevenueByLounge() {
+    const y = this.currentYear;
+    const m = this.currentMonth;
+    const acc = new Map<string, number>();
+    this.bookings.forEach(b => {
+      const d = new Date(b.start_datetime);
+      if (b.payment_status === 'Paid' && d.getFullYear() === y && d.getMonth() === m) {
+        acc.set(b.lounge_name, (acc.get(b.lounge_name) || 0) + b.total_amount);
+      }
+    });
+    this.revenueByLounge = Array.from(acc.entries())
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total);
+  }
+
+  // Bar chart helpers
+  getRevenueMaxForBars(): number {
+    return Math.max(1, ...this.revenueByLounge.map(x => x.total));
+  }
+  getRevenueBarHeight(total: number): number {
+    const max = this.getRevenueMaxForBars();
+    return (total / max) * 100;
   }
 
   // Simple inline charts helpers

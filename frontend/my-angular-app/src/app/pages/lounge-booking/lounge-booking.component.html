@@ -61,13 +61,13 @@
         </div>
         <div class="chart">
           <div class="chart-header">
-            <h3>Monthly Revenue (Paid)</h3>
+            <h3>Monthly Revenue (Paid) — Current Month by Lounge</h3>
           </div>
-          <svg class="line-chart" [attr.viewBox]="'0 0 600 220'" preserveAspectRatio="none">
-            <polyline [attr.points]="getRevenuePoints()" fill="none" stroke="#1d4ed8" stroke-width="3"/>
-          </svg>
-          <div class="months">
-            <span *ngFor="let m of months">{{ m }}</span>
+          <div class="bars">
+            <div class="bar" *ngFor="let item of revenueByLounge" [style.--height]="getRevenueBarHeight(item.total)">
+              <span class="bar-value">${{ item.total | number:'1.0-0' }}</span>
+              <span class="bar-label">{{ item.name }}</span>
+            </div>
           </div>
         </div>
       </section>
