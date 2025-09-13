@@ -92,6 +92,7 @@
             <option>Cancelled</option>
             <option>Completed</option>
           </select>
+          <button class="btn" (click)="clearSearch()">Clear</button>
         </div>
       </section>
 
@@ -132,6 +133,7 @@
                   <option value="Cancelled">Cancelled</option>
                   <option value="Completed">Completed</option>
                 </select>
+                
               </td>
               <td class="actions-cell">
                 <button (click)="updateBooking(b)">Update</button>
