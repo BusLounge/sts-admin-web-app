@@ -52,7 +52,7 @@ export class LoungeBookingComponent implements OnInit {
   }
   onLogout() {
     localStorage.removeItem('token');
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 
   applyFilters() {

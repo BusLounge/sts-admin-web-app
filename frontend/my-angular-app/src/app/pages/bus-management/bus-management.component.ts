@@ -165,5 +165,5 @@ export class BusManagementComponent implements OnInit {
   }
 
   onNavigate(page: string): void { this.router.navigate([`/${page}`]); }
-  onLogout(): void { this.router.navigate(['/login']); }
+  onLogout(): void { this.router.navigate(['/']); }
 }

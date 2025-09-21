@@ -24,7 +24,7 @@ export class DriverManagementComponent implements OnInit {
   sidebarOpen: boolean = true;
 
   navigateTo(page: string) { this.router.navigate([`/${page}`]); }
-  logout() { this.router.navigate(['/login']); }
+  logout() { this.router.navigate(['/']); }
 
   constructor(private router: Router, private driverService: DriverService) {}
 

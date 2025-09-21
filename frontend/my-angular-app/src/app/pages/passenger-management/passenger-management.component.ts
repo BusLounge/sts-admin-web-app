@@ -115,6 +115,6 @@ export class PassengerManagementComponent implements OnInit {
   onLogout() {
     // Example logout logic
     localStorage.removeItem('token');
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 }
