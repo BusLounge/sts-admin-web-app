@@ -1,6 +1,7 @@
 .driver-page {
-    padding: 2rem;
+    padding: 1rem;
     min-height: 100vh;
+    box-sizing: border-box;
     background-image: url('../../../assets/img/yuuu.jpg_large');
     background-size: cover;
     background-position: center;
@@ -122,7 +123,7 @@
   
           .bar {
             flex: 1;
-            height: var(--height);
+            height:150px;
             background: linear-gradient(to top, #2e79f1, #60a5fa);
             border-radius: 4px 4px 0 0;
             display: flex;
@@ -212,30 +213,45 @@
     .driver-table {
       width: 100%;
       border-collapse: collapse;
+      margin: 0;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
       text-align: left;
-  
+      box-sizing: border-box;
+
       th, td {
         padding: 0.75rem;
         border-bottom: 1px solid #e5e7eb;
+        box-sizing: border-box;
       }
-  
+
       th {
-        background: #f3f4f6;
+        background: #eef2f7;
+        color: #334155;
+        font-weight: 700;
       }
-  
+
+      tbody tr:nth-child(even) {
+        background: rgba(15, 23, 42, 0.015);
+      }
+
       button {
         margin-right: 0.5rem;
-        padding: 0.25rem 0.5rem;
+        padding: 0.35rem 0.6rem;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
         cursor: pointer;
         transition: 0.2s;
-  
-        &:nth-child(1) { background: #fbbf24; color: white; } // Update
-        &:nth-child(2) { background: #3b82f6; color: white; } // Activate/Deactivate
-        &:nth-child(3) { background: #ef4444; color: white; } // Delete
-  
-        &:hover { opacity: 0.9; }
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        box-sizing: border-box;
+
+        &:nth-child(1) { background: #f59e0b; color: #fff; } // Update
+        &:nth-child(2) { background: #3b82f6; color: #fff; } // Activate/Deactivate
+        &:nth-child(3) { background: #ef4444; color: #fff; } // Delete
+
+        &:hover { opacity: 0.95; transform: translateY(-1px); }
       }
     }
   }
@@ -275,7 +291,6 @@
   z-index: 10;
 
   .nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-  .nav-item { }
   .nav-link { display: block; padding: 0.6rem 0.75rem; border-radius: 8px; cursor: pointer; color: #e5e7eb; text-decoration: none; }
   .nav-item.active .nav-link, .nav-link:hover { background: rgba(59,130,246,0.2); color: #fff; }
 }

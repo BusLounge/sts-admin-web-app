@@ -1,23 +1,61 @@
-.sidebar { background: #0b1220; color: #fff; height: 100vh; padding: 14px; border-radius: 10px; width: 260px; position: fixed; top: 0; left: 0; z-index: 1000; }
+.sidebar {
+  background: var(--color-background-dark-primary);
+  color: var(--color-text-inverse);
+  height: 100vh;
+  padding: 14px;
+  border-radius: 10px;
+  width: 260px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
 .sidebar-collapsed { width: 72px; }
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; }
-.toggle-btn { background: transparent; color: #e2e8f0; border: 1px solid #1f2937; border-radius: 8px; padding: 6px; cursor: pointer; }
+.toggle-btn {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-background-dark-secondary);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+}
 .sidebar-nav .nav-list { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 12px; }
 .nav-item .nav-link {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px; border-radius: 12px; color: #e2e8f0; cursor: pointer;
-  background: #1e3a8a; border: 1px solid #1e40af;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  background: var(--color-primary-900);
+  border: 1px solid var(--color-primary-800);
   box-shadow: 0 2px 0 0 rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0.3);
+
+  svg {
+    color: var(--color-text-muted);
+  }
 }
-.nav-item .nav-link svg { color: #e5e7eb; }
-.nav-item.active .nav-link { background: #69696a; color: #e2e8f0; border-color: #f3f5fe; }
+
+.nav-item.active .nav-link {
+  background: var(--color-neutral-600);
+  color: var(--color-text-secondary);
+  border-color: var(--color-neutral-400);
+}
 .nav-item .nav-link:hover { filter: brightness(1.05); }
 .sidebar-footer { margin-top: 16px; }
 .logout-btn {
-  display: flex; align-items: center; gap: 10px; padding: 12px 14px; 
-  background: #0f172a; color: #e2e8f0; border: 1px solid #1f2937; width: 100%;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-background-dark-primary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-background-dark-secondary);
+  width: 100%;
+  box-shadow: 0 1px 2px var(--color-shadow-medium);
 }
 
 
