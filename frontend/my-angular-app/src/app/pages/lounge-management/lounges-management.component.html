@@ -51,12 +51,20 @@
   <section class="table-section">
     <div class="table">
       <div class="row header">
-        <div class="col">Lounge Name</div>
+        <div class="col" (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
+          Lounge Name {{ getSortIcon('name') }}
+        </div>
         <div class="col">Address</div>
         <div class="col">Phone</div>
-        <div class="col num">Capacity</div>
-        <div class="col num">Price / hr</div>
-        <div class="col">Operating Hrs</div>
+        <div class="col num" (click)="onSort('capacity')" style="cursor: pointer;" title="Click to sort">
+          Capacity {{ getSortIcon('capacity') }}
+        </div>
+        <div class="col num" (click)="onSort('price_per_hour')" style="cursor: pointer;" title="Click to sort">
+          Price / hr {{ getSortIcon('price_per_hour') }}
+        </div>
+        <div class="col" (click)="onSort('operating_hours')" style="cursor: pointer;" title="Click to sort">
+          Operating Hrs {{ getSortIcon('operating_hours') }}
+        </div>
         <div class="col actions">Actions</div>
       </div>
 

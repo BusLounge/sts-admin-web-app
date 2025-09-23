@@ -24,6 +24,10 @@ export class ConductorManagementComponent implements OnInit {
   currentPage: string = 'conductor-management';
   sidebarOpen: boolean = true;
 
+  // Sorting properties
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(private router: Router, private conductorService: ConductorService) {}
 
   ngOnInit(): void {
@@ -160,5 +164,61 @@ export class ConductorManagementComponent implements OnInit {
   getExperienceLevelPercentage(level: string): number {
     const total = this.conductors.length || 1;
     return (this.getExperienceLevelCount(level) / total) * 100;
+  }
+
+  // Sorting functionality
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      // Toggle direction if same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, start with ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  private applySorting(): void {
+    this.filteredConductors = [...this.filteredConductors].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (this.sortColumn) {
+        case 'full_name':
+          aValue = a.full_name.toLowerCase();
+          bValue = b.full_name.toLowerCase();
+          break;
+        case 'experience':
+          aValue = a.experience_years;
+          bValue = b.experience_years;
+          break;
+        case 'assigned_bus':
+          aValue = a.assigned_bus_id || '';
+          bValue = b.assigned_bus_id || '';
+          break;
+        case 'hire_date':
+          aValue = new Date(a.hired_date);
+          bValue = new Date(b.hired_date);
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return '↕️'; // Both arrows for unsorted columns
+    }
+    return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 }

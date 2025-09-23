@@ -101,11 +101,17 @@
           <thead>
             <tr>
               <th>Booking ID</th>
-              <th>Passenger ID</th>
-              <th>Lounge Name</th>
+              <th (click)="onSort('passenger_id')" style="cursor: pointer;" title="Click to sort">
+                Passenger ID {{ getSortIcon('passenger_id') }}
+              </th>
+              <th (click)="onSort('lounge_name')" style="cursor: pointer;" title="Click to sort">
+                Lounge Name {{ getSortIcon('lounge_name') }}
+              </th>
               <th>Date & Time / Duration</th>
               <th>Guests / Capacity Used</th>
-              <th>Total Amount</th>
+              <th (click)="onSort('total_amount')" style="cursor: pointer;" title="Click to sort">
+                Total Amount {{ getSortIcon('total_amount') }}
+              </th>
               <th>Payment Status</th>
               <th>Booking Status</th>
               <th>Actions</th>

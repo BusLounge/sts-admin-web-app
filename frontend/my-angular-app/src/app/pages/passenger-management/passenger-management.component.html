@@ -59,7 +59,9 @@
         <thead>
           <tr>
             <th>Passenger ID</th>
-            <th>Name</th>
+            <th (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
+              Name {{ getSortIcon('name') }}
+            </th>
             <th>Phone</th>
             <th>Email</th>
             <th>NIC</th>

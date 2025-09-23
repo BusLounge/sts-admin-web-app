@@ -24,6 +24,10 @@ export class LoungeBookingComponent implements OnInit {
   paymentFilter: 'All' | 'Pending' | 'Paid' | 'Failed' = 'All';
   statusFilter: 'All' | 'Confirmed' | 'Pending' | 'Cancelled' | 'Completed' = 'All';
 
+  // Sorting properties
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   // Chart data
   payStatusCounts: Record<string, number> = {};
   bookStatusCounts: Record<string, number> = {};
@@ -155,5 +159,57 @@ export class LoungeBookingComponent implements OnInit {
         return `${x},${y}`;
       })
       .join(' ');
+  }
+
+  // Sorting functionality
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      // Toggle direction if same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, start with ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  private applySorting(): void {
+    this.filtered = [...this.filtered].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (this.sortColumn) {
+        case 'passenger_id':
+          aValue = a.passenger_id.toLowerCase();
+          bValue = b.passenger_id.toLowerCase();
+          break;
+        case 'lounge_name':
+          aValue = a.lounge_name.toLowerCase();
+          bValue = b.lounge_name.toLowerCase();
+          break;
+        case 'total_amount':
+          aValue = a.total_amount;
+          bValue = b.total_amount;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return '↕️'; // Both arrows for unsorted columns
+    }
+    return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 }

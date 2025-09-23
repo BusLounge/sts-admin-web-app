@@ -23,12 +23,20 @@ export class BusManagementComponent implements OnInit {
   sidebarOpen: boolean = true;
   currentPage: string = 'bus-management';
 
+  // Sorting properties
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(private router: Router, private busService: BusService) {}
 
   ngOnInit(): void {
     this.busService.buses$.subscribe(buses => {
       this.buses = buses;
       this.filteredBuses = buses;
+      // Apply current sorting to initial data
+      if (this.sortColumn) {
+        this.applySorting();
+      }
     });
   }
 
@@ -141,11 +149,19 @@ export class BusManagementComponent implements OnInit {
         bus.capacity.toString().includes(this.searchTerm)
       );
     }
+    // Apply current sorting to filtered results
+    if (this.sortColumn) {
+      this.applySorting();
+    }
   }
 
   clearSearch(): void {
     this.searchTerm = '';
     this.filteredBuses = this.buses;
+    // Apply current sorting after clearing search
+    if (this.sortColumn) {
+      this.applySorting();
+    }
   }
 
   goDriverManagement(): void {
@@ -166,4 +182,56 @@ export class BusManagementComponent implements OnInit {
 
   onNavigate(page: string): void { this.router.navigate([`/${page}`]); }
   onLogout(): void { this.router.navigate(['/']); }
+
+  // Sorting functionality
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      // Toggle direction if same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, start with ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  private applySorting(): void {
+    this.filteredBuses = [...this.filteredBuses].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (this.sortColumn) {
+        case 'capacity':
+          aValue = a.capacity;
+          bValue = b.capacity;
+          break;
+        case 'bus_number':
+          aValue = a.bus_number.toLowerCase();
+          bValue = b.bus_number.toLowerCase();
+          break;
+        case 'route_id':
+          aValue = a.assigned_route_id || '';
+          bValue = b.assigned_route_id || '';
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return '↕️'; // Both arrows for unsorted columns
+    }
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
 }

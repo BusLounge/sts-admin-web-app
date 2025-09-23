@@ -23,6 +23,10 @@ export class DriverManagementComponent implements OnInit {
   currentPage: string = 'driver-management';
   sidebarOpen: boolean = true;
 
+  // Sorting properties
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   navigateTo(page: string) { this.router.navigate([`/${page}`]); }
   logout() { this.router.navigate(['/']); }
 
@@ -32,6 +36,10 @@ export class DriverManagementComponent implements OnInit {
     this.driverService.drivers$.subscribe(drivers => {
       this.drivers = drivers;
       this.filteredDrivers = drivers;
+      // Apply current sorting to initial data
+      if (this.sortColumn) {
+        this.applySorting();
+      }
     });
   }
 
@@ -148,11 +156,19 @@ export class DriverManagementComponent implements OnInit {
         driver.assigned_bus_id?.toString().includes(this.searchTerm)
       );
     }
+    // Apply current sorting to filtered results
+    if (this.sortColumn) {
+      this.applySorting();
+    }
   }
 
   clearSearch(): void {
     this.searchTerm = '';
     this.filteredDrivers = this.drivers;
+    // Apply current sorting after clearing search
+    if (this.sortColumn) {
+      this.applySorting();
+    }
   }
 
   goBusManagement(): void {
@@ -169,6 +185,58 @@ export class DriverManagementComponent implements OnInit {
 
   goPassengerReports(): void {
     this.router.navigate(['/scheduling']);
+  }
+
+  // Sorting functionality
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      // Toggle direction if same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, start with ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  private applySorting(): void {
+    this.filteredDrivers = [...this.filteredDrivers].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (this.sortColumn) {
+        case 'name':
+          aValue = `${a.first_name} ${a.last_name}`.toLowerCase();
+          bValue = `${b.first_name} ${b.last_name}`.toLowerCase();
+          break;
+        case 'assigned_bus':
+          aValue = a.assigned_bus_id || '';
+          bValue = b.assigned_bus_id || '';
+          break;
+        case 'experience':
+          aValue = a.experience_years;
+          bValue = b.experience_years;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return '↕️'; // Both arrows for unsorted columns
+    }
+    return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 }
 

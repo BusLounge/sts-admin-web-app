@@ -22,6 +22,10 @@ export class PassengerManagementComponent implements OnInit {
   currentPage: string = 'passenger-management';  // default page
   sidebarOpen: boolean = true;      // controls sidebar visibility
 
+  // Sorting properties
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   onNavigate(page: string) {
     this.currentPage = page;
     this.router.navigate([`/${page}`]);
@@ -116,5 +120,49 @@ export class PassengerManagementComponent implements OnInit {
     // Example logout logic
     localStorage.removeItem('token');
     this.router.navigate(['/']);
+  }
+
+  // Sorting functionality
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      // Toggle direction if same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, start with ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  private applySorting(): void {
+    this.filteredPassengers = [...this.filteredPassengers].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (this.sortColumn) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return '↕️'; // Both arrows for unsorted columns
+    }
+    return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 }

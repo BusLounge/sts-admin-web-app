@@ -105,13 +105,21 @@
         <thead>
           <tr>
             <th>Conductor ID</th>
-            <th>Full Name</th>
+            <th (click)="onSort('full_name')" style="cursor: pointer;" title="Click to sort">
+              Full Name {{ getSortIcon('full_name') }}
+            </th>
             <th>NIC</th>
             <th>Phone</th>
-            <th>Experience</th>
+            <th (click)="onSort('experience')" style="cursor: pointer;" title="Click to sort">
+              Experience {{ getSortIcon('experience') }}
+            </th>
             <th>Status</th>
-            <th>Assigned Bus</th>
-            <th>Hire Date</th>
+            <th (click)="onSort('assigned_bus')" style="cursor: pointer;" title="Click to sort">
+              Assigned Bus {{ getSortIcon('assigned_bus') }}
+            </th>
+            <th (click)="onSort('hire_date')" style="cursor: pointer;" title="Click to sort">
+              Hire Date {{ getSortIcon('hire_date') }}
+            </th>
             <th>Actions</th>
           </tr>
         </thead>

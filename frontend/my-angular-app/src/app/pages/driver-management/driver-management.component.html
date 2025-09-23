@@ -82,13 +82,19 @@
       <thead>
         <tr>
           <th>Driver ID</th>
-          <th>Name</th>
+          <th (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
+            Name {{ getSortIcon('name') }}
+          </th>
           <th>Email</th>
           <th>Phone</th>
           <th>License No.</th>
-          <th>Experience</th>
+          <th (click)="onSort('experience')" style="cursor: pointer;" title="Click to sort">
+            Experience {{ getSortIcon('experience') }}
+          </th>
           <th>Status</th>
-          <th>Assigned Bus</th>
+          <th (click)="onSort('assigned_bus')" style="cursor: pointer;" title="Click to sort">
+            Assigned Bus {{ getSortIcon('assigned_bus') }}
+          </th>
           <th>Actions</th>
         </tr>
       </thead>

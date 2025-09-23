@@ -24,6 +24,10 @@ export class BusBookingComponent implements OnInit {
   paymentFilter: 'All' | 'Pending' | 'Paid' | 'Failed' | 'Refunded' = 'All';
   statusFilter: 'All' | 'Confirmed' | 'Pending' | 'Cancelled' | 'Completed' = 'All';
 
+  // Sorting properties
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   // Chart data
   payStatusCounts: Record<string, number> = {};
   bookStatusCounts: Record<string, number> = {};
@@ -113,5 +117,69 @@ export class BusBookingComponent implements OnInit {
     // Update charts after booking status change
     this.refreshCharts();
     // Add your update logic here, e.g., call API to update backend
+  }
+
+  // Sorting functionality
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      // Toggle direction if same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, start with ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  private applySorting(): void {
+    this.filtered = [...this.filtered].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (this.sortColumn) {
+        case 'passenger_id':
+          aValue = a.passenger_id.toLowerCase();
+          bValue = b.passenger_id.toLowerCase();
+          break;
+        case 'bus_number':
+          aValue = a.bus_number.toLowerCase();
+          bValue = b.bus_number.toLowerCase();
+          break;
+        case 'route':
+          aValue = `${a.from} → ${a.to}`.toLowerCase();
+          bValue = `${b.from} → ${b.to}`.toLowerCase();
+          break;
+        case 'journey_datetime':
+          aValue = new Date(a.journey_datetime);
+          bValue = new Date(b.journey_datetime);
+          break;
+        case 'seats_booked':
+          aValue = a.seats_booked;
+          bValue = b.seats_booked;
+          break;
+        case 'total_fare':
+          aValue = a.total_fare;
+          bValue = b.total_fare;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return '↕️'; // Both arrows for unsorted columns
+    }
+    return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 }

@@ -82,11 +82,17 @@
     <thead>
       <tr>
         <th>Bus ID</th>
-        <th>Bus Number</th>
-        <th>Capacity</th>
+        <th (click)="onSort('bus_number')" style="cursor: pointer;" title="Click to sort">
+          Bus Number {{ getSortIcon('bus_number') }}
+        </th>
+        <th (click)="onSort('capacity')" style="cursor: pointer;" title="Click to sort">
+          Capacity {{ getSortIcon('capacity') }}
+        </th>
         <th>Type</th>
         <th>Status</th>
-        <th>Route ID</th>
+        <th (click)="onSort('route_id')" style="cursor: pointer;" title="Click to sort">
+          Route ID {{ getSortIcon('route_id') }}
+        </th>
         <th>Actions</th>
       </tr>
     </thead>
