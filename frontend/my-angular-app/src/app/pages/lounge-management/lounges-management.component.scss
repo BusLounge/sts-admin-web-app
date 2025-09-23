@@ -144,6 +144,10 @@ app-sidebar {
   background: rgba(15, 23, 42, 0.03);
 }
 
+.row.header:hover .col {
+  background: var(--color-neutral-400);
+}
+
 .row.header .col.num {
   text-align: center;
 }

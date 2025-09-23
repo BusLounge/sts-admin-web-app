@@ -31,7 +31,7 @@ app-sidebar {
 
 .lb-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
 .lb-table th, .lb-table td { padding: .75rem; border-bottom: 1px solid #e5e7eb; }
-.lb-table th { background: #eef2f7; color: #334155; text-align: left; }
+.lb-table th { background: var(--color-neutral-400); color: #334155; text-align: left; }
 .actions-cell { display: flex; gap: .5rem; }
 .actions-cell button:nth-child(1) { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }
 .actions-cell button:nth-child(2) { background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }
