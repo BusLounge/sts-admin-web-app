@@ -1,0 +1,164 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { ConductorService } from '../../core/services/conductor.service';
+import { Conductor } from '../../core/models/conductor.model';
+
+@Component({
+  selector: 'app-conductor-management',
+  standalone: true,
+  imports: [CommonModule, FormsModule, SidebarComponent],
+  templateUrl: './conductor-management.component.html',
+  styleUrls: ['./conductor-management.component.scss']
+})
+export class ConductorManagementComponent implements OnInit {
+  conductors: Conductor[] = [];
+  filteredConductors: Conductor[] = [];
+  searchTerm: string = '';
+  statusFilter: string = 'All';
+  experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
+  currentPage: string = 'conductor-management';
+  sidebarOpen: boolean = true;
+
+  constructor(private router: Router, private conductorService: ConductorService) {}
+
+  ngOnInit(): void {
+    this.conductorService.conductors$.subscribe(conductors => {
+      this.conductors = conductors;
+      this.applyFilters();
+    });
+  }
+
+  navigateTo(page: string) { this.router.navigate([`/${page}`]); }
+  logout() { this.router.navigate(['/']); }
+
+  addConductor() {
+    this.router.navigate(['/conductor-management/add']);
+  }
+
+  updateConductor(conductor: Conductor) {
+    this.router.navigate(['/conductor-management/edit', conductor.conductor_id]);
+  }
+
+  toggleStatus(conductor: Conductor) {
+    const statusOptions: Array<'Active' | 'On Leave' | 'Resigned'> = ['Active', 'On Leave', 'Resigned'];
+    const currentIndex = statusOptions.indexOf(conductor.status);
+    conductor.status = statusOptions[(currentIndex + 1) % statusOptions.length];
+    console.log(`${conductor.full_name} status changed to ${conductor.status}`);
+  }
+
+  deleteConductor(conductor: Conductor) {
+    const confirmed = confirm(`Are you sure you want to delete ${conductor.full_name}?`);
+    if (confirmed) {
+      this.conductorService.deleteConductor(conductor.conductor_id);
+      console.log(`${conductor.full_name} deleted`);
+    }
+  }
+
+  exportConductorsPdf() {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(16);
+    doc.text('Conductors Management Report', 14, 16);
+
+    const tableHead = [['Conductor ID', 'Full Name', 'NIC', 'Phone', 'Experience', 'Status', 'Assigned Bus', 'Hire Date']];
+    const tableBody = this.filteredConductors.map(c => [
+      c.conductor_id,
+      c.full_name,
+      c.nic,
+      c.phone_number,
+      `${c.experience_years}yrs`,
+      c.status,
+      c.assigned_bus_id || 'Unassigned',
+      new Date(c.hired_date).toLocaleDateString()
+    ]);
+
+    autoTable(doc, {
+      head: tableHead,
+      body: tableBody,
+      startY: 22,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [59, 130, 246] }
+    });
+
+    doc.save('conductors-report.pdf');
+  }
+
+  // Stats helpers
+  getTotalConductors(): number { return this.conductors.length; }
+  getActiveCount(): number { return this.conductors.filter(c => c.status === 'Active').length; }
+  getOnLeaveCount(): number { return this.conductors.filter(c => c.status === 'On Leave').length; }
+  getResignedCount(): number { return this.conductors.filter(c => c.status === 'Resigned').length; }
+  getAverageExperience(): number {
+    if (this.conductors.length === 0) return 0;
+    const total = this.conductors.reduce((sum, c) => sum + c.experience_years, 0);
+    return Math.round(total / this.conductors.length);
+  }
+
+  // Search and filter functionality
+  onSearchChange(): void {
+    this.applyFilters();
+  }
+
+  onStatusFilterChange(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let filtered = this.conductors;
+
+    // Apply status filter
+    if (this.statusFilter !== 'All') {
+      filtered = filtered.filter(c => c.status === this.statusFilter);
+    }
+
+    // Apply search filter
+    if (this.searchTerm.trim()) {
+      filtered = filtered.filter(conductor =>
+        conductor.full_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        conductor.nic.includes(this.searchTerm) ||
+        conductor.phone_number.includes(this.searchTerm) ||
+        conductor.conductor_id.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        conductor.assigned_bus_id.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    }
+
+    this.filteredConductors = filtered;
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.statusFilter = 'All';
+    this.filteredConductors = this.conductors;
+  }
+
+  // Navigation methods
+  goDashboard(): void { this.router.navigate(['/dashboard']); }
+  goBusManagement(): void { this.router.navigate(['/bus-management']); }
+  goPassengerManagement(): void { this.router.navigate(['/passenger-management']); }
+  goLounges(): void { this.router.navigate(['/lounges']); }
+
+  // Experience level calculations for charts
+  getExperienceLevelCount(level: string): number {
+    switch (level) {
+      case '0-2yrs': return this.conductors.filter(c => c.experience_years >= 0 && c.experience_years <= 2).length;
+      case '3-5yrs': return this.conductors.filter(c => c.experience_years >= 3 && c.experience_years <= 5).length;
+      case '6-10yrs': return this.conductors.filter(c => c.experience_years >= 6 && c.experience_years <= 10).length;
+      case '10+yrs': return this.conductors.filter(c => c.experience_years > 10).length;
+      default: return 0;
+    }
+  }
+
+  getExperienceLevelPercentage(level: string): number {
+    const total = this.conductors.length || 1;
+    return (this.getExperienceLevelCount(level) / total) * 100;
+  }
+}

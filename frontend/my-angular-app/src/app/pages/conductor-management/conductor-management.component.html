@@ -1,0 +1,146 @@
+<div class="management-container">
+  <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="navigateTo($event)" (logout)="logout()"></app-sidebar>
+
+  <div class="main-content">
+    <div class="conductor-page">
+      <nav class="quick-nav">
+        <span class="qn-root" (click)="goDashboard()">Dashboard</span>
+        <span class="qn-sep" aria-hidden="true">›</span>
+        <span class="qn-current">Conductor Management</span>
+      </nav>
+
+      <div class="page-header">
+        <h2>Conductor Management</h2>
+        <button class="add-conductor-btn" (click)="addConductor()">Add Conductor</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-title">Total Conductors</div>
+          <div class="stat-value">{{ getTotalConductors() }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Active</div>
+          <div class="stat-value">{{ getActiveCount() }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">On Leave</div>
+          <div class="stat-value">{{ getOnLeaveCount() }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Avg Experience</div>
+          <div class="stat-value">{{ getAverageExperience() }}yrs</div>
+        </div>
+      </div>
+
+      <div class="charts-section">
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Status Overview</h3>
+            <p>Distribution of conductor employment status</p>
+          </div>
+          <div class="pie-chart">
+            <div class="pie-slice active" [style.--percentage]="(getActiveCount() / getTotalConductors()) * 100">
+              <span class="slice-label">Active</span>
+              <span class="slice-value">{{ getActiveCount() }}</span>
+            </div>
+            <div class="pie-slice on-leave" [style.--percentage]="(getOnLeaveCount() / getTotalConductors()) * 100">
+              <span class="slice-label">On Leave</span>
+              <span class="slice-value">{{ getOnLeaveCount() }}</span>
+            </div>
+            <div class="pie-slice resigned" [style.--percentage]="(getResignedCount() / getTotalConductors()) * 100">
+              <span class="slice-label">Resigned</span>
+              <span class="slice-value">{{ getResignedCount() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Experience Distribution</h3>
+            <p>Conductors by experience level</p>
+          </div>
+          <div class="bar-chart">
+            <div class="bar" *ngFor="let level of experienceLevels" [style.--height]="getExperienceLevelPercentage(level)">
+              <span class="bar-value">{{ getExperienceLevelCount(level) }}</span>
+              <span class="bar-label">{{ level }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search by name, NIC, phone, ID, or bus..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          />
+          <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+        </div>
+
+        <div class="filters-container">
+          <div class="filter-group">
+            <label>Status:</label>
+            <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()" class="status-filter">
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="On Leave">On Leave</option>
+              <option value="Resigned">Resigned</option>
+            </select>
+          </div>
+        </div>
+
+        
+
+        <div class="toolbar-actions">
+          <button class="clear-filters-btn" (click)="clearFilters()" *ngIf="statusFilter !== 'All' || searchTerm">Clear Filters</button>
+          <button class="export-btn" (click)="exportConductorsPdf()">Export Report (PDF)</button>
+        </div>
+      </div>
+
+      <table class="conductor-table">
+        <thead>
+          <tr>
+            <th>Conductor ID</th>
+            <th>Full Name</th>
+            <th>NIC</th>
+            <th>Phone</th>
+            <th>Experience</th>
+            <th>Status</th>
+            <th>Assigned Bus</th>
+            <th>Hire Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let conductor of filteredConductors">
+            <td>{{ conductor.conductor_id }}</td>
+            <td>{{ conductor.full_name }}</td>
+            <td>{{ conductor.nic }}</td>
+            <td>{{ conductor.phone_number }}</td>
+            <td>{{ conductor.experience_years }}yrs</td>
+            <td>
+              <span class="status-badge" [ngClass]="conductor.status.toLowerCase().replace(' ', '-')">
+                {{ conductor.status }}
+              </span>
+            </td>
+            <td>{{ conductor.assigned_bus_id || 'Unassigned' }}</td>
+            <td>{{ conductor.hired_date | date:'shortDate' }}</td>
+            <td class="actions-cell">
+              <button (click)="updateConductor(conductor)" class="btn-update">Update</button>
+              <button (click)="toggleStatus(conductor)" class="btn-toggle">Change Status</button>
+              <button (click)="deleteConductor(conductor)" class="btn-delete">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="no-results" *ngIf="filteredConductors.length === 0">
+        <p>No conductors found matching your criteria.</p>
+      </div>
+    </div>
+  </div>
+</div>

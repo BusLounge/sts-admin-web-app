@@ -18,6 +18,9 @@ import { ViewLoungeComponent } from './pages/lounge-management/view-lounge.compo
 import { LoungeBookingComponent } from './pages/lounge-booking/lounge-booking.component';
 import { EditLoungeBookingComponent } from './pages/lounge-booking/edit-lounge-booking.component';
 import { BusBookingComponent } from './pages/bus-booking/bus-booking.component';
+import { ConductorManagementComponent } from './pages/conductor-management/conductor-management.component';
+import { AddConductorComponent } from './pages/conductor-management/add-conductor.component';
+import { EditConductorComponent } from './pages/conductor-management/edit-conductor.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -30,6 +33,9 @@ export const routes: Routes = [
   { path: 'driver-management', component: DriverManagementComponent },
   { path: 'driver-management/add', component: AddDriverComponent },
   { path: 'driver-management/edit/:id', component: EditDriverComponent },
+  { path: 'conductor-management', component: ConductorManagementComponent },
+  { path: 'conductor-management/add', component: AddConductorComponent },
+  { path: 'conductor-management/edit/:id', component: EditConductorComponent },
   { path: 'passenger-management', component: PassengerManagementComponent },
   { path: 'passenger-management/add', component: AddPassengerComponent },
   { path: 'passenger-management/edit/:id', component: EditPassengerComponent },

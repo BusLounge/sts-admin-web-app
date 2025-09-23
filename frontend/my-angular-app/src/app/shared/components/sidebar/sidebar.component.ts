@@ -14,6 +14,16 @@ export class SidebarComponent {
   @Output() toggle = new EventEmitter<void>();
   @Output() navigate = new EventEmitter<string>();
   @Output() logout = new EventEmitter<void>();
+
+  staffMenuExpanded = false;
+
+  toggleStaffMenu(): void {
+    this.staffMenuExpanded = !this.staffMenuExpanded;
+  }
+
+  setActivePage(page: string): void {
+    this.currentPage = page;
+  }
 }
 
 
