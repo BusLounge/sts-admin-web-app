@@ -3,6 +3,8 @@
   height: auto;
   min-height: 100vh;
   overflow: visible;
+  background: #9fcfff;
+
 }
 
 app-sidebar {
@@ -20,7 +22,7 @@ app-sidebar {
   flex: 1;
   overflow-y: visible;
   height: auto;
-  background: var(--color-background-secondary);
+   background: #9fcfff;
 }
 
 .lounges-container {
@@ -91,7 +93,6 @@ app-sidebar {
 
 .table {
   width: 95%;
-  border-collapse: collapse;
   margin: 2rem;
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -99,7 +100,7 @@ app-sidebar {
   overflow: hidden;
   display: table;
   max-height: 400px;
-  overflow-y: auto;
+  
 }
 
 .row {
