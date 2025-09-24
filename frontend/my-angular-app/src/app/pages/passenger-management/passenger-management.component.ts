@@ -159,10 +159,10 @@ export class PassengerManagementComponent implements OnInit {
     });
   }
 
-  getSortIcon(column: string): string {
+   getSortIcon(column: string): string {
     if (this.sortColumn !== column) {
-      return '↕️'; // Both arrows for unsorted columns
+      return ' ⇅'; // Both arrows for unsorted columns
     }
-    return this.sortDirection === 'asc' ? '↑' : '↓';
+    return this.sortDirection === 'asc' ? ' ↑' : ' ↓';
   }
 }

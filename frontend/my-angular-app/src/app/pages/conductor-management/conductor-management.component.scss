@@ -321,6 +321,10 @@
           transition: 0.2s;
           box-shadow: 0 2px 6px rgba(0,0,0,0.06);
           font-size: 0.75rem;
+          min-width: 80px; /* Ensure consistent button width */
+          text-align: center;
+          height: 32px; /* Set consistent height for all buttons */
+          line-height: 1; /* Ensure text is vertically centered */
 
           &.btn-update {
             background: #f59e0b;
@@ -330,11 +334,14 @@
           &.btn-toggle {
             background: #3b82f6;
             color: #fff;
+            min-width: 80px; /* Same width as update button */
+            height: 32px; /* Same height as update button */
           }
 
           &.btn-delete {
             background: #ef4444;
             color: #fff;
+            height: 32px; /* Same height as other buttons */
           }
 
           &:hover {
