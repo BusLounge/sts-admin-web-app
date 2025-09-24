@@ -136,3 +136,34 @@ body {
 
 .border-light { border-color: var(--color-border-light); }
 .border-medium { border-color: var(--color-border-medium); }
+
+// Quick navigation styles
+.quick-nav {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  padding-left: 18px;
+  margin-top: 10px;
+
+  .qn-root {
+    cursor: pointer;
+    color: var(--color-primary-900);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .qn-sep {
+    margin: 0 8px;
+    color: var(--color-text-muted);
+  }
+
+  .qn-current {
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+}

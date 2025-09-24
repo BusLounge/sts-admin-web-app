@@ -355,32 +355,7 @@
     }
   }
 
-  .quick-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    color: #e5e7eb;
-
-    .qn-root {
-      font-weight: 700;
-      cursor: pointer;
-
-      &:hover {
-        color: #93c5fd;
-      }
-    }
-
-    .qn-sep {
-      color: #cbd5e1;
-      user-select: none;
-    }
-
-    .qn-current {
-      color: #93c5fd;
-      font-weight: 600;
-    }
-  }
+  .page-header .quick-nav { margin-bottom: 10px; }
 
   .management-container {
     display: flex;

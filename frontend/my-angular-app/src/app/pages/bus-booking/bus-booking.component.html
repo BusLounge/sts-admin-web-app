@@ -5,8 +5,12 @@
   <div class="main-content" [class.main-content-expanded]="!sidebarOpen">
     <header class="page-header">
       <div>
+        <nav class="quick-nav">
+          <span class="qn-root" (click)="goDashboard()">Dashboard</span>
+          <span class="qn-sep" aria-hidden="true">›</span>
+          <span class="qn-current">Bus Booking Management</span>
+        </nav>
         <h1>Bus Booking Management</h1>
-        <p>Manage and analyze bus bookings.</p>
       </div>
     </header>
 

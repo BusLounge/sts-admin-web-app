@@ -55,28 +55,7 @@
     }
   }
 
-  .quick-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    color: var(--color-text-secondary);
-
-    .qn-root {
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .qn-sep {
-      color: var(--color-text-muted);
-      user-select: none;
-    }
-
-    .qn-current {
-      color: var(--color-primary-500);
-      font-weight: 600;
-    }
-  }
+  .page-header .quick-nav { margin-bottom: 10px; }
 
   .stats-grid {
     display: grid;

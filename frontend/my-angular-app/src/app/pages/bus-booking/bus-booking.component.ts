@@ -56,6 +56,11 @@ export class BusBookingComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
+  goDashboard() {
+    this.currentPage = 'dashboard';
+    this.router.navigate(['/dashboard']);
+  }
+
   applyFilters() {
     const q = this.searchTerm.trim().toLowerCase();
     this.filtered = this.bookings.filter(b => {

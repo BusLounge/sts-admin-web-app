@@ -20,8 +20,8 @@ app-sidebar {
 .sidebar-nav .nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
 .sidebar-nav .nav-item.active .nav-link, .nav-link:hover { background: rgba(248, 250, 252, 0.2); color: #60a5fa; border-left-color: #f4f6f9; }
 
-.quick-nav { display: flex; align-items: center; gap: .5rem; margin: .5rem 0 0 1.5rem; color: #334155; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem; }
+.page-header .quick-nav { margin-bottom: 10px; }
 .add-passenger-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: .5rem 1rem; }
 
 .charts-section .chart { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; margin: 2rem; }

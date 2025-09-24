@@ -73,6 +73,11 @@ export class LoungesManagementComponent implements OnInit {
 
   navigateTo(page: string): void { this.router.navigate([`/${page}`]); }
 
+  goDashboard(): void {
+    this.currentPage = 'dashboard';
+    this.router.navigate(['/dashboard']);
+  }
+
   onSearchChange(): void {
     const q = this.searchTerm.toLowerCase();
     this.filteredLounges = !q ? this.lounges : this.lounges.filter(l =>
