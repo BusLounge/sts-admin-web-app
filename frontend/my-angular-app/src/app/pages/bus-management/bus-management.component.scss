@@ -55,6 +55,59 @@
     }
   }
 
+  /* Modal styles */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1001;
+  }
+
+  .modal-container {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(700px, 90vw);
+    max-height: 90vh;
+    height: auto;
+    overflow: visible;
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-light);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    z-index: 1002;
+    padding: 1rem;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--color-text-primary);
+    }
+  }
+
+  .modal-body {
+    padding: 0.25rem 0;
+    overflow: visible;
+  }
+
   .page-header .quick-nav { margin-bottom: 10px; }
 
   .stats-grid {

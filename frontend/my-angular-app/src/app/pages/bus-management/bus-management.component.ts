@@ -6,13 +6,14 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BusService } from '../../core/services/bus.service';
+import { AddBusComponent } from './add-bus.component';
 
 import { Bus } from '../../core/models/bus.model';
 
 @Component({
   selector: 'app-bus-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, AddBusComponent],
   templateUrl: './bus-management.component.html',
   styleUrls: ['./bus-management.component.scss']
 })
@@ -22,6 +23,9 @@ export class BusManagementComponent implements OnInit {
   searchTerm: string = '';
   sidebarOpen: boolean = true;
   currentPage: string = 'bus-management';
+
+  // Modal state to show Add Bus overlay
+  showAddBusModal = false;
 
   // Sorting properties
   sortColumn: string = '';
@@ -41,7 +45,12 @@ export class BusManagementComponent implements OnInit {
   }
 
   addBus() {
-    this.router.navigate(['/bus-management/add']);
+    // Open the modal overlay instead of routing
+    this.showAddBusModal = true;
+  }
+
+  closeAddBusModal() {
+    this.showAddBusModal = false;
   }
 
   goDashboard() {

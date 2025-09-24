@@ -13,6 +13,19 @@
     <button class="add-bus-btn" (click)="addBus()">Add Bus</button>
   </div>
 
+  <!-- Add Bus Modal Overlay -->
+  <div class="modal-backdrop" *ngIf="showAddBusModal" (click)="closeAddBusModal()"></div>
+  <div class="modal-container" *ngIf="showAddBusModal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Bus</h3>
+      <button class="modal-close" aria-label="Close" (click)="closeAddBusModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- Render standalone AddBusComponent inside the modal -->
+      <app-add-bus [isModal]="true" (closed)="closeAddBusModal()"></app-add-bus>
+    </div>
+  </div>
+
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-title">Total Buses</div>

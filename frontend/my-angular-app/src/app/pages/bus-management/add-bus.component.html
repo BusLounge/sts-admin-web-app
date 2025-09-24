@@ -1,9 +1,9 @@
-<div class="add-bus-page">
-  <nav class="back-nav" (click)="goBack()" aria-label="Back">
+<div class="add-bus-page" [ngClass]="{ 'modal': isModal }">
+  <nav class="back-nav" *ngIf="!isModal" (click)="goBack()" aria-label="Back">
     <span class="arrow">‹</span>
     <span class="label">Back</span>
   </nav>
-  <div class="page-header">
+  <div class="page-header" *ngIf="!isModal">
     <h2>Add a new Bus </h2>
   </div>
 
@@ -78,7 +78,7 @@
     </div>
 
     <div class="form-actions">
-      <button type="button" class="btn secondary" (click)="cancel()">Cancel</button>
+      <button type="button" class="btn secondary" (click)="cancel()">{{ isModal ? 'Close' : 'Cancel' }}</button>
       <button type="submit" class="btn primary" [disabled]="isSubmitting || !isFormValid()">
         {{ isSubmitting ? 'Saving...' : 'Save' }}
       </button>

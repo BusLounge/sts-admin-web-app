@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -27,6 +27,9 @@ interface ValidationErrors {
   styleUrls: ['./add-bus.component.scss']
 })
 export class AddBusComponent {
+  @Input() isModal = false; // when true, don't navigate, just emit close
+  @Output() closed = new EventEmitter<void>();
+
   form: AddBusForm = {
     bus_number: '',
     capacity: null,
@@ -130,15 +133,28 @@ export class AddBusComponent {
     };
     this.busService.addBus(newBus);
     this.isSubmitting = false;
-    this.router.navigate(['/bus-management']);
+
+    if (this.isModal) {
+      this.closed.emit();
+    } else {
+      this.router.navigate(['/bus-management']);
+    }
   }
 
   cancel(): void {
-    this.router.navigate(['/bus-management']);
+    if (this.isModal) {
+      this.closed.emit();
+    } else {
+      this.router.navigate(['/bus-management']);
+    }
   }
 
   goBack(): void {
-    this.router.navigate(['/bus-management']);
+    if (this.isModal) {
+      this.closed.emit();
+    } else {
+      this.router.navigate(['/bus-management']);
+    }
   }
 
   private generateBusId(): string {
