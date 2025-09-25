@@ -65,15 +65,24 @@
   </div>
 
   <div class="toolbar">
-    <div class="search-container">
-      <input 
-        type="text" 
-        class="search-input" 
-        placeholder="Search buses by number, ID, type, route, or capacity..." 
-        [(ngModel)]="searchTerm" 
-        (input)="onSearchChange()"
-      />
-      <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+    <div class="left-section">
+      <div class="search-container">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search buses by number, ID, type, route, or capacity..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+        />
+        <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+      </div>
+      <div class="filter-container">
+        <select [(ngModel)]="statusFilter" (change)="onFilterChange()" class="filter-select">
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
     </div>
     <button class="export-btn" (click)="exportHistoryPdf()">Export Buses History (PDF)</button>
   </div>
@@ -146,6 +155,43 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeAddBusModal()">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Bus Modal -->
+  <div class="add-bus-modal" *ngIf="showEditBusModal && selectedBus" (click)="closeEditBusModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Edit Bus</h2>
+      <form (ngSubmit)="saveEditBus()">
+        <div class="form-row">
+          <label>Bus Number</label>
+          <input type="text" [(ngModel)]="selectedBus.bus_number" name="bus_number" required />
+        </div>
+        <div class="form-row">
+          <label>Capacity</label>
+          <input type="number" [(ngModel)]="selectedBus.capacity" name="capacity" required min="1" />
+        </div>
+        <div class="form-row">
+          <label>Type</label>
+          <select [(ngModel)]="selectedBus.type" name="type">
+            <option value="AC">AC</option>
+            <option value="Non-AC">Non-AC</option>
+            <option value="Luxury">Luxury</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Status</label>
+          <input type="checkbox" [(ngModel)]="selectedBus.is_active" name="is_active" /> Active
+        </div>
+        <div class="form-row">
+          <label>Route ID</label>
+          <input type="text" [(ngModel)]="selectedBus.assigned_route_id" name="assigned_route_id" required />
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="closeEditBusModal()">Cancel</button>
           <button type="submit">Save</button>
         </div>
       </form>

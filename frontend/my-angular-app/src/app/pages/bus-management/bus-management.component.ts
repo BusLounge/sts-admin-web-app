@@ -21,10 +21,12 @@ export class BusManagementComponent implements OnInit {
   buses: Bus[] = [];
   filteredBuses: Bus[] = [];
   searchTerm: string = '';
+  statusFilter: 'all' | 'active' | 'inactive' = 'all';
   sidebarOpen: boolean = true;
   currentPage: string = 'bus-management';
 
   showAddBusModal = false;
+  showEditBusModal = false;
 
   newBus: Omit<Bus, 'bus_id'> = {
     bus_number: '',
@@ -33,6 +35,8 @@ export class BusManagementComponent implements OnInit {
     is_active: true,
     assigned_route_id: ''
   };
+
+  selectedBus: Bus | null = null;
 
   // Sorting properties
   sortColumn: string = '';
@@ -43,11 +47,7 @@ export class BusManagementComponent implements OnInit {
   ngOnInit(): void {
     this.busService.buses$.subscribe(buses => {
       this.buses = buses;
-      this.filteredBuses = buses;
-      // Apply current sorting to initial data
-      if (this.sortColumn) {
-        this.applySorting();
-      }
+      this.applyFilters();
     });
   }
 
@@ -87,8 +87,23 @@ export class BusManagementComponent implements OnInit {
     }
   }
 
+  closeEditBusModal() {
+    this.showEditBusModal = false;
+    this.selectedBus = null;
+  }
+
+  saveEditBus() {
+    if (this.selectedBus && this.selectedBus.bus_number && this.selectedBus.capacity > 0 && this.selectedBus.assigned_route_id) {
+      this.busService.updateBus(this.selectedBus);
+      this.closeEditBusModal();
+    } else {
+      alert('Please fill all required fields');
+    }
+  }
+
   updateBus(bus: Bus) {
-    this.router.navigate(['/bus-management/edit', bus.bus_id]);
+    this.selectedBus = { ...bus };
+    this.showEditBusModal = true;
   }
 
   toggleActive(bus: Bus) {
@@ -177,10 +192,25 @@ export class BusManagementComponent implements OnInit {
 
   // Search functionality
   onSearchChange(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredBuses = this.buses;
-    } else {
-      this.filteredBuses = this.buses.filter(bus =>
+    this.applyFilters();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
+  // Filter functionality
+  onFilterChange(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let filtered = this.buses;
+
+    // Apply search filter
+    if (this.searchTerm.trim()) {
+      filtered = filtered.filter(bus =>
         bus.bus_number.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         bus.bus_id.toString().includes(this.searchTerm) ||
         bus.type.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -188,16 +218,15 @@ export class BusManagementComponent implements OnInit {
         bus.capacity.toString().includes(this.searchTerm)
       );
     }
-    // Apply current sorting to filtered results
-    if (this.sortColumn) {
-      this.applySorting();
-    }
-  }
 
-  clearSearch(): void {
-    this.searchTerm = '';
-    this.filteredBuses = this.buses;
-    // Apply current sorting after clearing search
+    // Apply status filter
+    if (this.statusFilter !== 'all') {
+      filtered = filtered.filter(bus => bus.is_active === (this.statusFilter === 'active'));
+    }
+
+    this.filteredBuses = filtered;
+
+    // Apply current sorting to filtered results
     if (this.sortColumn) {
       this.applySorting();
     }

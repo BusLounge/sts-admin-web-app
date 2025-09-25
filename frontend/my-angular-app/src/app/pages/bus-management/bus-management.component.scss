@@ -159,6 +159,13 @@
     margin-bottom: 1rem;
     gap: 1rem;
 
+    .left-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+    }
+
     .search-container {
       position: relative;
       flex: 1;
@@ -166,7 +173,7 @@
 
       .search-input {
         width: 100%;
-        padding: 0.75rem 2.5rem 0.75rem 1rem;
+        padding: 0.4rem 2.5rem 0.4rem 1rem;
         border: 2px solid var(--color-border-light);
         border-radius: 8px;
         font-size: 0.875rem;
@@ -209,6 +216,31 @@
       }
     }
 
+    .filter-container {
+      position: relative;
+    }
+
+    .filter-select {
+      padding: 0.4rem 1rem;
+      border: 2px solid var(--color-border-light);
+      border-radius: 8px;
+      background: var(--color-background-primary);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--color-text-primary);
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-primary-500);
+        box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
+      }
+
+      &:hover {
+        border-color: var(--color-primary-400);
+      }
+    }
+
     .export-btn {
       background: var(--color-primary-600);
       color: var(--color-text-inverse);
@@ -248,7 +280,7 @@
 
     .action-icon {
       margin-right: 0.5rem;
-      font-size: 1.2rem;
+      font-size: 1rem;
       cursor: pointer;
       transition: 0.2s;
 
