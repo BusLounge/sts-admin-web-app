@@ -1,7 +1,9 @@
-- [ ] Add statusFilter property in bus-management.component.ts
-- [ ] Add applyFilters method in bus-management.component.ts
-- [ ] Add onFilterChange method in bus-management.component.ts
-- [ ] Modify onSearchChange to use applyFilters
-- [ ] Update ngOnInit to call applyFilters
-- [ ] Add filter-container in toolbar in bus-management.component.html
-- [ ] Add styles for filter-container in bus-management.component.scss
+- [x] Add statusFilter property in bus-management.component.ts
+- [x] Add applyFilters method in bus-management.component.ts
+- [x] Add onFilterChange method in bus-management.component.ts
+- [x] Modify onSearchChange to use applyFilters
+- [x] Update ngOnInit to call applyFilters
+- [x] Add filter-container in toolbar in bus-management.component.html
+- [x] Add styles for filter-container in bus-management.component.scss
+- [x] Update colors.scss with additional theme variables
+- [x] Update bus-management.component.scss to use theme colors

@@ -2,7 +2,7 @@
   position: relative;
   padding: 2rem;
   min-height: 100vh;
-  background-color:#98c6ff;
+  background-color: var(--background-color);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -13,7 +13,7 @@
     content: "";
     position: absolute;
     inset: 0;
-  background: linear-gradient(180deg, rgba(var(--color-info-500-rgb), 0.92) 0%, rgba(var(--color-info-500-rgb), 0.86) 40%, rgba(var(--color-info-500-rgb), 0.82) 100%);
+    background: linear-gradient(180deg, rgba(var(--color-primary-500-rgb), 0.92) 0%, rgba(var(--color-primary-500-rgb), 0.86) 40%, rgba(var(--color-primary-500-rgb), 0.82) 100%);
     z-index: 0;
     pointer-events: none;
   }
