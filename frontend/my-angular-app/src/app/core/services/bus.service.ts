@@ -15,8 +15,10 @@ export class BusService {
     return this._buses$.getValue();
   }
 
-  addBus(bus: Bus): void {
-    this._buses$.next([...this.buses, bus]);
+  addBus(bus: Omit<Bus, 'bus_id'>): void {
+    const newId = `BUS${(this.buses.length + 1).toString().padStart(3, '0')}`;
+    const newBus: Bus = { ...bus, bus_id: newId };
+    this._buses$.next([...this.buses, newBus]);
   }
 
   updateBus(updated: Bus): void {

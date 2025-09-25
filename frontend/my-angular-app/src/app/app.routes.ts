@@ -3,7 +3,6 @@ import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { BusManagementComponent } from './pages/bus-management/bus-management.component';
-import { AddBusComponent } from './pages/bus-management/add-bus.component';
 import { EditBusComponent } from './pages/bus-management/edit-bus.component';
 import { DriverManagementComponent } from './pages/driver-management/driver-management.component';
 import { AddDriverComponent } from './pages/driver-management/add-driver.component';
@@ -28,7 +27,6 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'bus-management', component: BusManagementComponent },
-  { path: 'bus-management/add', component: AddBusComponent },
   { path: 'bus-management/edit/:id', component: EditBusComponent },
   { path: 'driver-management', component: DriverManagementComponent },
   { path: 'driver-management/add', component: AddDriverComponent },

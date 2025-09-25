@@ -6,14 +6,14 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BusService } from '../../core/services/bus.service';
-import { AddBusComponent } from './add-bus.component';
+
 
 import { Bus } from '../../core/models/bus.model';
 
 @Component({
   selector: 'app-bus-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, AddBusComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   templateUrl: './bus-management.component.html',
   styleUrls: ['./bus-management.component.scss']
 })
@@ -24,8 +24,15 @@ export class BusManagementComponent implements OnInit {
   sidebarOpen: boolean = true;
   currentPage: string = 'bus-management';
 
-  // Modal state to show Add Bus overlay
   showAddBusModal = false;
+
+  newBus: Omit<Bus, 'bus_id'> = {
+    bus_number: '',
+    capacity: 0,
+    type: 'AC',
+    is_active: true,
+    assigned_route_id: ''
+  };
 
   // Sorting properties
   sortColumn: string = '';
@@ -44,17 +51,40 @@ export class BusManagementComponent implements OnInit {
     });
   }
 
+ 
+
+  goDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
+
   addBus() {
-    // Open the modal overlay instead of routing
     this.showAddBusModal = true;
   }
 
   closeAddBusModal() {
     this.showAddBusModal = false;
+    this.newBus = {
+      bus_number: '',
+      capacity: 0,
+      type: 'AC',
+      is_active: true,
+      assigned_route_id: ''
+    };
   }
 
-  goDashboard() {
-    this.router.navigate(['/dashboard']);
+  saveBus() {
+    if (this.newBus.bus_number && this.newBus.capacity > 0 && this.newBus.assigned_route_id) {
+      this.busService.addBus({
+        bus_number: this.newBus.bus_number,
+        capacity: this.newBus.capacity,
+        type: this.newBus.type,
+        is_active: this.newBus.is_active,
+        assigned_route_id: this.newBus.assigned_route_id
+      });
+      this.closeAddBusModal();
+    } else {
+      alert('Please fill all required fields');
+    }
   }
 
   updateBus(bus: Bus) {

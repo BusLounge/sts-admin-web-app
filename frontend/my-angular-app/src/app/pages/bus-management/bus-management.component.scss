@@ -46,6 +46,7 @@
       border-radius: 6px;
       cursor: pointer;
       transition: 0.3s;
+      margin-right: 5.5px;
 
       &:hover {
         background: var(--color-primary-700);
@@ -55,59 +56,7 @@
     }
   }
 
-  /* Modal styles */
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 1001;
-  }
-
-  .modal-container {
-    position: fixed;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(700px, 90vw);
-    max-height: 90vh;
-    height: auto;
-    overflow: visible;
-    background: var(--color-background-primary);
-    border: 1px solid var(--color-border-light);
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    z-index: 1002;
-    padding: 1rem;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-
-    h3 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 800;
-    }
-
-    .modal-close {
-      background: transparent;
-      border: none;
-      font-size: 1.5rem;
-      line-height: 1;
-      cursor: pointer;
-      color: var(--color-text-primary);
-    }
-  }
-
-  .modal-body {
-    padding: 0.25rem 0;
-    overflow: visible;
-  }
-
+  
   .page-header .quick-nav { margin-bottom: 10px; }
 
   .stats-grid {
@@ -297,20 +246,27 @@
 
     tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.015); }
 
-    button {
+    .action-icon {
       margin-right: 0.5rem;
-      padding: 0.35rem 0.6rem;
-      border: none;
-      border-radius: 6px;
+      font-size: 1.2rem;
       cursor: pointer;
       transition: 0.2s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 
-      &:nth-child(1) { background: #f59e0b; color: #fff; } // Update
-      &:nth-child(2) { background: #3b82f6; color: #fff; } // Activate/Deactivate
-      &:nth-child(3) { background: #ef4444; color: #fff; } // Delete
+      &:hover {
+        transform: scale(1.1);
+      }
 
-      &:hover { opacity: 0.95; transform: translateY(-1px); }
+      &.edit-icon {
+        color: #070122;
+      }
+
+      &.toggle-icon {
+        color:#070122;
+      }
+
+      &.delete-icon {
+        color: #070122;
+      }
     }
   }
 
@@ -430,4 +386,74 @@ app-sidebar {
 @media (max-width: 768px) {
   .sidebar { position: fixed; left: -280px; z-index: 1000; height: 100vh; }
   .sidebar.sidebar-open { left: 0; }
+}
+
+// Add Bus Modal
+.add-bus-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+    h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-row {
+      margin-bottom: 15px;
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      input[type="checkbox"] {
+        width: auto;
+        margin-right: 10px;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:first-child {
+          background: #ccc;
+        }
+
+        &:last-child {
+          background: #007bff;
+          color: white;
+        }
+      }
+    }
+  }
 }
