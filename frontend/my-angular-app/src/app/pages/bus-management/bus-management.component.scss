@@ -328,7 +328,15 @@ app-sidebar {
   z-index: 1000;
 }
 
-.main-content { margin-left: 260px; flex: 1; }
+.main-content {
+  margin-left: 260px;
+  flex: 1;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 72px;
+}
 
 .sidebar {
   width: 280px;
