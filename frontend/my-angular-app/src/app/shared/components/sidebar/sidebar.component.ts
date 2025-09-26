@@ -25,6 +25,8 @@ export class SidebarComponent {
     this.currentPage = page;
     if (page === 'driver-management' || page === 'conductor-management') {
       this.staffMenuExpanded = true;
+    } else {
+      this.staffMenuExpanded = false;
     }
   }
 }

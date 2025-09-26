@@ -56,9 +56,8 @@
 }
 
 .nav-item.active .nav-link {
-  background: var(--sidebar-hover);
-  color: var(--sidebar-active);
-  font-weight: 500;
+  color: var(--color-text-muted);
+  font-weight: normal;
 }
 .nav-item .nav-link:hover { filter: brightness(1.05); }
 
@@ -107,9 +106,8 @@
     }
 
     &.active {
-      background: var(--sidebar-hover);
-      color: var(--sidebar-active);
-      font-weight: 500;
+      color: var(--color-text-muted);
+      font-weight: normal;
     }
   }
 }
