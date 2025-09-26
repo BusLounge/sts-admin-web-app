@@ -1,14 +1,14 @@
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background: #a6d3ff;
+  background: #ffffff;
 }
 
 // Sidebar Styles
 .sidebar {
   width: 280px;
-  background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
-  color: white;
+  background: #ffffff;
+  color: black;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -37,10 +37,10 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: white;
+    color: #647FBC;
 
     svg {
-      color: #3b82f6;
+      color: #647FBC;
     }
 
     .logo-text {
@@ -51,16 +51,16 @@
   }
 
   .toggle-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(100, 127, 188, 0.1);
     border: none;
     border-radius: 8px;
     padding: 0.5rem;
-    color: white;
+    color: #647FBC;
     cursor: pointer;
     transition: all 0.3s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(100, 127, 188, 0.2);
     }
   }
 }
@@ -83,15 +83,15 @@
       align-items: center;
       gap: 0.75rem;
       padding: 1rem 1.5rem;
-      color: rgba(255, 255, 255, 0.8);
+      color: #647FBC;
       text-decoration: none;
       transition: all 0.3s ease;
       cursor: pointer;
       border-left: 3px solid transparent;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
+        background: rgba(100, 127, 188, 0.1);
+        color: #647FBC;
       }
 
       span {
@@ -100,9 +100,9 @@
     }
 
     &.active .nav-link {
-      background: rgba(59, 130, 246, 0.2);
-      color: #60a5fa;
-      border-left-color: #3b82f6;
+      background: rgba(100, 127, 188, 0.1);
+      color: #647FBC;
+      border-left-color: #647FBC;
     }
   }
 }
@@ -120,13 +120,13 @@
     border: none;
     border-radius: 8px;
     padding: 0.75rem 1rem;
-    color: #fca5a5;
+    color: #dc2626;
     cursor: pointer;
     transition: all 0.3s ease;
 
     &:hover {
       background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
+      color: #b91c1c;
     }
 
     span {

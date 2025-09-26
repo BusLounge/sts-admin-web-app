@@ -1,8 +1,9 @@
 :root {
+  // Theme colors as specified: #647FBC #91ADC8 #AED6CF #FAFDD6
   --primary-color: #647FBC;
   --secondary-color: #91ADC8;
   --tertiary-color: #AED6CF;
-  --background-color: #FAFDD6;
+  --background-color: #e5e5e5; // Light yellow background for pages
   --text-primary: #333333;
   --text-secondary: #666666;
   --border-color: #e0e0e0;
@@ -42,9 +43,21 @@
   --color-neutral-800: #262626;
   --color-neutral-900: #171717;
 
-  --color-text-muted: #9ca3af;
+  --color-text-muted:#647FBC;
   --color-text-inverse: #ffffff;
 
-  --color-background-primary: #ffffff;
+  --color-background-primary: #F8FAFC;// White background for content areas
+  --color-background-dark-primary: #ffffff;
+  --color-background-dark-secondary: #f5f5f5;
   --color-border-light: #e5e7eb;
+  --color-buttns-light:#647FBC;
+  --color-bargraph: #647FBC;
+  --color-bargraphgradient: #91ADC8;
+
+
+  // Sidebar specific colors - white background as requested
+  --sidebar-background: #ffffff;
+  --sidebar-text: #333333;
+  --sidebar-hover: #f5f5f5;
+  --sidebar-active: #647FBC;
 }

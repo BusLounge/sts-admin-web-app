@@ -2,27 +2,13 @@
   position: relative;
   padding: 2rem;
   min-height: 100vh;
-  background-color: var(--background-color);
+  background-color: var(--color-background-primary); // White background for pages as requested
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
 
-  /* Semi-transparent overlay for better content readability */
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(var(--color-primary-500-rgb), 0.92) 0%, rgba(var(--color-primary-500-rgb), 0.86) 40%, rgba(var(--color-primary-500-rgb), 0.82) 100%);
-    z-index: 0;
-    pointer-events: none;
-  }
 
-  /* Ensure content is above the overlay */
-  > * {
-    position: relative;
-    z-index: 1;
-  }
 
   .page-header {
     display: flex;
@@ -39,7 +25,7 @@
     }
 
     .add-bus-btn {
-      background: var(--color-primary-500);
+      background: var(--color-buttns-light);
       color: var(--color-text-inverse);
       border: none;
       padding: 0.5rem 1rem;
@@ -66,11 +52,11 @@
     margin-bottom: 1.5rem;
 
     .stat-card {
-      background: linear-gradient(180deg, var(--color-primary-50) 0%, var(--color-primary-100) 100%);
+      background:  var(--color-secondary-500) ;
       border: 1px solid var(--color-primary-200);
       border-radius: 14px;
       padding: 1.1rem;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.08);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
 
       &:hover {
@@ -120,10 +106,10 @@
           font-weight: 700;
 
           &.active {
-            background: conic-gradient(var(--color-success-500) 0deg, var(--color-success-500) calc(var(--percentage) * 3.6deg), var(--color-border-light) calc(var(--percentage) * 3.6deg));
+            background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-border-light) calc(var(--percentage) * 3.6deg));
           }
           &.inactive {
-            background: conic-gradient(var(--color-info-500) 0deg, var(--color-primary-500) calc(var(--percentage) * 3.6deg), var(--color-text-muted) calc(var(--percentage) * 3.6deg));
+            background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-text-muted) calc(var(--percentage) * 3.6deg));
           }
         }
       }
@@ -137,7 +123,7 @@
         .bar {
           flex: 1;
           height: var(--height);
-          background: linear-gradient(to top, var(--color-primary-600), var(--color-primary-400));
+          background: linear-gradient(to top, var(  --color-bargraph), var(--color-bargraphgradient));
           border-radius: 4px 4px 0 0;
           display: flex;
           flex-direction: column;
@@ -228,7 +214,7 @@
       font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.2s;
-      color: var(--color-text-primary);
+      color: var(--color-text-muted);
 
       &:focus {
         outline: none;
@@ -236,13 +222,11 @@
         box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
       }
 
-      &:hover {
-        border-color: var(--color-primary-400);
-      }
+    
     }
 
     .export-btn {
-      background: var(--color-primary-600);
+      background: var(--color-buttns-light);
       color: var(--color-text-inverse);
       border: none;
       border-radius: 8px;
@@ -332,7 +316,7 @@
   .page-content { margin-left: 200px; }
 }
 
-.management-container { display: flex; min-height: 100vh; background: var(--color-info-500); }
+.management-container { display: flex; min-height: 100vh; }
 
 app-sidebar {
   position: fixed;
@@ -482,7 +466,7 @@ app-sidebar {
         }
 
         &:last-child {
-          background: #007bff;
+          background: var(--color-buttns-light);
           color: white;
         }
       }

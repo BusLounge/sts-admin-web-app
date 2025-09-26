@@ -15,7 +15,7 @@ export class SidebarComponent {
   @Output() navigate = new EventEmitter<string>();
   @Output() logout = new EventEmitter<void>();
 
-  staffMenuExpanded = false;
+  staffMenuExpanded = true;
 
   toggleStaffMenu(): void {
     this.staffMenuExpanded = !this.staffMenuExpanded;
@@ -23,6 +23,9 @@ export class SidebarComponent {
 
   setActivePage(page: string): void {
     this.currentPage = page;
+    if (page === 'driver-management' || page === 'conductor-management') {
+      this.staffMenuExpanded = true;
+    }
   }
 }
 
