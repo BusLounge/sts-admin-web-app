@@ -1,7 +1,7 @@
 <div class="management-container">
   <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="navigateTo($event)" (logout)="logout()"></app-sidebar>
 
-  <div class="main-content">
+  <div class="main-content" [class.sidebar-open]="sidebarOpen">
     <div class="conductor-page">
       <nav class="quick-nav">
         <span class="qn-root" (click)="goDashboard()">Dashboard</span>
@@ -39,20 +39,12 @@
             <h3>Status Overview</h3>
             <p>Distribution of conductor employment status</p>
           </div>
-          <div class="pie-chart">
-            <div class="pie-slice active" [style.--percentage]="(getActiveCount() / getTotalConductors()) * 100">
-              <span class="slice-label">Active</span>
-              <span class="slice-value">{{ getActiveCount() }}</span>
-            </div>
-            <div class="pie-slice on-leave" [style.--percentage]="(getOnLeaveCount() / getTotalConductors()) * 100">
-              <span class="slice-label">On Leave</span>
-              <span class="slice-value">{{ getOnLeaveCount() }}</span>
-            </div>
-            <div class="pie-slice resigned" [style.--percentage]="(getResignedCount() / getTotalConductors()) * 100">
-              <span class="slice-label">Resigned</span>
-              <span class="slice-value">{{ getResignedCount() }}</span>
-            </div>
+        <div class="pie-chart">
+          <div class="pie-slice active" [style.--percentage]="(getActiveCount() / getTotalConductors()) * 100">
+            <span class="slice-label">Active</span>
+            <span class="slice-value">{{ getActiveCount() }}</span>
           </div>
+        </div>
         </div>
 
         <div class="chart">
@@ -70,21 +62,20 @@
       </div>
 
       <div class="toolbar">
-        <div class="search-container">
-          <input
-            type="text"
-            class="search-input"
-            placeholder="Search by name, NIC, phone, ID, or bus..."
-            [(ngModel)]="searchTerm"
-            (input)="onSearchChange()"
-          />
-          <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
-        </div>
+        <div class="left-section">
+          <div class="search-container">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Search by name, NIC, phone, ID, or bus..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()"
+            />
+            <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+          </div>
 
-        <div class="filters-container">
-          <div class="filter-group">
-            <label>Status:</label>
-            <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()" class="status-filter">
+          <div class="filter-container">
+            <select class="filter-select" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
               <option value="All">All Status</option>
               <option value="Active">Active</option>
               <option value="On Leave">On Leave</option>
@@ -92,8 +83,6 @@
             </select>
           </div>
         </div>
-
-        
 
         <div class="toolbar-actions">
           <button class="clear-filters-btn" (click)="clearFilters()" *ngIf="statusFilter !== 'All' || searchTerm">Clear Filters</button>
@@ -138,9 +127,8 @@
             <td>{{ conductor.assigned_bus_id || 'Unassigned' }}</td>
             <td>{{ conductor.hired_date | date:'shortDate' }}</td>
             <td class="actions-cell">
-              <button (click)="updateConductor(conductor)" class="btn-update">Update</button>
-              <button (click)="toggleStatus(conductor)" class="btn-toggle">Change Status</button>
-              <button (click)="deleteConductor(conductor)" class="btn-delete">Delete</button>
+              <i class="fas fa-edit action-icon edit-icon" (click)="updateConductor(conductor)" title="Update"></i>
+              <i class="fas fa-toggle-on action-icon toggle-icon" (click)="toggleStatus(conductor)" title="Change Status"></i>
             </td>
           </tr>
         </tbody>
@@ -149,6 +137,96 @@
       <div class="no-results" *ngIf="filteredConductors.length === 0">
         <p>No conductors found matching your criteria.</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Add Conductor Modal -->
+  <div class="add-conductor-modal" *ngIf="showAddConductorModal" (click)="closeAddConductorModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Add Conductor</h2>
+      <form (ngSubmit)="saveConductor()">
+        <div class="form-row">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="newConductor.full_name" name="full_name" required />
+        </div>
+        <div class="form-row">
+          <label>NIC</label>
+          <input type="text" [(ngModel)]="newConductor.nic" name="nic" required />
+        </div>
+        <div class="form-row">
+          <label>Phone Number</label>
+          <input type="text" [(ngModel)]="newConductor.phone_number" name="phone_number" required />
+        </div>
+        <div class="form-row">
+          <label>Experience (Years)</label>
+          <input type="number" [(ngModel)]="newConductor.experience_years" name="experience_years" required min="0" />
+        </div>
+        <div class="form-row">
+          <label>Status</label>
+          <select [(ngModel)]="newConductor.status" name="status">
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Resigned">Resigned</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Assigned Bus ID</label>
+          <input type="text" [(ngModel)]="newConductor.assigned_bus_id" name="assigned_bus_id" />
+        </div>
+        <div class="form-row">
+          <label>Hire Date</label>
+          <input type="date" [(ngModel)]="newConductor.hired_date" name="hired_date" required />
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="closeAddConductorModal()">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Conductor Modal -->
+  <div class="add-conductor-modal" *ngIf="showEditConductorModal" (click)="closeEditConductorModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Edit Conductor</h2>
+      <form (ngSubmit)="saveEditConductor()" *ngIf="selectedConductor">
+        <div class="form-row">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="selectedConductor.full_name" name="edit_full_name" required />
+        </div>
+        <div class="form-row">
+          <label>NIC</label>
+          <input type="text" [(ngModel)]="selectedConductor.nic" name="edit_nic" required />
+        </div>
+        <div class="form-row">
+          <label>Phone Number</label>
+          <input type="text" [(ngModel)]="selectedConductor.phone_number" name="edit_phone_number" required />
+        </div>
+        <div class="form-row">
+          <label>Experience (Years)</label>
+          <input type="number" [(ngModel)]="selectedConductor.experience_years" name="edit_experience_years" required min="0" />
+        </div>
+        <div class="form-row">
+          <label>Status</label>
+          <select [(ngModel)]="selectedConductor.status" name="edit_status">
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Resigned">Resigned</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Assigned Bus ID</label>
+          <input type="text" [(ngModel)]="selectedConductor.assigned_bus_id" name="edit_assigned_bus_id" />
+        </div>
+        <div class="form-row">
+          <label>Hire Date</label>
+          <input type="date" [(ngModel)]="selectedConductor.hired_date" name="edit_hired_date" required />
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="closeEditConductorModal()">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

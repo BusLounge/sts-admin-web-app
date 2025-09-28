@@ -24,6 +24,21 @@ export class ConductorManagementComponent implements OnInit {
   currentPage: string = 'conductor-management';
   sidebarOpen: boolean = true;
 
+  showAddConductorModal = false;
+  showEditConductorModal = false;
+
+  newConductor: Omit<Conductor, 'conductor_id'> = {
+    full_name: '',
+    nic: '',
+    phone_number: '',
+    experience_years: 0,
+    status: 'Active',
+    assigned_bus_id: '',
+    hired_date: new Date().toISOString().split('T')[0]
+  };
+
+  selectedConductor: Conductor | null = null;
+
   // Sorting properties
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -41,11 +56,54 @@ export class ConductorManagementComponent implements OnInit {
   logout() { this.router.navigate(['/']); }
 
   addConductor() {
-    this.router.navigate(['/conductor-management/add']);
+    this.showAddConductorModal = true;
+  }
+
+  closeAddConductorModal() {
+    this.showAddConductorModal = false;
+    this.newConductor = {
+      full_name: '',
+      nic: '',
+      phone_number: '',
+      experience_years: 0,
+      status: 'Active',
+      assigned_bus_id: '',
+      hired_date: new Date().toISOString().split('T')[0]
+    };
+  }
+
+  saveConductor() {
+    if (this.newConductor.full_name && this.newConductor.nic && this.newConductor.phone_number) {
+      this.conductorService.addConductor({
+        full_name: this.newConductor.full_name,
+        nic: this.newConductor.nic,
+        phone_number: this.newConductor.phone_number,
+        experience_years: this.newConductor.experience_years,
+        status: this.newConductor.status,
+        assigned_bus_id: this.newConductor.assigned_bus_id,
+        hired_date: this.newConductor.hired_date
+      });
+      this.closeAddConductorModal();
+    } else {
+      alert('Please fill all required fields');
+    }
   }
 
   updateConductor(conductor: Conductor) {
-    this.router.navigate(['/conductor-management/edit', conductor.conductor_id]);
+    this.selectedConductor = { ...conductor };
+    this.showEditConductorModal = true;
+  }
+
+  closeEditConductorModal() {
+    this.showEditConductorModal = false;
+    this.selectedConductor = null;
+  }
+
+  saveEditConductor() {
+    if (this.selectedConductor) {
+      this.conductorService.updateConductor(this.selectedConductor);
+      this.closeEditConductorModal();
+    }
   }
 
   toggleStatus(conductor: Conductor) {

@@ -169,15 +169,13 @@ export class BusManagementComponent implements OnInit {
     return this.buses.reduce((sum, bus) => sum + bus.capacity, 0);
   }
 
-  getCapacityByType(type: string): number {
-    return this.buses
-      .filter(bus => bus.type === type)
-      .reduce((sum, bus) => sum + bus.capacity, 0);
+  getBusCountByType(type: string): number {
+    return this.buses.filter(bus => bus.type === type).length;
   }
 
-  getCapacityByTypePercentage(type: string): number {
-    const total = this.getTotalCapacity() || 1;
-    return (this.getCapacityByType(type) / total) * 100;
+  getBusCountByTypePercentage(type: string): number {
+    const total = this.buses.length || 1;
+    return (this.getBusCountByType(type) / total) * 100;
   }
 
   getActivePercentage(): number {

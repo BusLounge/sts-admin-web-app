@@ -283,7 +283,9 @@ app-sidebar {
   z-index: 1000;
 }
 
-.main-content { margin-left: 260px; flex: 1; }
+.main-content { margin-left: 0; flex: 1; }
+
+.main-content.sidebar-open { margin-left: 260px; }
 
 .sidebar {
   width: 280px;
@@ -311,6 +313,7 @@ app-sidebar {
 @media (max-width: 768px) {
   .sidebar { position: fixed; left: -280px; z-index: 1000; height: 100vh; }
   .sidebar.sidebar-open { left: 0; }
+  .main-content.sidebar-open { margin-left: 0; }
 }
 
 .driver-table td.actions-cell { display: flex; gap: 0.5rem; align-items: center; }

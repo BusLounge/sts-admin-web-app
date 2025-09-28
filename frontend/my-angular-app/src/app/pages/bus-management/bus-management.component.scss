@@ -131,7 +131,6 @@
           justify-content: space-between;
           padding: 0.5rem 0;
 
-          .bar-value { color: var(--color-text-secondary); font-size: 1rem; font-weight: 700; }
           .bar-label { color: var(--color-text-primary); font-size: 1rem; font-weight: 600; }
         }
       }
@@ -329,13 +328,13 @@ app-sidebar {
 }
 
 .main-content {
-  margin-left: 260px;
+  margin-left: 0;
   flex: 1;
   transition: margin-left 0.3s ease;
 }
 
-.main-content.sidebar-collapsed {
-  margin-left: 72px;
+.main-content.sidebar-open {
+  margin-left: 260px;
 }
 
 .sidebar {

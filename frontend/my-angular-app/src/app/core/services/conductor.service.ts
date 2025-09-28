@@ -53,8 +53,10 @@ export class ConductorService {
     return this._conductors$.getValue();
   }
 
-  addConductor(conductor: Conductor): void {
-    this._conductors$.next([...this.conductors, conductor]);
+  addConductor(conductor: Omit<Conductor, 'conductor_id'>): void {
+    const newId = `CON${(this.conductors.length + 1).toString().padStart(3, '0')}`;
+    const newConductor: Conductor = { ...conductor, conductor_id: newId };
+    this._conductors$.next([...this.conductors, newConductor]);
   }
 
   updateConductor(updated: Conductor): void {

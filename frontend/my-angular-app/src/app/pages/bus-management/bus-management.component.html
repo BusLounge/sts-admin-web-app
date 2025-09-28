@@ -1,7 +1,7 @@
 <div class="management-container">
   <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="onNavigate($event)" (logout)="onLogout()"></app-sidebar>
 
-  <div class="main-content" [class.sidebar-collapsed]="!sidebarOpen">
+  <div class="main-content" [class.sidebar-open]="sidebarOpen">
     <div class="bus-page">
   <nav class="quick-nav">
     <span class="qn-root" (click)="goDashboard()">Dashboard</span>
@@ -52,12 +52,12 @@
 
     <div class="chart">
       <div class="chart-header">
-        <h3>Capacity by Type</h3>
-        <p>Sum of capacities per type</p>
+        <h3>Buses by Type</h3>
+        <p>Number of buses per type</p>
       </div>
       <div class="bar-chart">
-        <div class="bar" *ngFor="let t of ['AC','Non-AC','Luxury']" [style.--height]="getCapacityByTypePercentage(t)">
-          <span class="bar-value">{{ getCapacityByType(t) }}</span>
+        <div class="bar" *ngFor="let t of ['AC','Non-AC','Luxury']" [style.--height]="getBusCountByTypePercentage(t)">
+          <span class="bar-value">{{ getBusCountByType(t) }}</span>
           <span class="bar-label">{{ t }}</span>
         </div>
       </div>
@@ -78,7 +78,7 @@
       </div>
       <div class="filter-container">
         <select [(ngModel)]="statusFilter" (change)="onFilterChange()" class="filter-select">
-          <option value="all">All</option>
+          <option value="all">All status</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
