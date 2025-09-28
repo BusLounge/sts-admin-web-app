@@ -2,30 +2,11 @@
     padding: 1rem;
     min-height: 100vh;
     box-sizing: border-box;
-    background-image: url('../../../assets/img/yuuu.jpg_large');
+    background-color: var(--color-background-primary);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-  
-    /* Semi-transparent overlay for better content readability */
-    &::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(120, 120, 120, 0.85);
-      z-index: 0;
-      pointer-events: none;
-    }
-  
-    /* Ensure content is above the overlay */
-    > * {
-      position: relative;
-      z-index: 1;
-    }
   
     .page-header {
       display: flex;
@@ -35,11 +16,14 @@
   
       h2 {
         margin: 0;
-        
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        color: var(--color-text-primary);
       }
   
       .add-driver-btn {
-        background:  #2d36e2;
+        background:  var(--color-buttns-light);
         color: white;
         border: none;
         padding: 0.5rem 1rem;
@@ -48,7 +32,7 @@
         transition: 0.3s;
   
         &:hover {
-          background: #2563eb;
+          background: #91ADC8;
         }
       }
     }
@@ -60,12 +44,11 @@
       margin-bottom: 1.5rem;
   
       .stat-card {
-        background: #90bbfc;
-        border: 1px solid #e5e7eb;
+        background:var(  --color-stat);
         border-radius: 12px;
         padding: 1rem;
   
-        .stat-title { color: #6b7280; font-weight: 600;font-size: 1.6rem }
+        .stat-title { color: #111827; font-weight: 700;font-size: 1rem }
         .stat-value { font-size: 1.5rem; font-weight: 700; color: #111827; }
       }
     }
@@ -81,8 +64,8 @@
       }
   
       .chart {
-        background: #fff;
-        border: 1px solid #e5e7eb;
+        background: var(--color-background-primary);
+        border: 2px solid var(--color-neutral-300);
         border-radius: 12px;
         padding: 1rem;
   
@@ -107,10 +90,10 @@
             font-weight: 700;
   
             &.active {
-              background: conic-gradient(#10b981 0deg, #10b981 calc(var(--percentage) * 3.6deg), #e5e7eb calc(var(--percentage) * 3.6deg));
+              background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-border-light) calc(var(--percentage) * 3.6deg));
             }
             &.inactive {
-              background: conic-gradient(#288ee7 0deg, #1a71be calc(var(--percentage) * 3.6deg), #969ba4 calc(var(--percentage) * 3.6deg));
+              background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-text-muted) calc(var(--percentage) * 3.6deg));
             }
           }
         }
@@ -123,15 +106,15 @@
   
           .bar {
             flex: 1;
-            height:150px;
-            background: linear-gradient(to top, #2e79f1, #60a5fa);
+            height: var(--height);
+            background: linear-gradient(to top, var(--color-bargraph), var(--color-bargraphgradient));
             border-radius: 4px 4px 0 0;
-            display: flex;
+            display: flex
+;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
             padding: 0.5rem 0;
-  
             .bar-value { color: #090909; font-size: 1rem; font-weight: 700; }
             .bar-label { color: #383838; font-size: 1rem; font-weight: 600; }
           }
@@ -152,24 +135,24 @@
         max-width: 500px;
   
         .search-input {
-          width: 100%;
-          padding: 0.75rem 2.5rem 0.75rem 1rem;
-          border: 2px solid #e5e7eb;
-          border-radius: 8px;
-          font-size: 0.875rem;
-          transition: all 0.2s;
-          background: #fff;
-  
-          &:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-          }
-  
-          &::placeholder {
-            color: #9ca3af;
-          }
+        width: 100%;
+        padding: 0.4rem 2.5rem 0.4rem 1rem;
+        border: 2px solid var(--color-border-light);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        background: var(--color-background-primary);
+
+        &:focus {
+          outline: none;
+          border-color: var(--color-primary-500);
+          box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
         }
+
+        &::placeholder {
+          color: var(--color-text-muted);
+        }
+      }
   
         .clear-search-btn {
           position: absolute;
@@ -196,41 +179,49 @@
         }
       }
   
-      .export-btn {
-        background:  #353dd4;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        transition: 0.2s;
-        white-space: nowrap;
-  
-        &:hover { opacity: 0.9; }
-      }
+     .export-btn {
+      background: var(--color-buttns-light);
+      color: var(--color-text-inverse);
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+
+      &:hover { background: var(--secondary-color); }
+     }
     }
   
     .driver-table {
       width: 100%;
       border-collapse: collapse;
       margin: 0;
-      background: #fff;
-      border: 1px solid #e5e7eb;
+      background: var(--color-neutral-200);
+      border: 1px solid var(--color-neutral-300);
       border-radius: 12px;
       overflow: hidden;
       text-align: left;
-      box-sizing: border-box;
+      
 
       th, td {
-        padding: 0.75rem;
-        border-bottom: 1px solid #e5e7eb;
-        box-sizing: border-box;
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid var(--color-neutral-300);
+        vertical-align: top;
+        text-align: left;
+
+      }
+
+      th:nth-child(6), td:nth-child(6),
+      th:nth-child(8), td:nth-child(8) {
+        text-align: center;
       }
 
       th {
         background: var(--color-neutral-400);
         color: #334155;
         font-weight: 700;
+       
       }
 
       tbody tr:nth-child(even) {
@@ -281,7 +272,7 @@
   .page-content { margin-left: 200px; }
 }
 
-.management-container { display: flex; min-height: 100vh; background: #a6d3ff; }
+.management-container { display: flex; min-height: 100vh;  }
 
 app-sidebar {
   position: fixed;
@@ -323,6 +314,102 @@ app-sidebar {
 }
 
 .driver-table td.actions-cell { display: flex; gap: 0.5rem; align-items: center; }
-.driver-table td.actions-cell button:nth-child(1) { background: #f59e0b; color: #fff; }
-.driver-table td.actions-cell button:nth-child(2) { background: #ef4444; color: #fff; }
-.driver-table td.actions-cell button:nth-child(3) { background: #3b82f6; color: #fff; }
+
+.action-icon {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.edit-icon {
+    color: #070122;
+  }
+
+  &.toggle-icon {
+    color:#070122;
+  }
+
+  &.delete-icon {
+    color: #070122;
+  }
+}
+
+// Add Driver Modal
+.add-driver-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+    h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-row {
+      margin-bottom: 15px;
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      input[type="checkbox"] {
+        width: auto;
+        margin-right: 10px;
+      }
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:first-child {
+          background: #ccc;
+        }
+
+        &:last-child {
+          background: var(--color-buttns-light);
+          color: white;
+        }
+      }
+    }
+  }
+}

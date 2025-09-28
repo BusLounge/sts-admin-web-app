@@ -103,21 +103,73 @@
           <td>{{ driver.driver_id }}</td>
           <td>{{ driver.first_name }} {{ driver.last_name }}</td>
           <td>{{ driver.email }}</td>
-          <td>{{ driver.phone }}</td>
+          <td>{{ formatPhone(driver.phone) }}</td>
           <td>{{ driver.license_number }}</td>
           <td>{{ driver.experience_years }}yrs</td>
           <td>{{ driver.is_active ? 'Active' : 'Inactive' }}</td>
           <td>{{ driver.assigned_bus_id || 'Unassigned' }}</td>
           <td class="actions-cell">
-            <button (click)="updateDriver(driver)">Update</button>
-            <button (click)="deleteDriver(driver)">Delete</button>
-            <button (click)="toggleActive(driver)">
-              {{ driver.is_active ? 'Deactivate' : 'Activate' }}
-            </button>
+            <i class="fas fa-edit action-icon edit-icon" (click)="updateDriver(driver)" title="Update"></i>
+            <i class="fas {{ driver.is_active ? 'fa-toggle-on' : 'fa-toggle-off' }} action-icon toggle-icon" (click)="toggleActive(driver)" [title]="driver.is_active ? 'Deactivate' : 'Activate'"></i>
           </td>
         </tr>
       </tbody>
     </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Driver Modal -->
+  <div class="add-driver-modal" *ngIf="showAddDriverModal" (click)="closeAddDriverModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>{{ isEditing ? 'Edit Driver' : 'Add Driver' }}</h2>
+      <form (ngSubmit)="saveDriver()">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>First Name</label>
+            <input type="text" [(ngModel)]="newDriver.first_name" name="first_name" required />
+          </div>
+          <div class="form-row">
+            <label>Last Name</label>
+            <input type="text" [(ngModel)]="newDriver.last_name" name="last_name" required />
+          </div>
+          <div class="form-row">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="newDriver.email" name="email" required />
+          </div>
+          <div class="form-row">
+            <label>Phone</label>
+            <input type="text" [(ngModel)]="newDriver.phone" name="phone" required />
+          </div>
+          <div class="form-row">
+            <label>License Number</label>
+            <input type="text" [(ngModel)]="newDriver.license_number" name="license_number" required />
+          </div>
+          <div class="form-row">
+            <label>Experience (Years)</label>
+            <input type="number" [(ngModel)]="newDriver.experience_years" name="experience_years" required min="0" />
+          </div>
+          <div class="form-row">
+            <label>License Expiry</label>
+            <input type="date" [(ngModel)]="newDriver.license_expiry" name="license_expiry" />
+          </div>
+          <div class="form-row">
+            <label>Assigned Bus ID</label>
+            <input type="text" [(ngModel)]="newDriver.assigned_bus_id" name="assigned_bus_id" />
+          </div>
+          <div class="form-row">
+            <label>Hire Date</label>
+            <input type="date" [(ngModel)]="newDriver.hire_date" name="hire_date" />
+          </div>
+          <div class="form-row">
+            <label>Status</label>
+            <input type="checkbox" [(ngModel)]="newDriver.is_active" name="is_active" /> Active
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="closeAddDriverModal()">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

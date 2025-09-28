@@ -23,6 +23,23 @@ export class DriverManagementComponent implements OnInit {
   currentPage: string = 'driver-management';
   sidebarOpen: boolean = true;
 
+  showAddDriverModal = false;
+  isEditing = false;
+  editingDriver: Driver | null = null;
+
+  newDriver: Omit<Driver, 'driver_id'> = {
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    license_number: '',
+    experience_years: 0,
+    is_active: true,
+    license_expiry: '',
+    assigned_bus_id: '',
+    hire_date: ''
+  };
+
   // Sorting properties
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -44,7 +61,41 @@ export class DriverManagementComponent implements OnInit {
   }
 
   addDriver() {
-    this.router.navigate(['/driver-management/add']);
+    this.isEditing = false;
+    this.editingDriver = null;
+    this.showAddDriverModal = true;
+  }
+
+  closeAddDriverModal() {
+    this.showAddDriverModal = false;
+    this.isEditing = false;
+    this.editingDriver = null;
+    this.newDriver = {
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      license_number: '',
+      experience_years: 0,
+      is_active: true,
+      license_expiry: '',
+      assigned_bus_id: '',
+      hire_date: ''
+    };
+  }
+
+  saveDriver() {
+    if (this.newDriver.first_name && this.newDriver.last_name && this.newDriver.email && this.newDriver.phone && this.newDriver.license_number && this.newDriver.experience_years >= 0) {
+      if (this.isEditing && this.editingDriver) {
+        const updatedDriver = { ...this.editingDriver, ...this.newDriver };
+        this.driverService.updateDriver(updatedDriver);
+      } else {
+        this.driverService.addDriver(this.newDriver as Driver);
+      }
+      this.closeAddDriverModal();
+    } else {
+      alert('Please fill all required fields');
+    }
   }
 
   goDashboard() {
@@ -52,7 +103,21 @@ export class DriverManagementComponent implements OnInit {
   }
 
   updateDriver(driver: Driver) {
-    this.router.navigate(['/driver-management/edit', driver.driver_id]);
+    this.isEditing = true;
+    this.editingDriver = driver;
+    this.newDriver = {
+      first_name: driver.first_name,
+      last_name: driver.last_name,
+      email: driver.email,
+      phone: driver.phone,
+      license_number: driver.license_number,
+      experience_years: driver.experience_years,
+      is_active: driver.is_active,
+      license_expiry: driver.license_expiry,
+      assigned_bus_id: driver.assigned_bus_id,
+      hire_date: driver.hire_date
+    };
+    this.showAddDriverModal = true;
   }
 
   toggleActive(driver: Driver) {
@@ -78,7 +143,7 @@ export class DriverManagementComponent implements OnInit {
       d.driver_id,
       `${d.first_name} ${d.last_name}`,
       d.email,
-      d.phone,
+      this.formatPhone(d.phone),
       d.license_number,
       `${d.experience_years}yrs`,
       d.is_active ? 'Active' : 'Inactive',
@@ -232,11 +297,15 @@ export class DriverManagementComponent implements OnInit {
     });
   }
 
-   getSortIcon(column: string): string {
+  getSortIcon(column: string): string {
     if (this.sortColumn !== column) {
       return ' ⇅'; // Both arrows for unsorted columns
     }
     return this.sortDirection === 'asc' ? ' ↑' : ' ↓';
+  }
+
+  formatPhone(phone: string): string {
+    return `(${phone})`;
   }
 }
 

@@ -1,10 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
+// Import color system
+@use 'styles/colors' as *;
+
 // Import FontAwesome
 @import '@fortawesome/fontawesome-free/css/all.min.css';
-
-// Import color system
-@import 'styles/colors';
 
 // Global styles using color variables
 * {
