@@ -328,9 +328,9 @@ app-sidebar {
 }
 
 .main-content {
-  margin-left: 0;
+  margin-left: 72px;
   flex: 1;
-  transition: margin-left 0.3s ease;
+  
 }
 
 .main-content.sidebar-open {
