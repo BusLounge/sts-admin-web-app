@@ -298,6 +298,15 @@ app-sidebar {
   border-left-color: #3b82f6;
 }
 
+.main-content {
+  flex: 1;
+  margin-left: 72px;
+}
+
+.main-content.sidebar-open {
+  margin-left: 260px;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;

@@ -9,7 +9,7 @@
   </app-sidebar>
 
   <!-- ✅ Main content -->
-  <div class="main-content">
+  <div class="main-content" [class.sidebar-open]="sidebarOpen">
     <div class="passenger-page">
       <nav class="quick-nav">
         <span class="qn-root" (click)="goDashboard()">Dashboard</span>
