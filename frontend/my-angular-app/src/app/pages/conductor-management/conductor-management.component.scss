@@ -69,7 +69,16 @@
       border-radius: 12px;
       padding: 1rem;
 
-      .chart-header { margin-bottom: 1rem; }
+     .chart-header {
+        margin-bottom: 1rem;
+
+        h3 {
+          margin-bottom: -1rem;
+        }
+        p{
+          color:var(--color-chart-p);
+        }
+      }
 
       .pie-chart {
         position: relative;
@@ -93,7 +102,7 @@
             background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-border-light) calc(var(--percentage) * 3.6deg));
           }
           &.inactive {
-            background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-text-muted) calc(var(--percentage) * 3.6deg));
+            background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-bargraph) calc(var(--percentage) * 3.6deg));
           }
         }
       }
@@ -275,7 +284,13 @@
   }
 }
 
-.page-header .quick-nav { margin-bottom: 10px; }
+.page-header .quick-nav {
+  margin-bottom: 10px;
+
+  h3 {
+    margin-bottom: 0.25rem;
+  }
+}
 
 .sidebar-nav {
   position: fixed;

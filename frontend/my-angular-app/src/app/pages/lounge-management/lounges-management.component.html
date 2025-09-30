@@ -1,14 +1,16 @@
 <div class="management-container">
   <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="navigateTo($event)" (logout)="navigateTo('')"></app-sidebar>
-  <div class="main-content">
-    <div class="lounges-container">
-  <header class="header">
-    <nav class="quick-nav">
-      <span class="qn-root" (click)="goDashboard()">Dashboard</span>
-      <span class="qn-sep" aria-hidden="true">›</span>
-      <span class="qn-current">Lounge Management</span>
-    </nav>
+  <div class="main-content" [class.sidebar-open]="sidebarOpen">
+  <div class="lounge-page">
+  <nav class="quick-nav">
+    <span class="qn-root" (click)="goDashboard()">Dashboard</span>
+    <span class="qn-sep" aria-hidden="true">›</span>
+    <span class="qn-current">Lounge Management</span>
+  </nav>
+
+  <header class="page-header">
     <h2>Lounge Management</h2>
+    <button class="add-lounge-btn" (click)="addLounge()">Add Lounge</button>
   </header>
 
     <section class="charts">
@@ -49,7 +51,6 @@
       <input type="text" placeholder="Search by name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
       <button (click)="clearSearch()">Clear</button>
     </div>
-    <button class="add-btn" (click)="addLounge()">Add Lounge</button>
   </section>
 
   <section class="table-section">

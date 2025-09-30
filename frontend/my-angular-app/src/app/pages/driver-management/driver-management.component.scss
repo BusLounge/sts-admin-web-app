@@ -69,7 +69,16 @@
         border-radius: 12px;
         padding: 1rem;
   
-        .chart-header { margin-bottom: 1rem; }
+        .chart-header {
+        margin-bottom: 1rem;
+
+        h3 {
+          margin-bottom: -1rem;
+        }
+        p{
+          color:var(--color-chart-p);
+        }
+      }
   
         .pie-chart {
           position: relative;
@@ -247,7 +256,13 @@
     }
   }
 
-  .page-header .quick-nav { margin-bottom: 10px; }
+.page-header .quick-nav {
+  margin-bottom: 10px;
+
+  h3 {
+    margin-bottom: 0.25rem;
+  }
+}
 
 .sidebar-nav {
   position: fixed;

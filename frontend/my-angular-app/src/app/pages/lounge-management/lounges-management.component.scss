@@ -1,10 +1,6 @@
 .management-container {
   display: flex;
-  height: auto;
   min-height: 100vh;
-  overflow: visible;
-  background: #9fcfff;
-
 }
 
 app-sidebar {
@@ -12,31 +8,63 @@ app-sidebar {
   top: 0;
   left: 0;
   height: 100vh;
-  width: 250px; /* Adjust width as per sidebar design */
+  width: 260px;
   z-index: 1000;
-  background: var(--color-background-dark-secondary);
 }
 
 .main-content {
-  margin-left: 265px; /* Same width as sidebar */
+  margin-left: 72px;
   flex: 1;
-  overflow-y: visible;
-  height: auto;
-   background: #9fcfff;
 }
 
-.lounges-container {
-  padding: 20px;
+.main-content.sidebar-open {
+  margin-left: 260px;
 }
 
-.header {
+.lounge-page {
+  padding: 1rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: var(--color-background-primary);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 16px;
 }
 
-.header .quick-nav { margin-bottom: 10px; }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: var(--color-text-primary);
+  }
+
+  .add-lounge-btn {
+    background: var(--color-buttns-light);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+
+    &:hover {
+      background: #91ADC8;
+    }
+  }
+}
+
+.page-header .quick-nav { margin-bottom: 10px; }
 
 .metrics {
   display: flex;
