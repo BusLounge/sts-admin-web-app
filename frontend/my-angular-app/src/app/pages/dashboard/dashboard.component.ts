@@ -23,6 +23,10 @@ export class DashboardComponent implements OnInit {
     availableBuses: 0
   };
 
+  activeDeg = 0;
+  maintenanceDeg = 0;
+  availableDeg = 0;
+
   numBuses = 0;
   numLounges = 0;
   numDrivers = 0;

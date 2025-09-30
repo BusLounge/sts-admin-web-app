@@ -12,6 +12,15 @@
   background-repeat: no-repeat;
   background-attachment: fixed;
 
+  --color-maintenance: #ff9800;
+  --color-available: #4caf50;
+  --color-secondary-500: #3b82f6;
+  --color-bargraph: #3b82f6;
+  --color-bargraphgradient: #60a5fa;
+  --color-border-light: #e5e7eb;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+
   .page-header {
     display: flex;
     flex-direction: column;
@@ -107,43 +116,47 @@
 
       .chart-header { margin-bottom: 1rem; }
 
-      .pie-chart {
-        position: relative;
-        height: 200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+  .pie-chart {
+    position: relative;
+    height: 200px;
+    width: 200px;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--color-secondary-500) 0deg,
+      var(--color-secondary-500) var(--active-deg),
+      var(--color-maintenance) var(--active-deg),
+      var(--color-maintenance) calc(var(--active-deg) + var(--maintenance-deg)),
+      var(--color-available) calc(var(--active-deg) + var(--maintenance-deg)),
+      var(--color-available) 360deg
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-primary);
+    font-weight: 700;
+    flex-direction: column;
+    gap: 0.5rem;
 
-        .pie-slice {
-          position: absolute;
-          width: 150px;
-          height: 150px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--color-text-primary);
-          font-weight: 700;
+    .slice-label {
+      font-size: 1rem;
+      font-weight: 600;
+    }
 
-          &.active {
-            background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-border-light) calc(var(--percentage) * 3.6deg));
-          }
-          &.inactive {
-            background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-text-muted) calc(var(--percentage) * 3.6deg));
-          }
-        }
-      }
+    .slice-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+  }
 
       .bar-chart {
         display: flex;
-        align-items: end;
+        align-items: flex-end;
         gap: 0.5rem;
         height: 170px;
 
         .bar {
           flex: 1;
-          height: var(--height);
-          background: linear-gradient(to top, var(  --color-bargraph), var(--color-bargraphgradient));
+          background: linear-gradient(to top, var(--color-bargraph), var(--color-bargraphgradient));
           border-radius: 4px 4px 0 0;
           display: flex;
           flex-direction: column;

@@ -56,20 +56,14 @@
             <p>Current distribution of bus fleet</p>
           </div>
           <div class="chart-content">
-            <div class="pie-chart">
-              <div class="pie-slice active" [style.--percentage]="(busStats.activeBuses / busStats.totalBuses) * 100">
-                <span class="slice-label">Active</span>
-                <span class="slice-value">{{ busStats.activeBuses }}</span>
-              </div>
-              <div class="pie-slice maintenance" [style.--percentage]="(busStats.maintenanceBuses / busStats.totalBuses) * 100">
-                <span class="slice-label">Maintenance</span>
-                <span class="slice-value">{{ busStats.maintenanceBuses }}</span>
-              </div>
-              <div class="pie-slice available" [style.--percentage]="(busStats.availableBuses / busStats.totalBuses) * 100">
-                <span class="slice-label">Available</span>
-                <span class="slice-value">{{ busStats.availableBuses }}</span>
-              </div>
+            <div class="pie-chart" [style.--active-deg]="activeDeg + 'deg'" [style.--maintenance-deg]="maintenanceDeg + 'deg'" [style.--available-deg]="availableDeg + 'deg'" *ngIf="busStats.totalBuses > 0; else noBusData">
+              <div class="slice-label">Active: {{ busStats.activeBuses }}</div>
+              <div class="slice-value">Maintenance: {{ busStats.maintenanceBuses }}</div>
+              <div class="slice-label">Available: {{ busStats.availableBuses }}</div>
             </div>
+            <ng-template #noBusData>
+              <div class="no-data">No bus data available</div>
+            </ng-template>
           </div>
         </div>
 
@@ -79,12 +73,15 @@
             <p>Revenue trends over the last 6 months</p>
           </div>
           <div class="chart-content">
-            <div class="bar-chart">
-              <div class="bar" *ngFor="let data of monthlyRevenue" [style.--height]="(data.revenue / 70000) * 100">
-                <span class="bar-value">${{ data.revenue / 1000 }}k</span>
+            <div class="bar-chart" *ngIf="monthlyRevenue.length > 0; else noRevenueData">
+              <div class="bar" *ngFor="let data of monthlyRevenue" [style.height.px]="(data.revenue / 700)">
+                <span class="bar-value">${{ (data.revenue / 1000) | number:'1.0-0' }}k</span>
                 <span class="bar-label">{{ data.month }}</span>
               </div>
             </div>
+            <ng-template #noRevenueData>
+              <div class="no-data">No revenue data available</div>
+            </ng-template>
           </div>
         </div>
       </div>
