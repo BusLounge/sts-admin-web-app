@@ -14,7 +14,16 @@ export class PassengerService {
 
   get passengers(): Passenger[] { return this._passengers$.getValue(); }
 
-  addPassenger(p: Passenger): void { this._passengers$.next([...this.passengers, p]); }
+  addPassenger(p: Partial<Passenger>): void {
+    const existingIds = this.passengers.map(pass => parseInt(pass.passenger_id.replace('PASS', '')));
+    const nextId = Math.max(...existingIds) + 1;
+    const newPassenger: Passenger = {
+      ...p,
+      passenger_id: `PASS${nextId.toString().padStart(3, '0')}`,
+      created_at: new Date().toISOString()
+    } as Passenger;
+    this._passengers$.next([...this.passengers, newPassenger]);
+  }
   updatePassenger(updated: Passenger): void { this._passengers$.next(this.passengers.map(x => x.passenger_id === updated.passenger_id ? updated : x)); }
   deletePassenger(id: string): void { this._passengers$.next(this.passengers.filter(x => x.passenger_id !== id)); }
   getById(id: string): Passenger | undefined { return this.passengers.find(x => x.passenger_id === id); }

@@ -49,12 +49,44 @@ export class PassengerManagementComponent implements OnInit {
   goBusManagement(): void { this.router.navigate(['/bus-management']); }
   goDriverManagement(): void { this.router.navigate(['/driver-management']); }
 
+  showAddPassengerModal: boolean = false;
+  newPassenger: Partial<Passenger> = {};
+
+  showUpdatePassengerModal: boolean = false;
+  selectedPassenger: Passenger | null = null;
+
   addPassenger(): void {
-    this.router.navigate(['/passenger-management/add']);
+    this.showAddPassengerModal = true;
+    this.newPassenger = {};
+  }
+
+  closeAddPassengerModal(): void {
+    this.showAddPassengerModal = false;
+    this.newPassenger = {};
+  }
+
+  savePassenger(): void {
+    if (this.newPassenger.name && this.newPassenger.phone && this.newPassenger.email && this.newPassenger.nic) {
+      this.passengerService.addPassenger(this.newPassenger as Passenger);
+      this.closeAddPassengerModal();
+    }
   }
 
   updatePassenger(p: Passenger): void {
-    this.router.navigate(['/passenger-management/edit', p.passenger_id]);
+    this.selectedPassenger = { ...p };
+    this.showUpdatePassengerModal = true;
+  }
+
+  closeUpdatePassengerModal(): void {
+    this.showUpdatePassengerModal = false;
+    this.selectedPassenger = null;
+  }
+
+  saveUpdatedPassenger(): void {
+    if (this.selectedPassenger && this.selectedPassenger.name && this.selectedPassenger.phone && this.selectedPassenger.email && this.selectedPassenger.nic) {
+      this.passengerService.updatePassenger(this.selectedPassenger);
+      this.closeUpdatePassengerModal();
+    }
   }
 
   deletePassenger(p: Passenger): void {
