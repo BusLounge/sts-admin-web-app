@@ -40,9 +40,20 @@
             <p>Distribution of conductor employment status</p>
           </div>
         <div class="pie-chart">
-          <div class="pie-slice active" [style.--percentage]="(getActiveCount() / getTotalConductors()) * 100">
-            <span class="slice-label">Active</span>
-            <span class="slice-value">{{ getActiveCount() }}</span>
+          <div class="pie-circle" [style.background]="getPieChartGradient()"></div>
+        </div>
+        <div class="pie-legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background: var(--color-primary-500);"></span>
+            <span class="legend-label">Active: {{ getActiveCount() }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: var(--color-warning-500);"></span>
+            <span class="legend-label">On Leave: {{ getOnLeaveCount() }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: var(--color-danger-500);"></span>
+            <span class="legend-label">Resigned: {{ getResignedCount() }}</span>
           </div>
         </div>
         </div>

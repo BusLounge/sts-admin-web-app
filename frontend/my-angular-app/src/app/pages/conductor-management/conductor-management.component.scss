@@ -86,25 +86,30 @@
         display: flex;
         align-items: center;
         justify-content: center;
-
-        .pie-slice {
-          position: absolute;
-          width: 160px;
-          height: 160px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #0f172a;
-          font-weight: 700;
-
-          &.active {
-            background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-border-light) calc(var(--percentage) * 3.6deg));
-          }
-          &.inactive {
-            background: conic-gradient(var(--color-secondary-500) 0deg, var(--color-secondary-500) calc(var(--percentage) * 3.6deg), var(--color-bargraph) calc(var(--percentage) * 3.6deg));
-          }
-        }
+      }
+      .pie-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        display: block;
+      }
+      .pie-legend {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 1rem;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+      }
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
       }
 
       .bar-chart {

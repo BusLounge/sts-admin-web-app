@@ -273,10 +273,29 @@ export class ConductorManagementComponent implements OnInit {
     });
   }
 
-   getSortIcon(column: string): string {
+  getSortIcon(column: string): string {
     if (this.sortColumn !== column) {
       return ' ⇅'; // Both arrows for unsorted columns
     }
     return this.sortDirection === 'asc' ? ' ↑' : ' ↓';
+  }
+
+  getPieChartGradient(): string {
+    const total = this.getTotalConductors();
+    if (total === 0) return 'conic-gradient(gray 0deg 360deg)';
+
+    const activeCount = this.getActiveCount();
+    const onLeaveCount = this.getOnLeaveCount();
+    const resignedCount = this.getResignedCount();
+
+    const activePercent = (activeCount / total) * 360;
+    const onLeavePercent = (onLeaveCount / total) * 360;
+    const resignedPercent = (resignedCount / total) * 360;
+
+    const activeEnd = activePercent;
+    const onLeaveEnd = activeEnd + onLeavePercent;
+    const resignedEnd = onLeaveEnd + resignedPercent;
+
+    return `conic-gradient(var(--color-primary-500) 0deg ${activeEnd}deg, var(--color-warning-500) ${activeEnd}deg ${onLeaveEnd}deg, var(--color-danger-500) ${onLeaveEnd}deg ${resignedEnd}deg)`;
   }
 }
