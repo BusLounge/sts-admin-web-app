@@ -45,15 +45,15 @@
         <div class="pie-legend">
           <div class="legend-item">
             <span class="legend-color" style="background: var(--color-primary-500);"></span>
-            <span class="legend-label">Active: {{ getActiveCount() }}</span>
+            <span class="legend-label">Active: {{ getFilteredActiveCount() }}</span>
           </div>
           <div class="legend-item">
             <span class="legend-color" style="background: var(--color-warning-500);"></span>
-            <span class="legend-label">On Leave: {{ getOnLeaveCount() }}</span>
+            <span class="legend-label">On Leave: {{ getFilteredOnLeaveCount() }}</span>
           </div>
           <div class="legend-item">
             <span class="legend-color" style="background: var(--color-danger-500);"></span>
-            <span class="legend-label">Resigned: {{ getResignedCount() }}</span>
+            <span class="legend-label">Resigned: {{ getFilteredResignedCount() }}</span>
           </div>
         </div>
         </div>

@@ -160,6 +160,12 @@ export class ConductorManagementComponent implements OnInit {
     return Math.round(total / this.conductors.length);
   }
 
+  // Filtered stats helpers for pie chart
+  getFilteredTotalConductors(): number { return this.filteredConductors.length; }
+  getFilteredActiveCount(): number { return this.filteredConductors.filter(c => c.status === 'Active').length; }
+  getFilteredOnLeaveCount(): number { return this.filteredConductors.filter(c => c.status === 'On Leave').length; }
+  getFilteredResignedCount(): number { return this.filteredConductors.filter(c => c.status === 'Resigned').length; }
+
   // Search and filter functionality
   onSearchChange(): void {
     this.applyFilters();
@@ -281,12 +287,12 @@ export class ConductorManagementComponent implements OnInit {
   }
 
   getPieChartGradient(): string {
-    const total = this.getTotalConductors();
+    const total = this.getFilteredTotalConductors();
     if (total === 0) return 'conic-gradient(gray 0deg 360deg)';
 
-    const activeCount = this.getActiveCount();
-    const onLeaveCount = this.getOnLeaveCount();
-    const resignedCount = this.getResignedCount();
+    const activeCount = this.getFilteredActiveCount();
+    const onLeaveCount = this.getFilteredOnLeaveCount();
+    const resignedCount = this.getFilteredResignedCount();
 
     const activePercent = (activeCount / total) * 360;
     const onLeavePercent = (onLeaveCount / total) * 360;
