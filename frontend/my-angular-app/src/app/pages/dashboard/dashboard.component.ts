@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -21,6 +22,11 @@ export class DashboardComponent implements OnInit {
     maintenanceBuses: 0,
     availableBuses: 0
   };
+
+  numBuses = 0;
+  numLounges = 0;
+  numDrivers = 0;
+  numConductors = 0;
 
   monthlyRevenue = [
     { month: 'Jan', revenue: 45000 },
@@ -46,7 +52,13 @@ export class DashboardComponent implements OnInit {
       this.busStats.activeBuses = buses.filter(bus => bus.is_active).length;
       this.busStats.maintenanceBuses = Math.floor(buses.length * 0.1); // 10% under maintenance
       this.busStats.availableBuses = this.busStats.activeBuses - this.busStats.maintenanceBuses;
+      this.numBuses = this.busStats.totalBuses;
     });
+
+    // Hardcoded for now, replace with actual services if available
+    this.numLounges = 5;
+    this.numDrivers = 20;
+    this.numConductors = 15;
   }
 
   toggleSidebar(): void {

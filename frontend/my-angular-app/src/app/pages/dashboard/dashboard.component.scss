@@ -3,9 +3,8 @@
   min-height: 100vh;
 }
 
-.dashboard-content {
-  position: relative;
-  padding: 2rem;
+.bus-page {
+  padding: 1rem;
   min-height: 100vh;
   background-color: var(--color-background-primary); // White background for pages as requested
   background-size: cover;
@@ -13,15 +12,13 @@
   background-repeat: no-repeat;
   background-attachment: fixed;
 
-
-
-  .dashboard-header {
+  .page-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 2.7rem;
 
-    h2 {
+    h1 {
       margin: 0;
       font-size: 1.75rem;
       font-weight: 800;
@@ -29,48 +26,66 @@
       color: var(--color-text-primary);
     }
 
-    .add-btn {
-      background: var(--color-buttns-light);
-      color: var(--color-text-inverse);
-      border: none;
-      border-radius: 8px;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      transition: 0.2s;
-      white-space: nowrap;
-
-      &:hover {
-        background: var(--secondary-color);
-
-
-      }
+    p {
+      margin: 0.5rem 0 0 0;
+      color: var(--color-text-secondary);
+      font-size: 1rem;
     }
   }
 
-
-  .page-header .quick-nav { margin-bottom: 10px; }
-
   .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    display: flex;
+    justify-content: space-between;
     gap: 1rem;
     margin-bottom: 1.5rem;
 
     .stat-card {
-      background:  var(--color-secondary-500) ;
-      border: 1px ;
-      border-radius: 14px;
-      padding: 1.1rem;
-      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.08);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      flex: 1;
+      height: 85px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: box-shadow 0.3s ease;
 
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
       }
 
-      .stat-title { color: var(--color-text-secondary); font-weight: 700; font-size: 1rem; letter-spacing: .2px; }
-      .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--color-text-primary); }
+      .stat-icon {
+        background-color: var(--color-primary-100);
+        border-radius: 12px;
+        padding: 0.5rem;
+        color: var(--color-primary-600);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+      }
+
+      .stat-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin-bottom: 0.25rem;
+      }
+
+      .stat-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+      }
     }
   }
 
@@ -293,7 +308,7 @@
 
   @media (max-width: 768px) {
     padding: 1rem;
-    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
     .toolbar { flex-direction: column; align-items: stretch; }
   }
 }
@@ -333,13 +348,13 @@ app-sidebar {
 }
 
 .main-content {
-  margin-left: 260px;
+  margin-left: 72px;
   flex: 1;
-  transition: margin-left 0.3s ease;
+  
 }
 
-.main-content.sidebar-collapsed {
-  margin-left: 72px;
+.main-content.sidebar-open {
+  margin-left: 260px;
 }
 
 .sidebar {
