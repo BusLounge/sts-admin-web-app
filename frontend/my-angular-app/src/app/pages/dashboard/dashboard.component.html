@@ -18,8 +18,8 @@
             </svg>
           </div>
           <div class="stat-content">
-            <div class="stat-title">Buses</div>
             <div class="stat-value">{{ numBuses }}</div>
+            <div class="stat-title">Buses</div>
           </div>
         </div>
 
@@ -48,7 +48,88 @@
         </div>
       </div>
 
+  <div class="charts-section">
+    <div class="chart">
+      <div class="chart-header">
+        <h3>Status Overview - Bus Management</h3>
+      </div>
+      <div class="pie-chart">
+        <div class="pie-slice active" [style.--percentage]="getBusActivePercentage()">
+          <span class="slice-label">Active</span>
+          <span class="slice-value">{{ busStatusCounts['Active'] || 0 }}</span>
+        </div>
+        <div class="pie-slice inactive" [style.--percentage]="getBusInactivePercentage()">
+          <span class="slice-label">Inactive</span>
+          <span class="slice-value">{{ busStatusCounts['Inactive'] || 0 }}</span>
+        </div>
+      </div>
+    </div>
 
+    <div class="chart">
+      <div class="chart-header">
+        <h3>Status Overview - Driver Management</h3>
+      </div>
+      <div class="pie-chart">
+        <div class="pie-slice active" [style.--percentage]="driverStatusCounts['Active'] || 0">
+          <span class="slice-label">Active</span>
+          <span class="slice-value">{{ driverStatusCounts['Active'] || 0 }}</span>
+        </div>
+        <div class="pie-slice inactive" [style.--percentage]="driverStatusCounts['Inactive'] || 0">
+          <span class="slice-label">Inactive</span>
+          <span class="slice-value">{{ driverStatusCounts['Inactive'] || 0 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <div class="chart-header">
+        <h3>Status Overview - Conductor Management</h3>
+      </div>
+      <div class="pie-chart">
+        <div class="pie-slice active" [style.--percentage]="conductorStatusCounts['Active'] || 0">
+          <span class="slice-label">Active</span>
+          <span class="slice-value">{{ conductorStatusCounts['Active'] || 0 }}</span>
+        </div>
+        <div class="pie-slice on-leave" [style.--percentage]="conductorStatusCounts['On Leave'] || 0">
+          <span class="slice-label">On Leave</span>
+          <span class="slice-value">{{ conductorStatusCounts['On Leave'] || 0 }}</span>
+        </div>
+        <div class="pie-slice resigned" [style.--percentage]="conductorStatusCounts['Resigned'] || 0">
+          <span class="slice-label">Resigned</span>
+          <span class="slice-value">{{ conductorStatusCounts['Resigned'] || 0 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <div class="chart-header">
+        <h3>Monthly Revenue (Paid) — Current Month by Lounge</h3>
+      </div>
+      <div class="bars">
+        <div class="bar" *ngFor="let item of loungeRevenueByLounge" [style.--height]="item.total">
+          <span class="bar-value">${{ item.total }}</span>
+          <span class="bar-label">{{ item.name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <div class="chart-header">
+        <h3>Monthly Paid Revenue - Bus Booking</h3>
+      </div>
+      <svg viewBox="0 0 640 260" class="line-chart">
+        <polyline
+          fill="none"
+          stroke="#3b82f6"
+          stroke-width="3"
+          [attr.points]="getRevenuePoints()"
+        ></polyline>
+      </svg>
+      <div class="months">
+        <span *ngFor="let m of months">{{ m }}</span>
+      </div>
     </div>
   </div>
 </div>
+
+

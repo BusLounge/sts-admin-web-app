@@ -4,6 +4,11 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { BusService } from '../../core/services/bus.service';
+import { LoungeService } from '../../core/services/lounge.service';
+import { DriverService } from '../../core/services/driver.service';
+import { ConductorService } from '../../core/services/conductor.service';
+import { BusBookingService } from '../../core/services/bus-booking.service';
+import { LoungeBookingService } from '../../core/services/lounge-booking.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,17 +26,126 @@ export class DashboardComponent implements OnInit {
   numDrivers = 0;
   numConductors = 0;
 
-  constructor(private router: Router, private busService: BusService) {}
+  // Chart data
+  busStatusCounts: Record<string, number> = {};
+  driverStatusCounts: Record<string, number> = {};
+  conductorStatusCounts: Record<string, number> = {};
+  loungeRevenueByLounge: { name: string; total: number }[] = [];
+  busMonthlyRevenue: number[] = [];
+  months: string[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  constructor(
+    private router: Router,
+    private busService: BusService,
+    private loungeService: LoungeService,
+    private driverService: DriverService,
+    private conductorService: ConductorService,
+    private busBookingService: BusBookingService,
+    private loungeBookingService: LoungeBookingService
+  ) {}
 
   ngOnInit(): void {
     this.busService.buses$.subscribe(buses => {
       this.numBuses = buses.length;
+      this.busStatusCounts = this.countBusStatus(buses);
     });
 
-    // Hardcoded for now, replace with actual services if available
-    this.numLounges = 5;
-    this.numDrivers = 20;
-    this.numConductors = 15;
+    this.loungeService.lounges$.subscribe(lounges => {
+      this.numLounges = lounges.length;
+    });
+
+    this.driverService.drivers$.subscribe(drivers => {
+      this.numDrivers = drivers.length;
+      this.driverStatusCounts = this.countDriverStatus(drivers);
+    });
+
+    this.conductorService.conductors$.subscribe(conductors => {
+      this.numConductors = conductors.length;
+      this.conductorStatusCounts = this.countConductorStatus(conductors);
+    });
+
+    this.busBookingService.bookings$.subscribe(bookings => {
+      this.busMonthlyRevenue = this.busBookingService.monthlyRevenue(new Date().getFullYear());
+    });
+
+    this.loungeBookingService.bookings$.subscribe(bookings => {
+      this.loungeRevenueByLounge = this.computeLoungeRevenue(bookings);
+    });
+  }
+
+  private countBusStatus(buses: any[]): Record<string, number> {
+    const map: Record<string, number> = { Active: 0, Inactive: 0 };
+    buses.forEach(b => map[b.is_active ? 'Active' : 'Inactive']++);
+    return map;
+  }
+
+  private countDriverStatus(drivers: any[]): Record<string, number> {
+    const map: Record<string, number> = { Active: 0, Inactive: 0 };
+    drivers.forEach(d => map[d.is_active ? 'Active' : 'Inactive']++);
+    return map;
+  }
+
+  private countConductorStatus(conductors: any[]): Record<string, number> {
+    const map: Record<string, number> = { Active: 0, 'On Leave': 0, Resigned: 0 };
+    conductors.forEach(c => map[c.status] = (map[c.status] || 0) + 1);
+    return map;
+  }
+
+  private computeLoungeRevenue(bookings: any[]): { name: string; total: number }[] {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const map: Record<string, number> = {};
+    bookings
+      .filter(b => b.payment_status === 'Paid' && new Date(b.start_datetime).getMonth() === currentMonth && new Date(b.start_datetime).getFullYear() === currentYear)
+      .forEach(b => {
+        map[b.lounge_name] = (map[b.lounge_name] || 0) + b.total_amount;
+      });
+    return Object.entries(map).map(([name, total]) => ({ name, total }));
+  }
+
+  getBusActivePercentage(): number {
+    const total = this.busStatusCounts['Active'] + this.busStatusCounts['Inactive'];
+    return total ? (this.busStatusCounts['Active'] / total) * 100 : 0;
+  }
+
+  getBusInactivePercentage(): number {
+    const total = this.busStatusCounts['Active'] + this.busStatusCounts['Inactive'];
+    return total ? (this.busStatusCounts['Inactive'] / total) * 100 : 0;
+  }
+
+  getDriverActivePercentage(): number {
+    const total = this.driverStatusCounts['Active'] + this.driverStatusCounts['Inactive'];
+    return total ? (this.driverStatusCounts['Active'] / total) * 100 : 0;
+  }
+
+  getDriverInactivePercentage(): number {
+    const total = this.driverStatusCounts['Active'] + this.driverStatusCounts['Inactive'];
+    return total ? (this.driverStatusCounts['Inactive'] / total) * 100 : 0;
+  }
+
+  getConductorActivePercentage(): number {
+    const total = Object.values(this.conductorStatusCounts).reduce((a, b) => a + b, 0);
+    return total ? (this.conductorStatusCounts['Active'] / total) * 100 : 0;
+  }
+
+  getConductorOnLeavePercentage(): number {
+    const total = Object.values(this.conductorStatusCounts).reduce((a, b) => a + b, 0);
+    return total ? (this.conductorStatusCounts['On Leave'] / total) * 100 : 0;
+  }
+
+  getConductorResignedPercentage(): number {
+    const total = Object.values(this.conductorStatusCounts).reduce((a, b) => a + b, 0);
+    return total ? (this.conductorStatusCounts['Resigned'] / total) * 100 : 0;
+  }
+
+  getRevenuePoints(): string {
+    const max = Math.max(...this.busMonthlyRevenue, 1);
+    return this.busMonthlyRevenue.map((v, i) => `${i * 50 + 50},${260 - (v / max) * 200}`).join(' ');
+  }
+
+  getLoungeRevenueBarHeight(total: number): number {
+    const max = Math.max(...this.loungeRevenueByLounge.map(i => i.total), 1);
+    return (total / max) * 100;
   }
 
   toggleSidebar(): void {
