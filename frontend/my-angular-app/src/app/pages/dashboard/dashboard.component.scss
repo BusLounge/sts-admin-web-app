@@ -98,78 +98,6 @@
     }
   }
 
-  .charts-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-
-    @media (max-width: 1024px) {
-      grid-template-columns: 1fr;
-    }
-
-    .chart {
-      background: var(--color-background-primary);
-      border: 2px solid var( --color-neutral-300);
-      border-radius: 12px;
-      padding: 1rem;
-
-      .chart-header { margin-bottom: 1rem; }
-
-  .pie-chart {
-    position: relative;
-    height: 200px;
-    width: 200px;
-    border-radius: 50%;
-    background: conic-gradient(
-      var(--color-secondary-500) 0deg,
-      var(--color-secondary-500) var(--active-deg),
-      var(--color-maintenance) var(--active-deg),
-      var(--color-maintenance) calc(var(--active-deg) + var(--maintenance-deg)),
-      var(--color-available) calc(var(--active-deg) + var(--maintenance-deg)),
-      var(--color-available) 360deg
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-primary);
-    font-weight: 700;
-    flex-direction: column;
-    gap: 0.5rem;
-
-    .slice-label {
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .slice-value {
-      font-size: 1.5rem;
-      font-weight: 800;
-    }
-  }
-
-      .bar-chart {
-        display: flex;
-        align-items: flex-end;
-        gap: 0.5rem;
-        height: 170px;
-
-        .bar {
-          flex: 1;
-          background: linear-gradient(to top, var(--color-bargraph), var(--color-bargraphgradient));
-          border-radius: 4px 4px 0 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0.5rem 0;
-          .bar-value { color: var(--color-text-secondary); font-size: 1rem; font-weight: 700; }
-          .bar-label { color: var(--color-text-primary); font-size: 1rem; font-weight: 600; }
-        }
-      }
-    }
-  }
-
   .toolbar {
     display: flex;
     justify-content: space-between;
@@ -253,8 +181,6 @@
         border-color: var(--color-primary-500);
         box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
       }
-
-
     }
 
     .export-btn {
@@ -267,13 +193,15 @@
       transition: 0.2s;
       white-space: nowrap;
 
-      &:hover { background: var(--secondary-color); }
+      &:hover {
+        background: var(--secondary-color);
+      }
     }
   }
 
   .dashboard-table {
     width: 100%;
-    border-collapse:collapse;
+    border-collapse: collapse;
     margin: 0rem;
     background: var(--color-neutral-200);
     border: 1px solid var(--color-neutral-300);
@@ -293,7 +221,9 @@
       font-weight: 700;
     }
 
-    tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.015); }
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.015);
+    }
 
     .action-icon {
       margin-right: 0.5rem;
@@ -310,7 +240,7 @@
       }
 
       &.toggle-icon {
-        color:#070122;
+        color: #070122;
       }
 
       &.delete-icon {
@@ -321,8 +251,15 @@
 
   @media (max-width: 768px) {
     padding: 1rem;
-    .page-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
-    .toolbar { flex-direction: column; align-items: stretch; }
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 }
 
@@ -337,19 +274,45 @@
   padding: 1rem 0.75rem;
   z-index: 10;
 
-  .nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-  .nav-link { display: block; padding: 0.6rem 0.75rem; border-radius: 8px; cursor: pointer; color: var(--color-neutral-300); text-decoration: none; }
-  .nav-item.active .nav-link, .nav-link:hover { background: var(--color-primary-500); color: var(--color-neutral-100); }
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .nav-link {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--color-neutral-300);
+    text-decoration: none;
+  }
+  .nav-item.active .nav-link, .nav-link:hover {
+    background: var(--color-primary-500);
+    color: var(--color-neutral-100);
+  }
 }
 
-.page-content { margin-left: 240px; }
+.page-content {
+  margin-left: 240px;
+}
 
 @media (max-width: 1024px) {
-  .sidebar-nav { width: 180px; }
-  .page-content { margin-left: 200px; }
+  .sidebar-nav {
+    width: 180px;
+  }
+  .page-content {
+    margin-left: 200px;
+  }
 }
 
-.dashboard-container { display: flex; min-height: 100vh; }
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
 
 app-sidebar {
   position: fixed;
@@ -363,7 +326,6 @@ app-sidebar {
 .main-content {
   margin-left: 72px;
   flex: 1;
-  
 }
 
 .main-content.sidebar-open {
@@ -438,11 +400,20 @@ app-sidebar {
   }
 }
 
-.main-content { flex: 1; }
+.main-content {
+  flex: 1;
+}
 
 @media (max-width: 768px) {
-  .sidebar { position: fixed; left: -280px; z-index: 1000; height: 100vh; }
-  .sidebar.sidebar-open { left: 0; }
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    z-index: 1000;
+    height: 100vh;
+  }
+  .sidebar.sidebar-open {
+    left: 0;
+  }
 }
 
 // Add Dashboard Modal

@@ -48,67 +48,7 @@
         </div>
       </div>
 
-      <!-- Charts Section -->
-      <div class="charts-section">
-        <div class="chart-container">
-          <div class="chart-header">
-            <h3>Bus Status Overview</h3>
-            <p>Current distribution of bus fleet</p>
-          </div>
-          <div class="chart-content">
-            <div class="pie-chart" [style.--active-deg]="activeDeg + 'deg'" [style.--maintenance-deg]="maintenanceDeg + 'deg'" [style.--available-deg]="availableDeg + 'deg'" *ngIf="busStats.totalBuses > 0; else noBusData">
-              <div class="slice-label">Active: {{ busStats.activeBuses }}</div>
-              <div class="slice-value">Maintenance: {{ busStats.maintenanceBuses }}</div>
-              <div class="slice-label">Available: {{ busStats.availableBuses }}</div>
-            </div>
-            <ng-template #noBusData>
-              <div class="no-data">No bus data available</div>
-            </ng-template>
-          </div>
-        </div>
 
-        <div class="chart-container">
-          <div class="chart-header">
-            <h3>Monthly Revenue</h3>
-            <p>Revenue trends over the last 6 months</p>
-          </div>
-          <div class="chart-content">
-            <div class="bar-chart" *ngIf="monthlyRevenue.length > 0; else noRevenueData">
-              <div class="bar" *ngFor="let data of monthlyRevenue" [style.height.px]="(data.revenue / 700)">
-                <span class="bar-value">${{ (data.revenue / 1000) | number:'1.0-0' }}k</span>
-                <span class="bar-label">{{ data.month }}</span>
-              </div>
-            </div>
-            <ng-template #noRevenueData>
-              <div class="no-data">No revenue data available</div>
-            </ng-template>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Bookings -->
-      <div class="recent-bookings">
-        <div class="section-header">
-          <h3>Recent Bookings</h3>
-          <button class="view-all-btn">View All</button>
-        </div>
-        <div class="bookings-table">
-          <div class="booking-row header">
-            <div class="col">Booking ID</div>
-            <div class="col">Route</div>
-            <div class="col">Time</div>
-            <div class="col">Status</div>
-          </div>
-          <div class="booking-row" *ngFor="let booking of recentBookings">
-            <div class="col booking-id">{{ booking.id }}</div>
-            <div class="col route">{{ booking.route }}</div>
-            <div class="col time">{{ booking.time }}</div>
-            <div class="col status">
-              <span class="status-badge" [class]="booking.status.toLowerCase()">{{ booking.status }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </div>
