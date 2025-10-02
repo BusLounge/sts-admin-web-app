@@ -113,6 +113,16 @@ export class DashboardComponent implements OnInit {
     return total ? (this.busStatusCounts['Inactive'] / total) * 100 : 0;
   }
 
+  getBusPieBackground(): string {
+    const active = this.getBusActivePercentage();
+    return `conic-gradient(#4caf50 0% ${active}%, #f87171 ${active}% 100%)`;
+  }
+
+  getDriverPieBackground(): string {
+    const active = this.getDriverActivePercentage();
+    return `conic-gradient(#4caf50 0% ${active}%, #f87171 ${active}% 100%)`;
+  }
+
   getDriverActivePercentage(): number {
     const total = this.driverStatusCounts['Active'] + this.driverStatusCounts['Inactive'];
     return total ? (this.driverStatusCounts['Active'] / total) * 100 : 0;
@@ -126,6 +136,25 @@ export class DashboardComponent implements OnInit {
   getConductorActivePercentage(): number {
     const total = Object.values(this.conductorStatusCounts).reduce((a, b) => a + b, 0);
     return total ? (this.conductorStatusCounts['Active'] / total) * 100 : 0;
+  }
+
+  getConductorOnLeavePercentage(): number {
+    const total = Object.values(this.conductorStatusCounts).reduce((a, b) => a + b, 0);
+    return total ? (this.conductorStatusCounts['On Leave'] / total) * 100 : 0;
+  }
+
+  getConductorResignedPercentage(): number {
+    const total = Object.values(this.conductorStatusCounts).reduce((a, b) => a + b, 0);
+    return total ? (this.conductorStatusCounts['Resigned'] / total) * 100 : 0;
+  }
+
+  getConductorPieBackground(): string {
+    const active = this.getConductorActivePercentage();
+    const onLeave = this.getConductorOnLeavePercentage();
+    const resigned = this.getConductorResignedPercentage();
+    const activeEnd = active;
+    const onLeaveEnd = active + onLeave;
+    return `conic-gradient(#4caf50 0% ${activeEnd}%, #fbbf24 ${activeEnd}% ${onLeaveEnd}%, #9ca3af ${onLeaveEnd}% 100%)`;
   }
 
   getConductorOnLeavePercentage(): number {

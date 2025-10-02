@@ -54,13 +54,18 @@
         <h3>Status Overview - Bus Management</h3>
       </div>
       <div class="pie-chart">
-        <div class="pie-slice active" [style.--percentage]="getBusActivePercentage()">
-          <span class="slice-label">Active</span>
-          <span class="slice-value">{{ busStatusCounts['Active'] || 0 }}</span>
-        </div>
-        <div class="pie-slice inactive" [style.--percentage]="getBusInactivePercentage()">
-          <span class="slice-label">Inactive</span>
-          <span class="slice-value">{{ busStatusCounts['Inactive'] || 0 }}</span>
+        <div class="pie-container">
+          <div class="pie-slice" [style.background]="getBusPieBackground()"></div>
+          <div class="pie-labels">
+            <div class="label active">
+              <span class="color-box active"></span>
+              <span>Active ({{ busStatusCounts['Active'] || 0 }})</span>
+            </div>
+            <div class="label inactive">
+              <span class="color-box inactive"></span>
+              <span>Inactive ({{ busStatusCounts['Inactive'] || 0 }})</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -70,13 +75,18 @@
         <h3>Status Overview - Driver Management</h3>
       </div>
       <div class="pie-chart">
-        <div class="pie-slice active" [style.--percentage]="driverStatusCounts['Active'] || 0">
-          <span class="slice-label">Active</span>
-          <span class="slice-value">{{ driverStatusCounts['Active'] || 0 }}</span>
-        </div>
-        <div class="pie-slice inactive" [style.--percentage]="driverStatusCounts['Inactive'] || 0">
-          <span class="slice-label">Inactive</span>
-          <span class="slice-value">{{ driverStatusCounts['Inactive'] || 0 }}</span>
+        <div class="pie-container">
+          <div class="pie-slice" [style.background]="getDriverPieBackground()"></div>
+          <div class="pie-labels">
+            <div class="label active">
+              <span class="color-box active"></span>
+              <span>Active ({{ driverStatusCounts['Active'] || 0 }})</span>
+            </div>
+            <div class="label inactive">
+              <span class="color-box inactive"></span>
+              <span>Inactive ({{ driverStatusCounts['Inactive'] || 0 }})</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -131,5 +141,3 @@
     </div>
   </div>
 </div>
-
-
