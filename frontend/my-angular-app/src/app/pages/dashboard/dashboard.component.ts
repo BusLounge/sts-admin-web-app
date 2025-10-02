@@ -157,16 +157,6 @@ export class DashboardComponent implements OnInit {
     return `conic-gradient(#4caf50 0% ${activeEnd}%, #fbbf24 ${activeEnd}% ${onLeaveEnd}%, #9ca3af ${onLeaveEnd}% 100%)`;
   }
 
-  getConductorOnLeavePercentage(): number {
-    const total = Object.values(this.conductorStatusCounts).reduce((a, b) => a + b, 0);
-    return total ? (this.conductorStatusCounts['On Leave'] / total) * 100 : 0;
-  }
-
-  getConductorResignedPercentage(): number {
-    const total = Object.values(this.conductorStatusCounts).reduce((a, b) => a + b, 0);
-    return total ? (this.conductorStatusCounts['Resigned'] / total) * 100 : 0;
-  }
-
   getRevenuePoints(): string {
     const max = Math.max(...this.busMonthlyRevenue, 1);
     return this.busMonthlyRevenue.map((v, i) => `${i * 50 + 50},${260 - (v / max) * 200}`).join(' ');

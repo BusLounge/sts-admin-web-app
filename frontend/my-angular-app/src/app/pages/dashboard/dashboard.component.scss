@@ -6,6 +6,7 @@
 .bus-page {
   padding: 1rem;
   min-height: 100vh;
+  margin-left: 70px;
   background-color: var(--color-background-primary); // White background for pages as requested
   background-size: cover;
   background-position: center;
@@ -180,6 +181,14 @@
 
   .color-box.inactive {
     background: #f87171;
+  }
+
+  .color-box.on-leave {
+    background: #fbbf24;
+  }
+
+  .color-box.resigned {
+    background: #9ca3af;
   }
 
   .pie-slice.active {

@@ -96,17 +96,22 @@
         <h3>Status Overview - Conductor Management</h3>
       </div>
       <div class="pie-chart">
-        <div class="pie-slice active" [style.--percentage]="conductorStatusCounts['Active'] || 0">
-          <span class="slice-label">Active</span>
-          <span class="slice-value">{{ conductorStatusCounts['Active'] || 0 }}</span>
-        </div>
-        <div class="pie-slice on-leave" [style.--percentage]="conductorStatusCounts['On Leave'] || 0">
-          <span class="slice-label">On Leave</span>
-          <span class="slice-value">{{ conductorStatusCounts['On Leave'] || 0 }}</span>
-        </div>
-        <div class="pie-slice resigned" [style.--percentage]="conductorStatusCounts['Resigned'] || 0">
-          <span class="slice-label">Resigned</span>
-          <span class="slice-value">{{ conductorStatusCounts['Resigned'] || 0 }}</span>
+        <div class="pie-container">
+          <div class="pie-slice" [style.background]="getConductorPieBackground()"></div>
+          <div class="pie-labels">
+            <div class="label active">
+              <span class="color-box active"></span>
+              <span>Active ({{ conductorStatusCounts['Active'] || 0 }})</span>
+            </div>
+            <div class="label on-leave">
+              <span class="color-box on-leave"></span>
+              <span>On Leave ({{ conductorStatusCounts['On Leave'] || 0 }})</span>
+            </div>
+            <div class="label resigned">
+              <span class="color-box resigned"></span>
+              <span>Resigned ({{ conductorStatusCounts['Resigned'] || 0 }})</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
