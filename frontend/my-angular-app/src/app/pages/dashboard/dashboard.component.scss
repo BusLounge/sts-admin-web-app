@@ -3,10 +3,18 @@
   min-height: 100vh;
 }
 
+.main-content {
+  
+  margin-left: 70px;
+}
+
+.main-content.sidebar-open {
+  margin-left: 250px;
+}
+
 .bus-page {
   padding: 1rem;
   min-height: 100vh;
-  margin-left: 70px;
   background-color: var(--color-background-primary); // White background for pages as requested
   background-size: cover;
   background-position: center;
@@ -100,7 +108,7 @@
   .charts-section {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    gap: 1rem;
   }
 
   .chart {
@@ -117,6 +125,7 @@
 
     h3 {
       margin: 0;
+      margin-bottom: 30px;
       font-weight: 700;
       font-size: 1.25rem;
       color: var(--color-text-primary);
@@ -134,6 +143,7 @@
     align-items: center;
     gap: 1rem;
     justify-content: center;
+    margin-bottom: 15px;
   }
 
   .pie-slice {

@@ -1,95 +1,93 @@
 <div class="management-container">
   <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="navigateTo($event)" (logout)="navigateTo('')"></app-sidebar>
   <div class="main-content" [class.sidebar-open]="sidebarOpen">
-  <div class="lounge-page">
-  <nav class="quick-nav">
-    <span class="qn-root" (click)="goDashboard()">Dashboard</span>
-    <span class="qn-sep" aria-hidden="true">›</span>
-    <span class="qn-current">Lounge Management</span>
-  </nav>
+    <div class="lounge-page">
+      <nav class="quick-nav">
+        <span class="qn-root" (click)="goDashboard()">Dashboard</span>
+        <span class="qn-sep" aria-hidden="true">›</span>
+        <span class="qn-current">Lounge Management</span>
+      </nav>
 
-  <header class="page-header">
-    <h2>Lounge Management</h2>
-    <button class="add-lounge-btn" (click)="addLounge()">Add Lounge</button>
-  </header>
+      <header class="page-header">
+        <h2>Lounge Management</h2>
+        <button class="add-lounge-btn" (click)="addLounge()">Add Lounge</button>
+      </header>
 
-    <section class="charts">
-    <div class="chart-card">
-      <h3>Lounge Capacity and Pricing Comparison</h3>
-      <div class="bars">
-        <div class="bar" *ngFor="let l of getCapacityPriceData()" [style.--height]="(l.capacity / 100) * 100">
-          <span class="bar-value">{{ l.capacity }}</span>
-          <span class="bar-label">{{ l.name }}</span>
-          <span class="price-overlay">${{ l.price_per_hour }}/hr</span>
+      <section class="charts">
+        <div class="chart-card">
+          <h3>Lounge Capacity and Pricing Comparison</h3>
+          <div class="bars">
+            <div class="bar" *ngFor="let l of getCapacityPriceData()" [style.--height]="(l.capacity / 100) * 100">
+              <span class="bar-value">{{ l.capacity }}</span>
+              <span class="bar-label">{{ l.name }}</span>
+              <span class="price-overlay">${{ l.price_per_hour }}/hr</span>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="chart-card">
-      <h3>Food, Drinks, and Shower Availability</h3>
-      <div class="bars">
-        <div class="bar" *ngFor="let f of getFoodDrinksShowerData()" [style.--height]="(f.count / (totalLounges() || 1)) * 100">
-          <span class="bar-value">{{ f.count }}</span>
-          <span class="bar-label">{{ f.label }}</span>
+        <div class="chart-card">
+          <h3>Food, Drinks, and Shower Availability</h3>
+          <div class="bars">
+            <div class="bar" *ngFor="let f of getFoodDrinksShowerData()" [style.--height]="(f.count / (totalLounges() || 1)) * 100">
+              <span class="bar-value">{{ f.count }}</span>
+              <span class="bar-label">{{ f.label }}</span>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="chart-card">
-      <h3>Amenities Availability Across Lounges</h3>
-      <div class="bars">
-        <div class="bar" *ngFor="let a of amenitiesCounts" [style.--height]="(a.count / (totalLounges() || 1)) * 100">
-          <span class="bar-value">{{ a.count }}</span>
-          <span class="bar-label">{{ a.label }}</span>
+        <div class="chart-card">
+          <h3>Amenities Availability Across Lounges</h3>
+          <div class="bars">
+            <div class="bar" *ngFor="let a of amenitiesCounts" [style.--height]="(a.count / (totalLounges() || 1)) * 100">
+              <span class="bar-value">{{ a.count }}</span>
+              <span class="bar-label">{{ a.label }}</span>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
 
-  <section class="toolbar">
-    <div class="search-group">
-      <input type="text" placeholder="Search by name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
-      <button (click)="clearSearch()">Clear</button>
-    </div>
-  </section>
+      <section class="toolbar">
+        <div class="search-group">
+          <input type="text" placeholder="Search by name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
+          <input type="number" placeholder="Price / hr" [(ngModel)]="priceFilter" (input)="onSearchChange()" style="margin-left: 0.1rem; width: 80px;" />
+        </div>
+      </section>
 
-  <section class="table-section">
-    <div class="table">
-      <div class="row header">
-        <div class="col" (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
-          Lounge Name {{ getSortIcon('name') }}
-        </div>
-        <div class="col">Address</div>
-        <div class="col">Phone</div>
-        <div class="col num" (click)="onSort('capacity')" style="cursor: pointer;" title="Click to sort">
-          Capacity {{ getSortIcon('capacity') }}
-        </div>
-        <div class="col num" (click)="onSort('price_per_hour')" style="cursor: pointer;" title="Click to sort">
-          Price / hr {{ getSortIcon('price_per_hour') }}
-        </div>
-        <div class="col" (click)="onSort('operating_hours')" style="cursor: pointer;" title="Click to sort">
-          Operating Hrs {{ getSortIcon('operating_hours') }}
-        </div>
-        <div class="col actions">Actions</div>
-      </div>
+      <section class="table-section">
+        <div class="table">
+          <div class="row header">
+            <div class="col" (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
+              Lounge Name {{ getSortIcon('name') }}
+            </div>
+            <div class="col">Address</div>
+            <div class="col">Phone</div>
+            <div class="col num" (click)="onSort('capacity')" style="cursor: pointer;" title="Click to sort">
+              Capacity {{ getSortIcon('capacity') }}
+            </div>
+            <div class="col num" (click)="onSort('price_per_hour')" style="cursor: pointer;" title="Click to sort">
+              Price / hr {{ getSortIcon('price_per_hour') }}
+            </div>
+            <div class="col" (click)="onSort('operating_hours')" style="cursor: pointer;" title="Click to sort">
+              Operating Hrs {{ getSortIcon('operating_hours') }}
+            </div>
+            <div class="col actions">Actions</div>
+          </div>
 
-      <div class="row" *ngFor="let l of filteredLounges">
-        <div class="col">{{ l.name }}</div>
-        <div class="col">{{ l.address }}</div>
-        <div class="col">{{ l.phone }}</div>
-        <div class="col num">{{ l.capacity }}</div>
-        <div class="col num">${{ l.price_per_hour }}</div>
-        <div class="col">{{ l.operating_hours }}</div>
-        <div class="col actions">
-          <button style="width: 70px;padding: 6px 4px;background-color: rgb(19, 180, 19);"  (click)="view(l)">View</button>
-          <button (click)="update(l)">Update</button>
-          <button class="danger" (click)="delete(l)">Delete</button>
+          <div class="row" *ngFor="let l of filteredLounges">
+            <div class="col">{{ l.name }}</div>
+            <div class="col">{{ l.address }}</div>
+            <div class="col">{{ l.phone }}</div>
+            <div class="col num">{{ l.capacity }}</div>
+            <div class="col num">${{ l.price_per_hour }}</div>
+            <div class="col">{{ l.operating_hours }}</div>
+            <div class="col actions">
+              <button style="width: 70px;padding: 6px 4px;background-color: rgb(19, 180, 19);"  (click)="view(l)">View</button>
+              <button (click)="update(l)">Update</button>
+              <button class="danger" (click)="delete(l)">Delete</button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
     </div>
   </div>
 </div>
-
-

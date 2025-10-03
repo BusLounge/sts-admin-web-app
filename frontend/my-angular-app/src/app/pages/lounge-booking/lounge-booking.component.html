@@ -63,12 +63,12 @@
           <div class="chart-header">
             <h3>Monthly Revenue (Paid) — Current Month by Lounge</h3>
           </div>
-          <div class="bars">
-            <div class="bar" *ngFor="let item of revenueByLounge" [style.--height]="getRevenueBarHeight(item.total)">
-              <span class="bar-value">${{ item.total | number:'1.0-0' }}</span>
-              <span class="bar-label">{{ item.name }}</span>
-            </div>
+        <div class="bars" [style.background]="getRevenuePieBackground()">
+          <div class="bar" *ngFor="let item of revenueByLounge" [style.color]="getColorForLounge(item.name)">
+            <span class="bar-value">${{ item.total | number:'1.0-0' }}</span>
+            <span class="bar-label">{{ item.name }}</span>
           </div>
+        </div>
         </div>
       </section>
 

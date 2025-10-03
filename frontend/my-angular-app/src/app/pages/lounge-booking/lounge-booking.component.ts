@@ -38,6 +38,28 @@ export class LoungeBookingComponent implements OnInit {
   private currentYear = new Date().getFullYear();
   private currentMonth = new Date().getMonth(); // 0-11
   revenueByLounge: { name: string; total: number }[] = [];
+  private colors: string[] = ['#4caf50', '#2196f3', '#ff9800', '#e91e63', '#9c27b0', '#00bcd4', '#8bc34a'];
+
+  // Remove pie chart helpers
+  // getRevenuePieBackground(): string {
+  //   if (this.revenueByLounge.length === 0) return 'conic-gradient(#ccc 0% 100%)';
+  //   const total = this.revenueByLounge.reduce((sum, item) => sum + item.total, 0);
+  //   let currentPercent = 0;
+  //   const gradients = this.revenueByLounge.map((item, index) => {
+  //     const percent = (item.total / total) * 100;
+  //     const start = currentPercent;
+  //     const end = currentPercent + percent;
+  //     currentPercent = end;
+  //     const color = this.colors[index % this.colors.length];
+  //     return `${color} ${start}% ${end}%`;
+  //   });
+  //   return `conic-gradient(${gradients.join(', ')})`;
+  // }
+  //
+  // getColorForLounge(name: string): string {
+  //   const index = this.revenueByLounge.findIndex(item => item.name === name);
+  //   return this.colors[index % this.colors.length];
+  // }
 
   constructor(private router: Router, private svc: LoungeBookingService) {}
 
@@ -211,5 +233,26 @@ export class LoungeBookingComponent implements OnInit {
       return ' ⇅'; // Both arrows for unsorted columns
     }
     return this.sortDirection === 'asc' ? ' ↑' : ' ↓';
+  }
+
+  // Pie chart helpers for revenue by lounge
+  getRevenuePieBackground(): string {
+    if (this.revenueByLounge.length === 0) return 'conic-gradient(#ccc 0% 100%)';
+    const total = this.revenueByLounge.reduce((sum, item) => sum + item.total, 0);
+    let currentPercent = 0;
+    const gradients = this.revenueByLounge.map((item, index) => {
+      const percent = (item.total / total) * 100;
+      const start = currentPercent;
+      const end = currentPercent + percent;
+      currentPercent = end;
+      const color = this.colors[index % this.colors.length];
+      return `${color} ${start}% ${end}%`;
+    });
+    return `conic-gradient(${gradients.join(', ')})`;
+  }
+
+  getColorForLounge(name: string): string {
+    const index = this.revenueByLounge.findIndex(item => item.name === name);
+    return this.colors[index % this.colors.length];
   }
 }

@@ -17,6 +17,7 @@ export class LoungesManagementComponent implements OnInit {
   lounges: Lounge[] = [];
   filteredLounges: Lounge[] = [];
   searchTerm = '';
+  priceFilter: number | null = null;
 
   amenitiesCounts: { label: string; count: number }[] = [];
   servicesCounts: { label: string; count: number }[] = [];
@@ -80,15 +81,18 @@ export class LoungesManagementComponent implements OnInit {
 
   onSearchChange(): void {
     const q = this.searchTerm.toLowerCase();
-    this.filteredLounges = !q ? this.lounges : this.lounges.filter(l =>
-      l.owner.toLowerCase().includes(q) ||
-      l.name.toLowerCase().includes(q) ||
-      l.address.toLowerCase().includes(q) ||
-      l.phone.includes(q)
-    );
+    this.filteredLounges = this.lounges.filter(l => {
+      const matchesSearch = !q || 
+        l.owner.toLowerCase().includes(q) ||
+        l.name.toLowerCase().includes(q) ||
+        l.address.toLowerCase().includes(q) ||
+        l.phone.includes(q);
+      const matchesPrice = this.priceFilter === null || l.price_per_hour <= this.priceFilter;
+      return matchesSearch && matchesPrice;
+    });
   }
 
-  clearSearch(): void { this.searchTerm = ''; this.filteredLounges = this.lounges; }
+  clearSearch(): void { this.searchTerm = ''; this.priceFilter = null; this.filteredLounges = this.lounges; }
 
   addLounge(): void {
     this.router.navigate(['/add-lounge']);

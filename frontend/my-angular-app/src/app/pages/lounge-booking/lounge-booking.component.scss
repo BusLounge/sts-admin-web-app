@@ -11,7 +11,7 @@ app-sidebar {
 .page-header .quick-nav { margin-bottom: 10px; }
 
 .charts-section { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
-.chart { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 2rem; }
+.chart { background: #fff; border: 2px solid #eff3fa; border-radius: 12px; padding: 2rem; }
 .bars { display: flex; gap: .75rem; height: 180px; align-items: end; }
 .bar { --height: 10; flex: 1; height: calc(var(--height) * 1%); background: linear-gradient(to top, #3b82f6, #60a5fa); border-radius: 4px 4px 0 0; position: relative; }
 .bar-value { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-weight: 700; }
@@ -35,3 +35,11 @@ app-sidebar {
 .actions-cell { display: flex; gap: .5rem; }
 .actions-cell button:nth-child(1) { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }
 .actions-cell button:nth-child(2) { background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }
+
+.chart {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
