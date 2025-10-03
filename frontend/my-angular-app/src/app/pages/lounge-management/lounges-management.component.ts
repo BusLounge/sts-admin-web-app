@@ -87,7 +87,7 @@ export class LoungesManagementComponent implements OnInit {
         l.name.toLowerCase().includes(q) ||
         l.address.toLowerCase().includes(q) ||
         l.phone.includes(q);
-      const matchesPrice = this.priceFilter === null || l.price_per_hour <= this.priceFilter;
+      const matchesPrice = this.priceFilter === null || l.price_per_hour === this.priceFilter;
       return matchesSearch && matchesPrice;
     });
   }

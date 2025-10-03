@@ -98,10 +98,29 @@ app-sidebar {
 
 .search-group {
   display: flex;
-  gap: 4px;
+  gap: 0.5rem;
   align-items: center;
-  margin-left: 19px;
-  
+  margin-left: 18px;
+}
+
+.search-group input[type="text"],
+.search-group input[type="number"] {
+  width: 300px;
+  padding: 0.4rem 2.5rem 0.4rem 1rem;
+  border: 2px solid var(--color-border-light);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: var(--color-background-primary);
+  color: var(--color-text-muted);
+  transition: all 0.2s;
+}
+
+.search-group input[type="text"]:focus,
+.search-group input[type="number"]:focus {
+  outline: none !important;
+  border-color: var(--color-primary-500) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1) !important;
+  color: var(--color-text-primary) !important;
 }
 
 .search-group input[type="number"] {
