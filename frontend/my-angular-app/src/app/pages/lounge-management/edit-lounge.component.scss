@@ -16,7 +16,7 @@
 
 .edit-container {
   padding: 30px;
-  background: #c7c2c2;
+  background: var(--color-background-primary);
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   width: 100%;
@@ -60,14 +60,14 @@
   padding: 10px 16px;
   border-radius: 6px;
   border: 1px solid #e5e7eb;
-  background: #36c94f;
+  background:var(--color-buttns-light);
   color: #fff;
   cursor: pointer;
 }
 
 .actions .secondary {
-  background: #f1f5f9;
-  color: #111827;
+  background:var( --color-buttns-dark);
+  color: #fdfefe;
 }
 
 /* Image preview grid */
