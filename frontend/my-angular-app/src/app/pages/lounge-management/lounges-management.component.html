@@ -81,9 +81,8 @@
             <div class="col num">${{ l.price_per_hour }}</div>
             <div class="col">{{ l.operating_hours }}</div>
             <div class="col actions">
-              <button style="width: 70px;padding: 6px 4px;background-color: rgb(19, 180, 19);"  (click)="view(l)">View</button>
-              <button (click)="update(l)">Update</button>
-              <button class="danger" (click)="delete(l)">Delete</button>
+              <i class="fas fa-eye action-icon view-icon" (click)="view(l)" title="View"></i>
+              <i class="fas fa-edit action-icon edit-icon" (click)="update(l)" title="Edit"></i>
             </div>
           </div>
         </div>
