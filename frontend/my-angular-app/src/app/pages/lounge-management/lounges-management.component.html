@@ -91,21 +91,21 @@
   </div>
 </div>
 
-<!-- Add Lounge Modal -->
-<div class="modal-overlay" *ngIf="showAddModal">
+<!-- Add/View Lounge Modal -->
+<div class="modal-overlay" *ngIf="showModal">
   <div class="edit-container">
-    <h2>Add Lounge</h2>
+    <h2>{{ modalMode === 'add' ? 'Add Lounge' : modalMode === 'edit' ? 'Edit Lounge' : 'View Lounge' }}</h2>
 
-    <form (ngSubmit)="saveAddLounge()" class="lounge-form">
+    <form (ngSubmit)="modalMode === 'add' || modalMode === 'edit' ? saveAddLounge() : null" class="lounge-form">
       <!-- First Row -->
       <div class="form-row">
         <label>
           Owner
-          <input [(ngModel)]="lounge.owner" name="owner" required />
+          <input [(ngModel)]="lounge.owner" name="owner" required [readonly]="modalMode === 'view'" />
         </label>
         <label>
           Lounge Name
-          <input [(ngModel)]="lounge.name" name="name" required />
+          <input [(ngModel)]="lounge.name" name="name" required [readonly]="modalMode === 'view'" />
         </label>
       </div>
 
@@ -113,11 +113,11 @@
       <div class="form-row">
         <label>
           Address
-          <input [(ngModel)]="lounge.address" name="address" required />
+          <input [(ngModel)]="lounge.address" name="address" required [readonly]="modalMode === 'view'" />
         </label>
         <label>
           Phone
-          <input [(ngModel)]="lounge.phone" name="phone" required />
+          <input [(ngModel)]="lounge.phone" name="phone" required [readonly]="modalMode === 'view'" />
         </label>
       </div>
 
@@ -125,11 +125,11 @@
       <div class="form-row">
         <label>
           Capacity
-          <input type="number" [(ngModel)]="lounge.capacity" name="capacity" required />
+          <input type="number" [(ngModel)]="lounge.capacity" name="capacity" required [readonly]="modalMode === 'view'" />
         </label>
         <label>
           Price / Hour
-          <input type="number" [(ngModel)]="lounge.price_per_hour" name="price" required />
+          <input type="number" [(ngModel)]="lounge.price_per_hour" name="price" required [readonly]="modalMode === 'view'" />
         </label>
       </div>
 
@@ -139,14 +139,22 @@
   <div class="form-group half-width">
     <label>
       Operating Hours
-      <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" />
+      <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" [readonly]="modalMode === 'view'" />
     </label>
   </div>
 
   <!-- Image Upload -->
-  <div class="form-group half-width">
+  <div class="form-group half-width" *ngIf="modalMode === 'add' || modalMode === 'edit'">
     <label for="imageUpload">Upload Images</label>
     <input type="file" id="imageUpload" name="images" (change)="onFileSelected($event)" multiple accept="image/*" />
+    <div class="image-preview" *ngIf="imagePreviews.length > 0">
+      <div *ngFor="let img of imagePreviews" class="image-thumb">
+        <img [src]="img" alt="Lounge Image" />
+      </div>
+    </div>
+  </div>
+  <div class="form-group half-width" *ngIf="modalMode === 'view'">
+    <label>Images</label>
     <div class="image-preview" *ngIf="imagePreviews.length > 0">
       <div *ngFor="let img of imagePreviews" class="image-thumb">
         <img [src]="img" alt="Lounge Image" />
@@ -163,7 +171,8 @@
             <input
               type="checkbox"
               [checked]="selectedAmenities.includes(amenity)"
-              (change)="toggleAmenity(amenity)"
+              (change)="modalMode === 'add' || modalMode === 'edit' ? toggleAmenity(amenity) : null"
+              [disabled]="modalMode === 'view'"
               id="amenity-{{amenity}}"
             />
             <label for="amenity-{{amenity}}">{{ amenity }}</label>
@@ -179,7 +188,8 @@
             <input
               type="checkbox"
               [checked]="selectedServices.includes(service)"
-              (change)="toggleService(service)"
+              (change)="modalMode === 'add' || modalMode === 'edit' ? toggleService(service) : null"
+              [disabled]="modalMode === 'view'"
               id="service-{{service}}"
             />
             <label for="service-{{service}}">{{ service }}</label>
@@ -189,8 +199,8 @@
 
       <!-- Actions -->
       <div class="actions">
-        <button type="submit">Save</button>
-        <button type="button" class="secondary" (click)="cancelAddLounge()">Cancel</button>
+        <button type="submit" *ngIf="modalMode === 'add' || modalMode === 'edit'">Save</button>
+        <button type="button" class="secondary" (click)="cancelAddLounge()">{{ modalMode === 'add' || modalMode === 'edit' ? 'Cancel' : 'Close' }}</button>
       </div>
     </form>
   </div>

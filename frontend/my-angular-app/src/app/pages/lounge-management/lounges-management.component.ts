@@ -30,7 +30,9 @@ export class LoungesManagementComponent implements OnInit {
   sortDirection: 'asc' | 'desc' = 'asc';
 
   // Modal properties
-  showAddModal: boolean = false;
+  showModal: boolean = false;
+  modalMode: 'add' | 'view' | 'edit' = 'add';
+  selectedLounge: Lounge | null = null;
   lounge: Lounge = {
     lounge_id: '0',
     owner: '',
@@ -121,8 +123,9 @@ export class LoungesManagementComponent implements OnInit {
   clearSearch(): void { this.searchTerm = ''; this.priceFilter = null; this.filteredLounges = this.lounges; }
 
   addLounge(): void {
+    this.modalMode = 'add';
     this.resetAddLoungeForm();
-    this.showAddModal = true;
+    this.showModal = true;
   }
 
   private resetAddLoungeForm(): void {
@@ -147,15 +150,22 @@ export class LoungesManagementComponent implements OnInit {
   }
 
   saveAddLounge(): void {
-    this.lounge.amenities = this.selectedAmenities;
-    this.lounge.services = this.selectedServices;
-    this.lounge.images = this.imagePreviews;
-    this.loungeService.add(this.lounge);
-    this.showAddModal = false;
+    if (this.modalMode === 'add') {
+      this.lounge.amenities = this.selectedAmenities;
+      this.lounge.services = this.selectedServices;
+      this.lounge.images = this.imagePreviews;
+      this.loungeService.add(this.lounge);
+    } else if (this.modalMode === 'edit') {
+      this.lounge.amenities = this.selectedAmenities;
+      this.lounge.services = this.selectedServices;
+      this.lounge.images = this.imagePreviews;
+      this.loungeService.update(this.lounge);
+    }
+    this.showModal = false;
   }
 
   cancelAddLounge(): void {
-    this.showAddModal = false;
+    this.showModal = false;
   }
 
   toggleAmenity(amenity: string): void {
@@ -199,11 +209,21 @@ export class LoungesManagementComponent implements OnInit {
   }
 
   view(l: Lounge): void {
-    this.router.navigate(['/lounges-management/view', l.lounge_id]);
+    this.modalMode = 'view';
+    this.lounge = { ...l };
+    this.selectedAmenities = [...l.amenities];
+    this.selectedServices = [...l.services];
+    this.imagePreviews = [...l.images];
+    this.showModal = true;
   }
 
   update(l: Lounge): void {
-    this.router.navigate(['/lounges-management/edit', l.lounge_id]);
+    this.modalMode = 'edit';
+    this.lounge = { ...l };
+    this.selectedAmenities = [...l.amenities];
+    this.selectedServices = [...l.services];
+    this.imagePreviews = [...l.images];
+    this.showModal = true;
   }
 
   delete(l: Lounge): void {
