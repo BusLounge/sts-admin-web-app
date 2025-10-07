@@ -33,6 +33,7 @@ export class DashboardComponent implements OnInit {
   loungeRevenueByLounge: { name: string; total: number }[] = [];
   busMonthlyRevenue: number[] = [];
   months: string[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  private colors: string[] = ['#4caf50', '#2196f3', '#ff9800', '#e91e63', '#9c27b0', '#00bcd4', '#8bc34a'];
 
   constructor(
     private router: Router,
@@ -92,15 +93,11 @@ export class DashboardComponent implements OnInit {
   }
 
   private computeLoungeRevenue(bookings: any[]): { name: string; total: number }[] {
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
     const map: Record<string, number> = {};
-    bookings
-      .filter(b => b.payment_status === 'Paid' && new Date(b.start_datetime).getMonth() === currentMonth && new Date(b.start_datetime).getFullYear() === currentYear)
-      .forEach(b => {
-        map[b.lounge_name] = (map[b.lounge_name] || 0) + b.total_amount;
-      });
-    return Object.entries(map).map(([name, total]) => ({ name, total }));
+    bookings.forEach(b => {
+      map[b.lounge_name] = (map[b.lounge_name] || 0) + b.total_amount;
+    });
+    return Object.entries(map).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total);
   }
 
   getBusActivePercentage(): number {
@@ -165,6 +162,11 @@ export class DashboardComponent implements OnInit {
   getLoungeRevenueBarHeight(total: number): number {
     const max = Math.max(...this.loungeRevenueByLounge.map(i => i.total), 1);
     return (total / max) * 100;
+  }
+
+  getColorForLounge(name: string): string {
+    const index = this.loungeRevenueByLounge.findIndex(item => item.name === name);
+    return this.colors[index % this.colors.length];
   }
 
   toggleSidebar(): void {
