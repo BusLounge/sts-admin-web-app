@@ -118,16 +118,11 @@ export class LoungeBookingComponent implements OnInit {
     this.revenueMonths = this.svc.monthlyRevenue(new Date().getFullYear());
   }
 
-  // Aggregate paid revenue by lounge for current month
+  // Aggregate total revenue by lounge
   refreshRevenueByLounge() {
-    const y = this.currentYear;
-    const m = this.currentMonth;
     const acc = new Map<string, number>();
     this.bookings.forEach(b => {
-      const d = new Date(b.start_datetime);
-      if (b.payment_status === 'Paid' && d.getFullYear() === y && d.getMonth() === m) {
-        acc.set(b.lounge_name, (acc.get(b.lounge_name) || 0) + b.total_amount);
-      }
+      acc.set(b.lounge_name, (acc.get(b.lounge_name) || 0) + b.total_amount);
     });
     this.revenueByLounge = Array.from(acc.entries())
       .map(([name, total]) => ({ name, total }))
