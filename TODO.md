@@ -1,3 +1,1 @@
-- [x] Remove pie chart background from .bars container in lounge-booking.component.html
-- [x] Add height style to each bar in Revenue by Lounge chart
-- [x] Add color distinction to bars for better visualization
+- [x] Reduce gap between search container and filter dropdowns in lounge booking page by changing gap from 0.7rem to 0.3rem in .filters class

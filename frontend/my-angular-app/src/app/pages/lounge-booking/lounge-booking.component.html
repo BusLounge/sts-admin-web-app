@@ -4,7 +4,7 @@
                (navigate)="onNavigate($event)"
                (logout)="onLogout()"></app-sidebar>
 
-  <div class="main-content">
+  <div class="main-content" [class.sidebar-open]="sidebarOpen">
     <div class="lb-page">
       <nav class="quick-nav">
         <span class="qn-root" (click)="onNavigate('dashboard')">Dashboard</span>
@@ -92,7 +92,7 @@
             <option>Cancelled</option>
             <option>Completed</option>
           </select>
-          <button class="btn" (click)="clearSearch()">Clear</button>
+         
         </div>
       </section>
 
