@@ -1,1 +1,1 @@
-- [x] Reduce gap between search container and filter dropdowns in lounge booking page by changing gap from 0.7rem to 0.3rem in .filters class
+- [x] Update lounge booking toolbar styles to match conductor management: gap, colors, borders, padding, etc.

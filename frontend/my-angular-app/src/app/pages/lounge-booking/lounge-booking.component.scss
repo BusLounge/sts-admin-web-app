@@ -63,14 +63,14 @@ app-sidebar {
 .line-chart { width: 100%; height: 220px; }
 .months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: .5rem; color: #334155; font-weight: 600; }
 
-.toolbar .filters { display: flex; align-items: center; gap: 0.3rem; margin: 0 0 1rem 0; }
-.filters input { padding: 0.4rem 2.5rem 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; width: 65%; }
-.filters select { padding: 0.4rem 2.5rem 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; width: 15%; }
+.toolbar .filters { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem 0; }
+.filters input { padding: 0.4rem 2.5rem 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 0.875rem; transition: all 0.2s; background: var(--color-background-primary); }
+.filters select { padding: 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; color: var(--color-text-muted); background: var(--color-background-primary); }
 .filters .btn { padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #0b0026;color:aliceblue; }
 
-.search-container { position: relative; max-width: 650px; flex: 1;margin-left: 1.5px; }
-.search-input { width: 100%; padding: .6rem 2.2rem .6rem .8rem; border: 2px solid #e5e7eb; border-radius: 8px; }
-.clear-search-btn { position: absolute; right: .5rem; top: 50%; transform: translateY(-50%); background: #6b7280; color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; }
+.search-container { position: relative; max-width: 500px; flex: 1; }
+.search-input { width: 100%; padding: 0.4rem 2.5rem 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 0.875rem; transition: all 0.2s; background: var(--color-background-primary); }
+.clear-search-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: #6b7280; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; line-height: 1; transition: background-color 0.2s; }
 .chart {
   
   border-radius: 12px;
@@ -86,4 +86,28 @@ app-sidebar {
 .actions-cell { display: flex; gap: .5rem; }
 .actions-cell button:nth-child(1) { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }
 .actions-cell button:nth-child(2) { background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }
+
+.search-input {
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
+  }
+}
+
+.filters select {
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
+  }
+}
+
+.clear-search-btn:hover {
+  background: #4b5563;
+}
 
