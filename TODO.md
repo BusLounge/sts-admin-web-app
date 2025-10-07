@@ -1,10 +1,11 @@
-# Lounge Management Table Actions Update
+# Lounge Management Modal Fix
 
 ## Completed Tasks
-- [x] Removed View and Update buttons from the actions column in lounges-management.component.html
-- [x] Added FontAwesome icons for View (fa-eye) and Edit (fa-edit) actions
-- [x] Updated styles in lounges-management.component.scss to style the action icons with hover effects
-- [x] Fixed table row alignment issues by adjusting icon styles (margin, padding, display, vertical-align)
+- [x] Updated lounges-management.component.ts to include modal state and form logic
+- [x] Updated lounges-management.component.html to include modal overlay with add lounge form
+- [x] Updated lounges-management.component.scss to include modal styles with blur background
 
-## Summary
-The lounge management page table now displays view and edit icons instead of text buttons in the actions column, matching the style of other management pages in the application. Table rows are properly aligned.
+## Next Steps
+- [ ] Test the modal opens with blurred background when clicking "Add Lounge"
+- [ ] Verify form submission saves the lounge and closes modal
+- [ ] Ensure cancel closes the modal without saving

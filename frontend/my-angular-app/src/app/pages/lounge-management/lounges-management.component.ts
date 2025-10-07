@@ -29,6 +29,32 @@ export class LoungesManagementComponent implements OnInit {
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  // Modal properties
+  showAddModal: boolean = false;
+  lounge: Lounge = {
+    lounge_id: '0',
+    owner: '',
+    name: '',
+    address: '',
+    phone: '',
+    capacity: 0,
+    price_per_hour: 0,
+    operating_hours: '',
+    amenities: [],
+    services: [],
+    images: [],
+    created_at: new Date().toISOString()
+  };
+
+  selectedAmenities: string[] = [];
+  selectedServices: string[] = [];
+
+  availableAmenities: string[] = ['WiFi', 'AC', 'TV', 'Charging Ports', 'Quiet Zone'];
+  availableServices: string[] = ['Food', 'Drinks', 'Shower'];
+
+  imagePreviews: string[] = [];
+  private selectedFiles: File[] = [];
+
   constructor(private router: Router, private loungeService: LoungeService) {}
 
   ngOnInit(): void {
@@ -95,7 +121,81 @@ export class LoungesManagementComponent implements OnInit {
   clearSearch(): void { this.searchTerm = ''; this.priceFilter = null; this.filteredLounges = this.lounges; }
 
   addLounge(): void {
-    this.router.navigate(['/add-lounge']);
+    this.resetAddLoungeForm();
+    this.showAddModal = true;
+  }
+
+  private resetAddLoungeForm(): void {
+    this.lounge = {
+      lounge_id: '0',
+      owner: '',
+      name: '',
+      address: '',
+      phone: '',
+      capacity: 0,
+      price_per_hour: 0,
+      operating_hours: '',
+      amenities: [],
+      services: [],
+      images: [],
+      created_at: new Date().toISOString()
+    };
+    this.selectedAmenities = [];
+    this.selectedServices = [];
+    this.imagePreviews = [];
+    this.selectedFiles = [];
+  }
+
+  saveAddLounge(): void {
+    this.lounge.amenities = this.selectedAmenities;
+    this.lounge.services = this.selectedServices;
+    this.lounge.images = this.imagePreviews;
+    this.loungeService.add(this.lounge);
+    this.showAddModal = false;
+  }
+
+  cancelAddLounge(): void {
+    this.showAddModal = false;
+  }
+
+  toggleAmenity(amenity: string): void {
+    const index = this.selectedAmenities.indexOf(amenity);
+    if (index > -1) {
+      this.selectedAmenities.splice(index, 1);
+    } else {
+      this.selectedAmenities.push(amenity);
+    }
+  }
+
+  toggleService(service: string): void {
+    const index = this.selectedServices.indexOf(service);
+    if (index > -1) {
+      this.selectedServices.splice(index, 1);
+    } else {
+      this.selectedServices.push(service);
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files || files.length === 0) return;
+
+    // Append to existing selections to allow multiple picks across interactions
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) continue; // skip non-images
+      this.selectedFiles.push(file);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = (e.target as FileReader).result as string;
+        this.imagePreviews.push(result);
+      };
+      reader.readAsDataURL(file); // create base64 preview
+    }
+
+    // Clear the input to allow re-selecting the same files if needed
+    input.value = '';
   }
 
   view(l: Lounge): void {
