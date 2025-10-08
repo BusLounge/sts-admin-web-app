@@ -105,7 +105,40 @@ export class LoungeBookingComponent implements OnInit {
 
   clearSearch() { this.searchTerm = ''; this.applyFilters(); }
 
-  updateBooking(b: LoungeBooking) { this.router.navigate(['/lounge-booking/edit', b.booking_id]); }
+  showUpdateBookingModal: boolean = false;
+  selectedBooking?: LoungeBooking;
+
+  formDurationHours: number = 1;
+  formGuests: number = 0;
+  formCapacityUsed: number = 0;
+  startDateTime: string = '';
+
+  updateBooking(b: LoungeBooking) {
+    this.selectedBooking = { ...b };
+    this.formDurationHours = b.duration_hours;
+    this.formGuests = b.guests;
+    this.formCapacityUsed = b.capacity_used;
+    this.startDateTime = b.start_datetime;
+    this.showUpdateBookingModal = true;
+  }
+
+  closeUpdateBookingModal() {
+    this.showUpdateBookingModal = false;
+    this.selectedBooking = undefined;
+    this.startDateTime = '';
+  }
+
+  saveUpdatedBooking() {
+    if (!this.selectedBooking) return;
+    const updated: LoungeBooking = {
+      ...this.selectedBooking,
+      duration_hours: Math.max(1, this.formDurationHours),
+      guests: Math.max(0, this.formGuests),
+      capacity_used: Math.max(0, this.formCapacityUsed),
+    };
+    this.svc.update(updated);
+    this.closeUpdateBookingModal();
+  }
   deleteBooking(b: LoungeBooking) {
     const ok = confirm(`Delete booking ${b.booking_id}?`);
     if (ok) this.svc.delete(b.booking_id);
