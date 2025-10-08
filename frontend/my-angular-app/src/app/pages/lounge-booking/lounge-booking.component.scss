@@ -64,7 +64,14 @@ app-sidebar {
 .months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: .5rem; color: #334155; font-weight: 600; }
 
 .toolbar .filters { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem 0; }
-.filters input { padding: 0.4rem 2.5rem 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 0.875rem; transition: all 0.2s; background: var(--color-background-primary); }
+.filters input { padding: 0.4rem 2.5rem 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 0.875rem; transition: all 0.2s; background: var(--color-background-primary);
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-toolbar-brdborder);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
+  }
+}
 .filters select { padding: 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; color: var(--color-text-muted); background: var(--color-background-primary); }
 .filters .btn { padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #0b0026;color:aliceblue; }
 
@@ -81,9 +88,28 @@ app-sidebar {
 }
 
 .lb-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
-.lb-table th, .lb-table td { padding: .75rem; border-bottom: 1px solid #e5e7eb; }
+.lb-table th, .lb-table td { padding: .75rem;}
 .lb-table th { background: var(--color-neutral-400); color: #334155; text-align: left; }
-.actions-cell { display: flex; gap: .5rem; }
+.actions-cell { display: flex; gap: .5rem; align-items: center; }
+.action-icon {
+  margin-right: 0.5rem;
+  margin-top: 15px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.edit-icon {
+    color: #070122;
+  }
+
+  &.delete-icon {
+    color: #070122;
+  }
+}
 .actions-cell button:nth-child(1) { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }
 .actions-cell button:nth-child(2) { background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }
 
@@ -91,18 +117,12 @@ app-sidebar {
   &::placeholder {
     color: var(--color-text-muted);
   }
-
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary-500);
-    box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
-  }
 }
 
 .filters select {
   &:focus {
     outline: none;
-    border-color: var(--color-primary-500);
+    border-color: var(--color-toolbar-brdborder);
     box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
   }
 }

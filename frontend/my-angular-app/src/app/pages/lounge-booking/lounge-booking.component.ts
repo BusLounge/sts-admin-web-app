@@ -88,6 +88,11 @@ export class LoungeBookingComponent implements OnInit {
         b.booking_id,
         b.passenger_id,
         b.lounge_name,
+        b.payment_status,
+        b.booking_status,
+        b.start_datetime,
+        b.guests.toString(),
+        b.capacity_used.toString()
       ].some(x => x.toLowerCase().includes(q)) ||
       b.total_amount.toString().includes(q) || b.duration_hours.toString().includes(q);
 
@@ -95,6 +100,7 @@ export class LoungeBookingComponent implements OnInit {
       const matchesStatus = this.statusFilter === 'All' || b.booking_status === this.statusFilter;
       return matchesSearch && matchesPay && matchesStatus;
     });
+    this.applySorting();
   }
 
   clearSearch() { this.searchTerm = ''; this.applyFilters(); }

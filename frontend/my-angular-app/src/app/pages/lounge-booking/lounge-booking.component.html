@@ -75,7 +75,7 @@
       <section class="toolbar">
         <div class="filters">
           <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search by Booking ID, Passenger ID, Lounge, Amount..."
+            <input type="text" class="search-input" placeholder="Search by Booking ID, Passenger ID, Lounge, Amount, Status, Date, Guests..."
                    [(ngModel)]="searchTerm" (input)="applyFilters()"/>
             <button class="clear-search-btn" *ngIf="searchTerm" (click)="clearSearch()">×</button>
           </div>
@@ -107,8 +107,8 @@
               <th (click)="onSort('lounge_name')" style="cursor: pointer;" title="Click to sort">
                 Lounge Name {{ getSortIcon('lounge_name') }}
               </th>
-              <th>Date & Time / Duration</th>
-              <th>Guests / Capacity Used</th>
+              <th>Date & Time/Duration</th>
+              <th>No of Guests</th>
               <th (click)="onSort('total_amount')" style="cursor: pointer;" title="Click to sort">
                 Total Amount {{ getSortIcon('total_amount') }}
               </th>
@@ -142,8 +142,7 @@
                 
               </td>
               <td class="actions-cell">
-                <button (click)="updateBooking(b)">Update</button>
-                <button (click)="deleteBooking(b)">Delete</button>
+                <i class="fas fa-edit action-icon edit-icon" (click)="updateBooking(b)" title="Update"></i>
               </td>
             </tr>
           </tbody>
