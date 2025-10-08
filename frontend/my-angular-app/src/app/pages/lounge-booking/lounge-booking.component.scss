@@ -33,6 +33,7 @@ app-sidebar {
 
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
 }
 
 .page-header {
@@ -90,10 +91,11 @@ app-sidebar {
 .lb-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
 .lb-table th, .lb-table td { padding: .75rem;}
 .lb-table th { background: var(--color-neutral-400); color: #334155; text-align: left; }
-.actions-cell { display: flex; gap: .5rem; align-items: center; }
+.lb-table th:nth-child(5), .lb-table th:nth-child(6) { text-align: center; }
+.lb-table td:nth-child(5), .lb-table td:nth-child(6) { text-align: center; }
+.actions-cell {  gap: .5rem; align-items: center; }
 .action-icon {
   margin-right: 0.5rem;
-  margin-top: 15px;
   font-size: 1rem;
   cursor: pointer;
   transition: 0.2s;
