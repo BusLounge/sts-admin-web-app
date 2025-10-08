@@ -3,14 +3,26 @@
   justify-content: center;
   align-items: flex-start;
   padding: 24px;
-  background: #9fcfff;
+  background: #f2f3f5;
   min-height: 100vh;
 }
 .main-content { width: 100%; max-width: 1200px;margin-left: 280px;; }
 .main-content-expanded { margin-left: 80px; }
 
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h1 { margin: 2;font-size: 1.6rem; }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: var(--color-text-primary);
+  }
+}
 .page-header .quick-nav { margin-bottom: 10px; }
 
 .filters { display: flex; gap: 10px; margin-bottom: 10px; margin-top:15px }
