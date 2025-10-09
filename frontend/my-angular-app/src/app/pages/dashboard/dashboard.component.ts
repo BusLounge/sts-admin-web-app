@@ -66,7 +66,15 @@ export class DashboardComponent implements OnInit {
     });
 
     this.busBookingService.bookings$.subscribe(bookings => {
-      this.busMonthlyRevenue = this.busBookingService.monthlyRevenue(new Date().getFullYear());
+      // Calculate total fare for each month for paid bookings
+      const monthlyTotals = Array(12).fill(0);
+      bookings.forEach(b => {
+        if (b.payment_status === 'Paid') {
+          const month = new Date(b.journey_datetime).getMonth();
+          monthlyTotals[month] += b.total_fare;
+        }
+      });
+      this.busMonthlyRevenue = monthlyTotals;
     });
 
     this.loungeBookingService.bookings$.subscribe(bookings => {
