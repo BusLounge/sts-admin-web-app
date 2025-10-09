@@ -34,11 +34,11 @@
 .quick-nav span {
   display: inline-block;
   font-size: 14px;
-  color: var(--color-text-secondary);
+  
 }
 
 .qn-root {
-  color: var(--color-primary-500);
+  color: var(--color-primary-900);
   cursor: pointer;
 }
 
@@ -73,6 +73,21 @@
 .row { display: grid; grid-template-columns: 1.1fr 1.2fr 1.1fr 1.1fr 1.2fr 1.3fr .9fr 1fr 1fr 1fr; gap: 10px; padding: 15px; align-items: center; border-bottom: 1px solid var(--color-border-light); }
 .row.header { background: var(--color-neutral-400); font-weight: 600; color: var(--color-text-primary); }
 .col.actions-col { display: flex; gap: 6px; }
+
+.action-icon {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.danger {
+    color: var(--color-error-500);
+  }
+}
 
 .badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; }
 .badge.paid { background: var(--color-success-100); color: var(--color-success-800); }
