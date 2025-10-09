@@ -18,16 +18,16 @@
       <div class="chart-card">
         <h3>Payment Status</h3>
         <div class="bar-chart">
-          <div class="bar paid" [style.height.%]="(getPayCount('Paid') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 100">
+          <div class="bar paid" [style.height.px]="(getPayCount('Paid') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 250">
             <span>Paid ({{ getPayCount('Paid') }})</span>
           </div>
-          <div class="bar pending" [style.height.%]="(getPayCount('Pending') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 100">
+          <div class="bar pending" [style.height.px]="(getPayCount('Pending') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 250">
             <span>Pending ({{ getPayCount('Pending') }})</span>
           </div>
-          <div class="bar failed" [style.height.%]="(getPayCount('Failed') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 100">
+          <div class="bar failed" [style.height.px]="(getPayCount('Failed') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 250">
             <span>Failed ({{ getPayCount('Failed') }})</span>
           </div>
-          <div class="bar refunded" [style.height.%]="(getPayCount('Refunded') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 100">
+          <div class="bar refunded" [style.height.px]="(getPayCount('Refunded') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 250">
             <span>Refunded ({{ getPayCount('Refunded') }})</span>
           </div>
         </div>
@@ -138,7 +138,6 @@
           </div>
           <div class="col actions-col">
             <button class="btn small" (click)="updateBooking(b)">Update</button>
-            <button class="btn small danger" (click)="deleteBooking(b)">Delete</button>
           </div>
         </div>
       </div>
