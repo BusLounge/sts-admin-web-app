@@ -13,7 +13,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  margin-top: -5px;
 
   h1 {
     margin: 0;
@@ -23,7 +24,36 @@
     color: var(--color-text-primary);
   }
 }
-.page-header .quick-nav { margin-bottom: 10px; }
+.page-header .quick-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+}
+
+.quick-nav span {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.qn-root {
+  color: var(--color-primary-500);
+  cursor: pointer;
+}
+
+.qn-root:hover {
+  text-decoration: underline;
+}
+
+.qn-sep {
+  color: var(--color-text-muted);
+}
+
+.qn-current {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
 
 .filters { display: flex; gap: 10px; margin-bottom: 10px; margin-top:15px }
 .filters input, .filters select {
