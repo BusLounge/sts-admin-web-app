@@ -112,11 +112,7 @@ export class BusBookingComponent implements OnInit {
 
   getRevenuePoints(): string {
     const max = Math.max(1, ...this.revenueMonths);
-    return this.revenueMonths.map((v, i) => {
-      const x = 20 + i * ((640 - 40) / (this.months.length - 1));
-      const y = 240 - (v / max) * (240 - 40);
-      return `${x},${y}`;
-    }).join(' ');
+    return this.revenueMonths.map((v, i) => `${i * 50 + 50},${260 - (v / max) * 200}`).join(' ');
   }
 
   getYAxisLabels(): { value: string, y: number }[] {
@@ -124,7 +120,7 @@ export class BusBookingComponent implements OnInit {
     const steps = [0, 0.25, 0.5, 0.75, 1];
     return steps.map(f => {
       const val = f * max;
-      const y = 240 - (val / max) * 200;
+      const y = 260 - (val / max) * 200;
       return { value: Math.round(val).toString(), y };
     });
   }
