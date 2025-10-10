@@ -5,9 +5,9 @@ import { Passenger } from '../models/passenger.model';
 @Injectable({ providedIn: 'root' })
 export class PassengerService {
   private readonly _passengers$ = new BehaviorSubject<Passenger[]>([
-    { passenger_id: 'PASS001', name: 'John Doe', phone: '+94712345678', email: 'john@example.com', nic: '123456789V', created_at: '2024-01-12T12:00:00Z' },
-    { passenger_id: 'PASS002', name: 'Jane Smith', phone: '+94719876543', email: 'jane@example.com', nic: '987654321V', created_at: '2024-03-22T10:00:00Z' },
-    { passenger_id: 'PASS003', name: 'Bob Lee', phone: '+94711234567', email: 'bob@example.com', nic: '753159846V', created_at: '2024-05-05T09:20:00Z' }
+    { passenger_id: 'PASS001', name: 'John Doe', phone: '+94712345678', email: 'john@example.com', nic: '123456789V', created_at: '2025-01-12T12:00:00Z' },
+    { passenger_id: 'PASS002', name: 'Jane Smith', phone: '+94719876543', email: 'jane@example.com', nic: '987654321V', created_at: '2025-03-22T10:00:00Z' },
+    { passenger_id: 'PASS003', name: 'Bob Lee', phone: '+94711234567', email: 'bob@example.com', nic: '753159846V', created_at: '2025-05-05T09:20:00Z' }
   ]);
 
   readonly passengers$ = this._passengers$.asObservable();

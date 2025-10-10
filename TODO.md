@@ -1,5 +1,23 @@
-- [x] Update lounge booking toolbar styles to match conductor management: gap, colors, borders, padding, etc.
-- [x] Add y-axis labels displaying total fare amounts to the "Monthly Paid Revenue - Bus Booking" line chart.
-- [x] Add y-axis labels displaying total fare amounts to the "Monthly Paid Revenue" line chart in the bus booking page.
-- [x] Standardize the "Monthly Paid Revenue" chart in the bus booking page to match the dashboard chart's scaling, positioning, and y-axis for correct display and reduced gap.
-- [x] Reduce the gap between the line chart and months labels in the bus booking page by updating CSS to match dashboard styling.
+# TODO: Add Passenger Growth Column Chart to Dashboard
+
+## Steps to Complete:
+
+1. **Install Dependencies** ✅
+   - Run `cd frontend/my-angular-app && npm install ng2-charts chart.js` to add ng2-charts and Chart.js for the column chart.
+
+2. **Update Dashboard Component TypeScript** ✅
+   - Import necessary modules: PassengerService, NgChartsModule, BaseChartDirective, Chart types.
+   - Inject PassengerService into the constructor.
+   - In ngOnInit, subscribe to passengers$ and compute monthly passenger counts for the current year.
+   - Add chart properties: barChartData, barChartOptions, barChartType.
+
+3. **Update Dashboard Component HTML** ✅
+   - Add a new `.chart` div after the "Monthly Paid Revenue - Bus Booking" chart.
+   - Include a header "Passenger Growth" and a canvas element with baseChart directive bound to the chart properties.
+
+4. **Test the Implementation** ✅
+   - Run `ng serve` in the frontend/my-angular-app directory.
+   - Verify the chart renders on the dashboard with passenger data aggregated by months.
+   - Check layout to ensure it's positioned on the right side of the revenue chart (may require minor SCSS adjustment if needed).
+
+Progress: All steps completed.

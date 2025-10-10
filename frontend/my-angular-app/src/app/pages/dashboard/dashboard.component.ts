@@ -9,6 +9,7 @@ import { DriverService } from '../../core/services/driver.service';
 import { ConductorService } from '../../core/services/conductor.service';
 import { BusBookingService } from '../../core/services/bus-booking.service';
 import { LoungeBookingService } from '../../core/services/lounge-booking.service';
+import { PassengerService } from '../../core/services/passenger.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -35,6 +36,8 @@ export class DashboardComponent implements OnInit {
   months: string[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   private colors: string[] = ['#4caf50', '#2196f3', '#ff9800', '#e91e63', '#9c27b0', '#00bcd4', '#8bc34a'];
 
+  passengerMonthlyCounts: number[] = [];
+
   constructor(
     private router: Router,
     private busService: BusService,
@@ -42,7 +45,8 @@ export class DashboardComponent implements OnInit {
     private driverService: DriverService,
     private conductorService: ConductorService,
     private busBookingService: BusBookingService,
-    private loungeBookingService: LoungeBookingService
+    private loungeBookingService: LoungeBookingService,
+    private passengerService: PassengerService
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +83,11 @@ export class DashboardComponent implements OnInit {
 
     this.loungeBookingService.bookings$.subscribe(bookings => {
       this.loungeRevenueByLounge = this.computeLoungeRevenue(bookings);
+    });
+
+    this.passengerService.passengers$.subscribe(passengers => {
+      const currentYear = new Date().getFullYear();
+      this.passengerMonthlyCounts = this.passengerService.getMonthlyCounts(currentYear);
     });
   }
 
@@ -120,12 +129,12 @@ export class DashboardComponent implements OnInit {
 
   getBusPieBackground(): string {
     const active = this.getBusActivePercentage();
-    return `conic-gradient(#4caf50 0% ${active}%, #f87171 ${active}% 100%)`;
+    return `conic-gradient(#0046FF 0% ${active}%, #FF8040 ${active}% 100%)`;
   }
 
   getDriverPieBackground(): string {
     const active = this.getDriverActivePercentage();
-    return `conic-gradient(#4caf50 0% ${active}%, #f87171 ${active}% 100%)`;
+    return `conic-gradient(#0046FF 0% ${active}%, #FF8040 ${active}% 100%)`;
   }
 
   getDriverActivePercentage(): number {
@@ -184,6 +193,15 @@ export class DashboardComponent implements OnInit {
 
   getColorForLounge(name: string): string {
     const index = this.loungeRevenueByLounge.findIndex(item => item.name === name);
+    return this.colors[index % this.colors.length];
+  }
+
+  getPassengerBarHeight(count: number): number {
+    const max = Math.max(...this.passengerMonthlyCounts, 1);
+    return (count / max) * 100;
+  }
+
+  getColorForPassenger(index: number): string {
     return this.colors[index % this.colors.length];
   }
 

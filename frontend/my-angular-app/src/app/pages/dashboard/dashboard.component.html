@@ -149,5 +149,17 @@
         <span *ngFor="let m of months">{{ m }}</span>
       </div>
     </div>
+
+    <div class="chart">
+      <div class="chart-header">
+        <h3>Passenger Growth</h3>
+      </div>
+      <div class="bars">
+        <div class="bar" *ngFor="let count of passengerMonthlyCounts; let i = index" [style.--height]="getPassengerBarHeight(count)" [style.background-color]="getColorForPassenger(i)">
+          <span class="bar-value">{{ count }}</span>
+          <span class="bar-label">{{ months[i] }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
