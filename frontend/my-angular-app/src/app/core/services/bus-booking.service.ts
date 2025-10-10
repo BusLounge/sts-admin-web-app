@@ -79,9 +79,9 @@ export class BusBookingService {
   monthlyRevenue(year: number) {
     const arr = Array(12).fill(0);
     this.bookings
-      .filter(b => new Date(b.journey_datetime).getFullYear() === year && b.payment_status === 'Paid')
+      .filter(b => new Date(b.created_at).getFullYear() === year && b.payment_status === 'Paid')
       .forEach(b => {
-        const m = new Date(b.journey_datetime).getMonth();
+        const m = new Date(b.created_at).getMonth();
         arr[m] += b.total_fare;
       });
     return arr;

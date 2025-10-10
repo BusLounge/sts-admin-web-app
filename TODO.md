@@ -1,1 +1,3 @@
 - [x] Update lounge booking toolbar styles to match conductor management: gap, colors, borders, padding, etc.
+- [x] Add y-axis labels displaying total fare amounts to the "Monthly Paid Revenue - Bus Booking" line chart.
+- [x] Add y-axis labels displaying total fare amounts to the "Monthly Paid Revenue" line chart in the bus booking page.

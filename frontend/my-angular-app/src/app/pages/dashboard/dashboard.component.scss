@@ -126,9 +126,9 @@
 
     h3 {
       margin: 0;
-      margin-bottom: 30px;
-      font-weight: 700;
-      font-size: 1.25rem;
+      margin-bottom: 35px;
+      font-weight: 600;
+      font-size: 1.2rem;
       color: var(--color-text-primary);
     }
   }
@@ -176,7 +176,7 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-text-primary);
   }
 
@@ -251,14 +251,25 @@
   }
 
   .bar-value {
-    margin-bottom: 0.25rem;
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 0.875rem;
+    white-space: nowrap;
   }
 
   .bar-label {
+    position: absolute;
+    bottom: -45px;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 0.75rem;
+    font-weight: 400;
     text-align: center;
-    margin-top: 0.25rem;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .line-chart {
@@ -269,8 +280,8 @@
   .months {
     display: flex;
     justify-content: space-between;
-    margin-top: 0.5rem;
+    margin-top: -40px;
     font-size: 0.75rem;
-    color: var(--color-text-secondary);
+    color: var(--bardhart-labletext);
   }
 }

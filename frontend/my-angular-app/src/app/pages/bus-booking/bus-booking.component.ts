@@ -119,6 +119,16 @@ export class BusBookingComponent implements OnInit {
     }).join(' ');
   }
 
+  getYAxisLabels(): { value: string, y: number }[] {
+    const max = Math.max(1, ...this.revenueMonths);
+    const steps = [0, 0.25, 0.5, 0.75, 1];
+    return steps.map(f => {
+      const val = f * max;
+      const y = 240 - (val / max) * 200;
+      return { value: Math.round(val).toString(), y };
+    });
+  }
+
   onPaymentStatusChange(booking: BusBooking): void {
     console.log('Payment status changed:', booking);
     // Update charts after payment status change

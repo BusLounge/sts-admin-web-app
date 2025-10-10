@@ -60,6 +60,11 @@
             stroke-width="3"
             [attr.points]="getRevenuePoints()"
           ></polyline>
+          <!-- Y-axis -->
+          <line x1="20" y1="40" x2="20" y2="240" stroke="#ccc" stroke-width="1"></line>
+          <text *ngFor="let label of getYAxisLabels()" x="15" [attr.y]="label.y + 4" text-anchor="end" font-size="12" fill="#666">{{ label.value }}</text>
+          <!-- Grid lines -->
+          <line *ngFor="let label of getYAxisLabels()" x1="20" [attr.y1]="label.y" x2="600" [attr.y2]="label.y" stroke="#f0f0f0" stroke-width="1"></line>
         </svg>
         <div class="months">
           <span *ngFor="let m of months">{{ m }}</span>
