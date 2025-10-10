@@ -34,6 +34,11 @@ export class BusBookingComponent implements OnInit {
   revenueMonths: number[] = [];
   months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+  // Modal properties
+  showEditModal = false;
+  selectedBooking: BusBooking | null = null;
+  formSeatNumbers = '';
+
   // Expose Math to template
   Math = Math;
 
@@ -84,7 +89,11 @@ export class BusBookingComponent implements OnInit {
   clearSearch() { this.searchTerm = ''; this.applyFilters(); }
 
   viewBooking(b: BusBooking) { alert(`View ${b.booking_id}`); }
-  updateBooking(b: BusBooking) { alert(`Update ${b.booking_id}`); }
+  updateBooking(b: BusBooking) {
+    this.selectedBooking = { ...b };
+    this.formSeatNumbers = b.seat_numbers.join(', ');
+    this.showEditModal = true;
+  }
   deleteBooking(b: BusBooking) {
     const ok = confirm(`Delete booking ${b.booking_id}?`);
     if (ok) this.svc.delete(b.booking_id);
@@ -186,5 +195,18 @@ export class BusBookingComponent implements OnInit {
       return ' ⇅'; // Both arrows for unsorted columns
     }
     return this.sortDirection === 'asc' ? ' ↑' : ' ↓';
+  }
+
+  // Modal methods
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.selectedBooking = null;
+  }
+
+  saveEditBooking(): void {
+    if (!this.selectedBooking) return;
+    this.selectedBooking.seat_numbers = this.formSeatNumbers.split(',').map(s => s.trim());
+    this.svc.update(this.selectedBooking);
+    this.closeEditModal();
   }
 }

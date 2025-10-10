@@ -144,3 +144,92 @@
     </section>
   </div>
 </div>
+
+<!-- Edit Bus Booking Modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="edit-container" (click)="$event.stopPropagation()">
+    <h2>Edit Bus Booking</h2>
+    <form (ngSubmit)="saveEditBooking()" *ngIf="selectedBooking" class="bus-form">
+      <div class="form-row">
+        <label>
+          Booking ID
+          <input [value]="selectedBooking.booking_id" readonly />
+        </label>
+        <label>
+          Passenger ID
+          <input [value]="selectedBooking.passenger_id" readonly />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          Passenger Name
+          <input type="text" [(ngModel)]="selectedBooking.passenger_name" name="passenger_name" required />
+        </label>
+        <label>
+          Bus Number
+          <input type="text" [(ngModel)]="selectedBooking.bus_number" name="bus_number" required />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          Bus Name
+          <input type="text" [(ngModel)]="selectedBooking.bus_name" name="bus_name" />
+        </label>
+        <label>
+          From
+          <input type="text" [(ngModel)]="selectedBooking.from" name="from" required />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          To
+          <input type="text" [(ngModel)]="selectedBooking.to" name="to" required />
+        </label>
+        <label>
+          Journey Date & Time
+          <input type="datetime-local" [(ngModel)]="selectedBooking.journey_datetime" name="journey_datetime" required />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          Seats Booked
+          <input type="number" [(ngModel)]="selectedBooking.seats_booked" name="seats_booked" required min="1" />
+        </label>
+        <label>
+          Seat Numbers (comma separated)
+          <input type="text" [(ngModel)]="formSeatNumbers" name="formSeatNumbers" required />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          Total Fare
+          <input type="number" [(ngModel)]="selectedBooking.total_fare" name="total_fare" required min="0" step="0.01" />
+        </label>
+        <label>
+          Payment Status
+          <select [(ngModel)]="selectedBooking.payment_status" name="payment_status">
+            <option value="Paid">Paid</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
+            <option value="Refunded">Refunded</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          Booking Status
+          <select [(ngModel)]="selectedBooking.booking_status" name="booking_status">
+            <option value="Confirmed">Confirmed</option>
+            <option value="Pending">Pending</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="button" (click)="closeEditModal()">Cancel</button>
+        <button type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
