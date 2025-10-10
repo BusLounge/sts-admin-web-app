@@ -168,7 +168,7 @@ export class DashboardComponent implements OnInit {
     const resigned = this.getConductorResignedPercentage();
     const activeEnd = active;
     const onLeaveEnd = active + onLeave;
-    return `conic-gradient(#4caf50 0% ${activeEnd}%, #fbbf24 ${activeEnd}% ${onLeaveEnd}%, #9ca3af ${onLeaveEnd}% 100%)`;
+    return `conic-gradient(#0046FF 0% ${activeEnd}%, #FF8040 ${activeEnd}% ${onLeaveEnd}%, #9ca3af ${onLeaveEnd}% 100%)`;
   }
 
   getRevenuePoints(): string {
