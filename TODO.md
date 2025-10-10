@@ -2,3 +2,4 @@
 - [x] Add y-axis labels displaying total fare amounts to the "Monthly Paid Revenue - Bus Booking" line chart.
 - [x] Add y-axis labels displaying total fare amounts to the "Monthly Paid Revenue" line chart in the bus booking page.
 - [x] Standardize the "Monthly Paid Revenue" chart in the bus booking page to match the dashboard chart's scaling, positioning, and y-axis for correct display and reduced gap.
+- [x] Reduce the gap between the line chart and months labels in the bus booking page by updating CSS to match dashboard styling.
