@@ -188,6 +188,11 @@ export class BusManagementComponent implements OnInit {
     return (this.getInactiveCount() / total) * 100;
   }
 
+  getBusPieBackground(): string {
+    const active = this.getActivePercentage();
+    return `conic-gradient(#0046FF 0% ${active}%, #FAA533 ${active}% 100%)`;
+  }
+
   // Search functionality
   onSearchChange(): void {
     this.applyFilters();
