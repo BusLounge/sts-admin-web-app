@@ -129,12 +129,12 @@ export class DashboardComponent implements OnInit {
 
   getBusPieBackground(): string {
     const active = this.getBusActivePercentage();
-    return `conic-gradient(#0046FF 0% ${active}%, #FF8040 ${active}% 100%)`;
+    return `conic-gradient(#0046FF 0% ${active}%, #FAA533 ${active}% 100%)`;
   }
 
   getDriverPieBackground(): string {
     const active = this.getDriverActivePercentage();
-    return `conic-gradient(#0046FF 0% ${active}%, #FF8040 ${active}% 100%)`;
+    return `conic-gradient(#0046FF 0% ${active}%, #FAA533 ${active}% 100%)`;
   }
 
   getDriverActivePercentage(): number {
@@ -168,7 +168,7 @@ export class DashboardComponent implements OnInit {
     const resigned = this.getConductorResignedPercentage();
     const activeEnd = active;
     const onLeaveEnd = active + onLeave;
-    return `conic-gradient(#0046FF 0% ${activeEnd}%, #FF8040 ${activeEnd}% ${onLeaveEnd}%, #9ca3af ${onLeaveEnd}% 100%)`;
+    return `conic-gradient(#0046FF 0% ${activeEnd}%, #FAA533 ${activeEnd}% ${onLeaveEnd}%, #9ca3af ${onLeaveEnd}% 100%)`;
   }
 
   getRevenuePoints(): string {
@@ -192,6 +192,10 @@ export class DashboardComponent implements OnInit {
   }
 
   getColorForLounge(name: string): string {
+    if (name === 'Beta Premium Lounge') {
+      return '#0046FF';
+    }
+    
     const index = this.loungeRevenueByLounge.findIndex(item => item.name === name);
     return this.colors[index % this.colors.length];
   }
@@ -202,7 +206,7 @@ export class DashboardComponent implements OnInit {
   }
 
   getColorForPassenger(index: number): string {
-    return this.colors[index % this.colors.length];
+    return '#0046FF';
   }
 
   toggleSidebar(): void {
