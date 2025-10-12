@@ -16,110 +16,26 @@
         <h2>Lounge Booking Management</h2>
       </header>
 
-      <section class="charts-section">
-        <div class="chart">
-          <div class="chart-header">
-            <h3>Payment Status</h3>
+      <section class="charts">
+        <div class="chart-card">
+          <h3>Payment Status</h3>
+          <div class="bar-chart">
+            <canvas *ngIf="isBrowser" baseChart [data]="barChartData[0]" [options]="barChartOptions" type="bar"></canvas>
           </div>
-          <div class="bars">
-            <div class="bar" [style.--height]="getPayBarHeight('Paid')">
-              <span class="bar-value">{{ getPayCount('Paid') }}</span>
-              <span class="bar-label">Paid</span>
-            </div>
-            <div class="bar" [style.--height]="getPayBarHeight('Pending')">
-              <span class="bar-value">{{ getPayCount('Pending') }}</span>
-              <span class="bar-label">Pending</span>
-            </div>
-            <div class="bar" [style.--height]="getPayBarHeight('Failed')">
-              <span class="bar-value">{{ getPayCount('Failed') }}</span>
-              <span class="bar-label">Failed</span>
-  </div>
-</div>
+        </div>
 
-<!-- Edit Lounge Booking Modal -->
-<div class="modal-overlay" *ngIf="showUpdateBookingModal" (click)="closeUpdateBookingModal()">
-  <div class="edit-container" (click)="$event.stopPropagation()">
-    <h2>Edit Lounge Booking</h2>
-    <form (ngSubmit)="saveUpdatedBooking()" *ngIf="selectedBooking" class="lounge-form">
-      <div class="form-row">
-        <label>
-          Booking ID
-          <input [value]="selectedBooking.booking_id" readonly />
-        </label>
-        <label>
-          Passenger ID
-          <input [value]="selectedBooking.passenger_id" readonly />
-        </label>
-      </div>
-      <div class="form-row">
-        <label>
-          Lounge Name
-          <input [value]="selectedBooking.lounge_name" readonly />
-        </label>
-        <label>
-          Date & Time (locked)
-          <input [value]="startDateTime" readonly />
-        </label>
-      </div>
-      <div class="form-row">
-        <label>
-          Duration (hours)
-          <input type="number" min="1" [(ngModel)]="formDurationHours" name="duration_hours" required />
-        </label>
-        <label>
-          Guests
-          <input type="number" min="0" [(ngModel)]="formGuests" name="guests" required />
-        </label>
-      </div>
-      <div class="form-row">
-        <label>
-          Capacity Used
-          <input type="number" min="0" [(ngModel)]="formCapacityUsed" name="capacity_used" required />
-        </label>
-      </div>
-      <div class="form-actions">
-        <button type="button" (click)="closeUpdateBookingModal()">Cancel</button>
-        <button type="submit">Save</button>
-      </div>
-    </form>
-  </div>
-</div>
-        </div>
-        <div class="chart">
-          <div class="chart-header">
-            <h3>Booking Status</h3>
+        <div class="chart-card">
+          <h3>Booking Status</h3>
+          <div class="bar-chart">
+            <canvas *ngIf="isBrowser" baseChart [data]="barChartData[1]" [options]="barChartOptions" type="bar"></canvas>
           </div>
-          <div class="bars">
-            
+        </div>
 
-            <div class="bar" [style.--height]="getBookBarHeight('Confirmed')">
-              <span class="bar-value">{{ getBookCount('Confirmed') }}</span>
-              <span class="bar-label">Confirmed</span>
-            </div>
-            <div class="bar" [style.--height]="getBookBarHeight('Pending')">
-              <span class="bar-value">{{ getBookCount('Pending') }}</span>
-              <span class="bar-label">Pending</span>
-            </div>
-            <div class="bar" [style.--height]="getBookBarHeight('Cancelled')">
-              <span class="bar-value">{{ getBookCount('Cancelled') }}</span>
-              <span class="bar-label">Cancelled</span>
-            </div>
-            <div class="bar" [style.--height]="getBookBarHeight('Completed')">
-              <span class="bar-value">{{ getBookCount('Completed') }}</span>
-              <span class="bar-label">Completed</span>
-            </div>
+        <div class="chart-card">
+          <h3>Revenue by Lounge</h3>
+          <div class="bar-chart">
+            <canvas *ngIf="isBrowser" baseChart [data]="barChartData[2]" [options]="barChartOptions" type="bar"></canvas>
           </div>
-        </div>
-        <div class="chart">
-          <div class="chart-header">
-            <h3>Revenue by Lounge</h3>
-          </div>
-        <div class="bars">
-          <div class="bar" *ngFor="let item of revenueByLounge" [style.--height]="getRevenueBarHeight(item.total)" [style.background-color]="getColorForLounge(item.name)">
-            <span class="bar-value">${{ item.total | number:'1.0-0' }}</span>
-            <span class="bar-label">{{ item.name }}</span>
-          </div>
-        </div>
         </div>
       </section>
 
@@ -199,6 +115,55 @@
           </tbody>
         </table>
       </section>
+
+      <!-- Edit Lounge Booking Modal -->
+      <div class="modal-overlay" *ngIf="showUpdateBookingModal" (click)="closeUpdateBookingModal()">
+        <div class="edit-container" (click)="$event.stopPropagation()">
+          <h2>Edit Lounge Booking</h2>
+          <form (ngSubmit)="saveUpdatedBooking()" *ngIf="selectedBooking" class="lounge-form">
+            <div class="form-row">
+              <label>
+                Booking ID
+                <input [value]="selectedBooking.booking_id" readonly />
+              </label>
+              <label>
+                Passenger ID
+                <input [value]="selectedBooking.passenger_id" readonly />
+              </label>
+            </div>
+            <div class="form-row">
+              <label>
+                Lounge Name
+                <input [value]="selectedBooking.lounge_name" readonly />
+              </label>
+              <label>
+                Date & Time (locked)
+                <input [value]="startDateTime" readonly />
+              </label>
+            </div>
+            <div class="form-row">
+              <label>
+                Duration (hours)
+                <input type="number" min="1" [(ngModel)]="formDurationHours" name="duration_hours" required />
+              </label>
+              <label>
+                Guests
+                <input type="number" min="0" [(ngModel)]="formGuests" name="guests" required />
+              </label>
+            </div>
+            <div class="form-row">
+              <label>
+                Capacity Used
+                <input type="number" min="0" [(ngModel)]="formCapacityUsed" name="capacity_used" required />
+              </label>
+            </div>
+            <div class="form-actions">
+              <button type="button" (click)="closeUpdateBookingModal()">Cancel</button>
+              <button type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>

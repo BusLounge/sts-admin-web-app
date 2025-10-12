@@ -77,7 +77,7 @@
 
 .table { background: #fff; border: 1px solid var(--color-border-light); border-radius: 12px; overflow: hidden; margin-right: -20px; }
 .row { display: grid; grid-template-columns: 1.1fr 1.2fr 1.1fr 1.1fr 1.2fr 1.3fr .9fr 1fr 1fr 1fr; gap: 8px; padding: 15px; align-items: center; border-bottom: 1px solid var(--color-border-light); }
-.row.header { background: var(--color-neutral-400); font-weight: 600; color: var(--color-text-primary); }
+.row.header { background: var(--color-table-header); font-weight: 600; color: var(--color-text-primary); }
 .col.actions-col { display: flex; gap: 6px; justify-content: center; }
 
 .action-icon {
@@ -115,20 +115,7 @@
 .btn.danger { background: var(--color-error-500); }
 
 .charts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;margin-bottom: 3rem;margin-right: -20px; }
-.chart-card { background: var(--color-background-primary); border: 1px solid var(--color-border-light); border-radius: 12px; padding: 16px; }
-.bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 250px;margin-left: 70px; }
-.bar { width: 18%; background: var(--color-neutral-200); position: relative; border-radius: 6px; display: flex; align-items: flex-end; justify-content: center;margin-bottom: 31px }
-.bar span { position: absolute; bottom: -30px; font-size: 12px; text-align: center; width: 100%; }
-.bar.paid { background: var(--color-success-400); }
-.bar.pending { background: var(--color-warning-400); }
-.bar.failed { background: var(--color-error-400); }
-.bar.refunded { background: var(--color-info-400); }
-.bar.confirmed { background: var(--color-info-400); }
-.bar.cancelled { background: var(--color-error-400); }
-.bar.completed { background: var(--color-success-400); }
-
-.line-chart { width: 100%; height: 247px; }
-.months { display: flex; justify-content: space-between; margin-top: -40px; font-size: 0.75rem; color: var(--color-text-secondary); }
+.chart-card { background: var(--statbackground); ; border-radius: 12px; padding: 16px;box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); h3{font-weight:600;text-align:start;font-size:16px}}
 
 .row > div:nth-child(6), /* Seats Booked / Seat Numbers */
 .row > div:nth-child(7), /* Total Fare */

@@ -1,21 +1,25 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { BusBookingService } from '../../core/services/bus-booking.service';
 import { BusBooking } from '../../core/models/bus-booking.model';
+import { ChartData, ChartOptions } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, registerables } from 'chart.js';
 
 @Component({
   selector: 'app-bus-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
   templateUrl: './bus-booking.component.html',
   styleUrls: ['./bus-booking.component.scss']
 })
 export class BusBookingComponent implements OnInit {
   sidebarOpen = true;
   currentPage = 'bus-booking';
+  isBrowser!: boolean;
 
   bookings: BusBooking[] = [];
   filtered: BusBooking[] = [];
@@ -34,6 +38,25 @@ export class BusBookingComponent implements OnInit {
   revenueMonths: number[] = [];
   months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+  // Chart.js data
+  barChartData: any[] = [];
+  barChartOptions: any = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 10
+        }
+      }
+    }
+  };
+
   // Modal properties
   showEditModal = false;
   selectedBooking: BusBooking | null = null;
@@ -42,13 +65,19 @@ export class BusBookingComponent implements OnInit {
   // Expose Math to template
   Math = Math;
 
-  constructor(private router: Router, private svc: BusBookingService) {}
+  constructor(private router: Router, private svc: BusBookingService, @Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      Chart.register(...registerables);
+    }
+  }
 
   ngOnInit(): void {
     this.svc.bookings$.subscribe(bs => {
       this.bookings = bs;
       this.applyFilters();
       this.refreshCharts();
+      this.updateChartData();
     });
   }
 
@@ -129,6 +158,7 @@ export class BusBookingComponent implements OnInit {
     console.log('Payment status changed:', booking);
     // Update charts after payment status change
     this.refreshCharts();
+    this.updateChartData();
     // Add your update logic here, e.g., call API to update backend
   }
 
@@ -136,7 +166,40 @@ export class BusBookingComponent implements OnInit {
     console.log('Booking status changed:', booking);
     // Update charts after booking status change
     this.refreshCharts();
+    this.updateChartData();
     // Add your update logic here, e.g., call API to update backend
+  }
+
+  updateChartData() {
+    this.barChartData = [
+      {
+        labels: ['Paid', 'Pending', 'Failed', 'Refunded'],
+        datasets: [{
+          data: [this.payStatusCounts['Paid'] || 0, this.payStatusCounts['Pending'] || 0, this.payStatusCounts['Failed'] || 0, this.payStatusCounts['Refunded'] || 0],
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          borderWidth: 0.25
+        }]
+      },
+      {
+        labels: ['Confirmed', 'Pending', 'Cancelled', 'Completed'],
+        datasets: [{
+          data: [this.bookStatusCounts['Confirmed'] || 0, this.bookStatusCounts['Pending'] || 0, this.bookStatusCounts['Cancelled'] || 0, this.bookStatusCounts['Completed'] || 0],
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          borderWidth: 0.25
+        }]
+      },
+      {
+        labels: this.months,
+        datasets: [{
+          data: this.revenueMonths,
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B', '#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B', '#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B', '#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B', '#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          borderWidth: 0.25
+        }]
+      }
+    ];
   }
 
   // Sorting functionality

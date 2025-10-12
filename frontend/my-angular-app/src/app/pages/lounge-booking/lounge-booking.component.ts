@@ -1,21 +1,25 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { LoungeBookingService } from '../../core/services/lounge-booking.service';
 import { LoungeBooking } from '../../core/models/lounge-booking.model';
+import { ChartData, ChartOptions } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, registerables } from 'chart.js';
 
 @Component({
   selector: 'app-lounge-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
   templateUrl: './lounge-booking.component.html',
   styleUrls: ['./lounge-booking.component.scss']
 })
 export class LoungeBookingComponent implements OnInit {
   sidebarOpen = true;
   currentPage = 'lounge-booking';
+  isBrowser!: boolean;
 
   bookings: LoungeBooking[] = [];
   filtered: LoungeBooking[] = [];
@@ -40,6 +44,25 @@ export class LoungeBookingComponent implements OnInit {
   revenueByLounge: { name: string; total: number }[] = [];
   private colors: string[] = ['#4caf50', '#2196f3', '#ff9800', '#e91e63', '#9c27b0', '#00bcd4', '#8bc34a'];
 
+  // Chart.js data
+  barChartData: any[] = [];
+  barChartOptions: any = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1
+        }
+      }
+    }
+  };
+
   // Remove pie chart helpers
   // getRevenuePieBackground(): string {
   //   if (this.revenueByLounge.length === 0) return 'conic-gradient(#ccc 0% 100%)';
@@ -61,7 +84,12 @@ export class LoungeBookingComponent implements OnInit {
   //   return this.colors[index % this.colors.length];
   // }
 
-  constructor(private router: Router, private svc: LoungeBookingService) {}
+  constructor(private router: Router, private svc: LoungeBookingService, @Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      Chart.register(...registerables);
+    }
+  }
 
   ngOnInit(): void {
     this.svc.bookings$.subscribe(bs => {
@@ -69,6 +97,7 @@ export class LoungeBookingComponent implements OnInit {
       this.applyFilters();
       this.refreshCharts();
       this.refreshRevenueByLounge();
+      this.updateChartData();
     });
   }
 
@@ -166,6 +195,39 @@ export class LoungeBookingComponent implements OnInit {
     this.revenueByLounge = Array.from(acc.entries())
       .map(([name, total]) => ({ name, total }))
       .sort((a, b) => b.total - a.total);
+    this.updateChartData();
+  }
+
+  updateChartData() {
+    this.barChartData = [
+      {
+        labels: ['Paid', 'Pending', 'Failed'],
+        datasets: [{
+          data: [this.payStatusCounts['Paid'] || 0, this.payStatusCounts['Pending'] || 0, this.payStatusCounts['Failed'] || 0],
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533'],
+          borderWidth: 0.25
+        }]
+      },
+      {
+        labels: ['Confirmed', 'Pending', 'Cancelled', 'Completed'],
+        datasets: [{
+          data: [this.bookStatusCounts['Confirmed'] || 0, this.bookStatusCounts['Pending'] || 0, this.bookStatusCounts['Cancelled'] || 0, this.bookStatusCounts['Completed'] || 0],
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#6db9f8ff'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#6db9f8ff'],
+          borderWidth: 0.25
+        }]
+      },
+      {
+        labels: this.revenueByLounge.map(item => item.name),
+        datasets: [{
+          data: this.revenueByLounge.map(item => item.total),
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#6db9f8ff'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#6db9f8ff'],
+          borderWidth: 0.25
+        }]
+      }
+    ];
   }
 
   // Bar chart helpers

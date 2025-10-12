@@ -17,58 +17,29 @@
     <section class="charts">
       <div class="chart-card">
         <h3>Payment Status</h3>
-        <div class="bar-chart">
-          <div class="bar paid" [style.height.px]="(getPayCount('Paid') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 200">
-            <span>Paid ({{ getPayCount('Paid') }})</span>
-          </div>
-          <div class="bar pending" [style.height.px]="(getPayCount('Pending') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 200">
-            <span>Pending ({{ getPayCount('Pending') }})</span>
-          </div>
-          <div class="bar failed" [style.height.px]="(getPayCount('Failed') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 200">
-            <span>Failed ({{ getPayCount('Failed') }})</span>
-          </div>
-          <div class="bar refunded" [style.height.px]="(getPayCount('Refunded') / this.Math.max(1, getPayCount('Paid'), getPayCount('Pending'), getPayCount('Failed'), getPayCount('Refunded'))) * 200">
-            <span>Refunded ({{ getPayCount('Refunded') }})</span>
-          </div>
-        </div>
+        <canvas *ngIf="isBrowser" baseChart
+                [data]="barChartData[0]"
+                [options]="barChartOptions"
+                type="bar">
+        </canvas>
       </div>
 
       <div class="chart-card">
         <h3>Booking Status</h3>
-        <div class="bar-chart">
-          <div class="bar confirmed" [style.height.%]="(getBookCount('Confirmed') / this.Math.max(1, getBookCount('Confirmed'), getBookCount('Pending'), getBookCount('Cancelled'), getBookCount('Completed'))) * 80">
-            <span>Confirmed ({{ getBookCount('Confirmed') }})</span>
-          </div>
-          <div class="bar pending" [style.height.%]="(getBookCount('Pending') / this.Math.max(1, getBookCount('Confirmed'), getBookCount('Pending'), getBookCount('Cancelled'), getBookCount('Completed'))) * 80">
-            <span>Pending ({{ getBookCount('Pending') }})</span>
-          </div>
-          <div class="bar cancelled" [style.height.%]="(getBookCount('Cancelled') / this.Math.max(1, getBookCount('Confirmed'), getBookCount('Pending'), getBookCount('Cancelled'), getBookCount('Completed'))) * 80">
-            <span>Cancelled ({{ getBookCount('Cancelled') }})</span>
-          </div>
-          <div class="bar completed" [style.height.%]="(getBookCount('Completed') / this.Math.max(1, getBookCount('Confirmed'), getBookCount('Pending'), getBookCount('Cancelled'), getBookCount('Completed'))) * 80">
-            <span>Completed ({{ getBookCount('Completed') }})</span>
-          </div>
-        </div>
+        <canvas *ngIf="isBrowser" baseChart
+                [data]="barChartData[1]"
+                [options]="barChartOptions"
+                type="bar">
+        </canvas>
       </div>
 
       <div class="chart-card">
         <h3>Monthly Paid Revenue</h3>
-        <svg viewBox="0 0 640 260" class="line-chart">
-          <polyline
-            fill="none"
-            stroke="#3b82f6"
-            stroke-width="3"
-            [attr.points]="getRevenuePoints()"
-          ></polyline>
-          <!-- Y-axis -->
-          <line x1="40" y1="60" x2="40" y2="260" stroke="#ccc" stroke-width="1"></line>
-          <text *ngFor="let label of getYAxisLabels()" x="35" [attr.y]="label.y + 4" text-anchor="end" font-size="17" fill="#666">{{ label.value }}</text>
-          <!-- Grid lines -->
-          <line *ngFor="let label of getYAxisLabels()" x1="40" [attr.y1]="label.y" x2="600" [attr.y2]="label.y" stroke="#f0f0f0" stroke-width="1"></line>
-        </svg>
-        <div class="months">
-          <span *ngFor="let m of months">{{ m }}</span>
-        </div>
+        <canvas *ngIf="isBrowser" baseChart
+                [data]="barChartData[2]"
+                [options]="barChartOptions"
+                type="bar">
+        </canvas>
       </div>
     </section>
 
