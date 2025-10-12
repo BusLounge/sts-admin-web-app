@@ -188,24 +188,43 @@
 
       .bar-chart {
         display: flex;
+        justify-content: center;
         align-items: end;
-        gap: 0.5rem;
-        height: 170px;
-        margin-left: 200px;
+        gap: 1rem;
+        height: 200px;
 
-        .bar {
-          flex: 0 0 62px;
-          height: var(--height);
-          background: linear-gradient(to top, var(  --color-bargraph), var(--color-bargraphgradient));
-          border-radius: 4px 4px 0 0;
+        .bar-container {
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: space-between;
-          padding: 0.5rem 0;
-          margin-bottom: 30px;
+          gap: 0.5rem;
 
-          .bar-label { color: var(--color-text-primary); font-size: 1rem; font-weight: 600; }
+          .bar {
+            width: 60px;
+            height: var(--height);
+            background: linear-gradient(to top, var(--color-bargraph), var(--color-bargraphgradient));
+            border-radius: 4px 4px 0 0;
+            position: relative;
+          }
+
+          .bar-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+
+            .bar-value {
+              color: var(--color-text-primary);
+              font-size: 1.1rem;
+              font-weight: 700;
+            }
+
+            .bar-label {
+              color: var(--color-text-primary);
+              font-size: 0.9rem;
+              font-weight: 600;
+            }
+          }
         }
       }
     }

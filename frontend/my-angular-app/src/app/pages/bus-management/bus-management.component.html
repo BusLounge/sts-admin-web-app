@@ -83,9 +83,12 @@
         <p>Number of buses per type</p>
       </div>
       <div class="bar-chart">
-        <div class="bar" *ngFor="let t of ['AC','Non-AC','Luxury']" [style.--height]="getBusCountByTypePercentage(t)">
-          <span class="bar-value">{{ getBusCountByType(t) }}</span>
-          <span class="bar-label">{{ t }}</span>
+        <div class="bar-container" *ngFor="let t of ['AC','Non-AC','Luxury']">
+          <div class="bar" [style.--height]="getBusCountByTypePercentage(t) + '%'"></div>
+          <div class="bar-info">
+            <span class="bar-value">{{ getBusCountByType(t) }}</span>
+            <span class="bar-label">{{ t }}</span>
+          </div>
         </div>
       </div>
     </div>
