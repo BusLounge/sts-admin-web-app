@@ -14,21 +14,43 @@
     </div>
   
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-title">Total Drivers</div>
-        <div class="stat-value">{{ getTotalDrivers() }}</div>
+      <div class="stat-card total-drivers">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getTotalDrivers() }}</div>
+          <div class="stat-title">Total Drivers</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-title">Active</div>
-        <div class="stat-value">{{ getActiveCount() }}</div>
+      <div class="stat-card active-drivers">
+        <div class="stat-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22,4 12,14.01 9,11.01"></polyline></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getActiveCount() }}</div>
+          <div class="stat-title">Active</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-title">Inactive</div>
-        <div class="stat-value">{{ getInactiveCount() }}</div>
+      <div class="stat-card inactive-drivers">
+        <div class="stat-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pause-circle"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getInactiveCount() }}</div>
+          <div class="stat-title">Inactive</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-title">Avg Experience</div>
-        <div class="stat-value">{{ getAverageExperience() }}yrs</div>
+      <div class="stat-card average-experience">
+        <div class="stat-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"></polyline></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getAverageExperience() }}</div>
+          <div class="stat-title">Avg Experience (yrs)</div>
+        </div>
       </div>
     </div>
   
@@ -39,13 +61,18 @@
           <p>Distribution of driver activity</p>
         </div>
         <div class="pie-chart">
-          <div class="pie-slice active" [style.--percentage]="getActivePercentage()">
-            <span class="slice-label">Active</span>
-            <span class="slice-value">{{ getActiveCount() }}</span>
-          </div>
-          <div class="pie-slice inactive" [style.--percentage]="getInactivePercentage()">
-            <span class="slice-label">Inactive</span>
-            <span class="slice-value">{{ getInactiveCount() }}</span>
+          <div class="pie-container">
+            <div class="pie-slice" [style.--percentage]="getActivePercentage()"></div>
+            <div class="pie-labels">
+              <div class="label active">
+                <span class="color-box active"></span>
+                <span>Active ({{ getActiveCount() }})</span>
+              </div>
+              <div class="label inactive">
+                <span class="color-box inactive"></span>
+                <span>Inactive ({{ getInactiveCount() }})</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
