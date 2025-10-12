@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BusService } from '../../core/services/bus.service';
@@ -13,7 +15,7 @@ import { Bus } from '../../core/models/bus.model';
 @Component({
   selector: 'app-bus-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
   templateUrl: './bus-management.component.html',
   styleUrls: ['./bus-management.component.scss']
 })
@@ -42,12 +44,25 @@ export class BusManagementComponent implements OnInit {
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  constructor(private router: Router, private busService: BusService) {}
+  // Chart properties
+  barChartData: any;
+  barChartOptions: any;
+  isBrowser: boolean;
+
+  constructor(private router: Router, private busService: BusService, @Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
+    if (this.isBrowser) {
+      Chart.register(...registerables);
+    }
     this.busService.buses$.subscribe(buses => {
       this.buses = buses;
       this.applyFilters();
+      if (this.isBrowser) {
+        this.updateBarChart();
+      }
     });
   }
 
@@ -191,6 +206,38 @@ export class BusManagementComponent implements OnInit {
   getBusPieBackground(): string {
     const active = this.getActivePercentage();
     return `conic-gradient(#0046FF 0% ${active}%, #FAA533 ${active}% 100%)`;
+  }
+
+  updateBarChart(): void {
+    this.barChartData = {
+      labels: ['AC', 'Non-AC', 'Luxury'],
+      datasets: [{
+        data: [
+          this.getBusCountByType('AC'),
+          this.getBusCountByType('Non-AC'),
+          this.getBusCountByType('Luxury')
+        ],
+        backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533'],
+        borderColor: ['#0046FF', '#a3a3a3', '#FAA533'],
+        borderWidth: 0.25
+      }]
+    };
+    this.barChartOptions = {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
+    };
   }
 
   // Search functionality
