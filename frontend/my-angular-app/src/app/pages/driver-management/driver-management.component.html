@@ -83,10 +83,7 @@
           <p>Drivers by experience level</p>
         </div>
         <div class="bar-chart">
-          <div class="bar" *ngFor="let level of experienceLevels" [style.--height]="getExperienceLevelPercentage(level)">
-            <span class="bar-value">{{ getExperienceLevelCount(level) }}</span>
-            <span class="bar-label">{{ level }}</span>
-          </div>
+          <canvas *ngIf="isBrowser" baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'"></canvas>
         </div>
       </div>
     </div>

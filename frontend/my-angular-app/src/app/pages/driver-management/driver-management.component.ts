@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { DriverService } from '../../core/services/driver.service';
@@ -11,7 +13,7 @@ import { Driver } from '../../core/models/driver.model';
 @Component({
   selector: 'app-driver-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
   templateUrl: './driver-management.component.html',
   styleUrls: ['./driver-management.component.scss']
 })
@@ -44,15 +46,28 @@ export class DriverManagementComponent implements OnInit {
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  // Chart properties
+  barChartData: any;
+  barChartOptions: any;
+  isBrowser: boolean;
+
   navigateTo(page: string) { this.router.navigate([`/${page}`]); }
   logout() { this.router.navigate(['/']); }
 
-  constructor(private router: Router, private driverService: DriverService) {}
+  constructor(private router: Router, private driverService: DriverService, @Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
+    if (this.isBrowser) {
+      Chart.register(...registerables);
+    }
     this.driverService.drivers$.subscribe(drivers => {
       this.drivers = drivers;
       this.filteredDrivers = drivers;
+      if (this.isBrowser) {
+        this.updateBarChart();
+      }
       // Apply current sorting to initial data
       if (this.sortColumn) {
         this.applySorting();
@@ -90,7 +105,10 @@ export class DriverManagementComponent implements OnInit {
         const updatedDriver = { ...this.editingDriver, ...this.newDriver };
         this.driverService.updateDriver(updatedDriver);
       } else {
-        this.driverService.addDriver(this.newDriver as Driver);
+        // Generate a new driver ID
+        const newDriverId = this.generateDriverId();
+        const driverToAdd: Driver = { ...this.newDriver, driver_id: newDriverId };
+        this.driverService.addDriver(driverToAdd);
       }
       this.closeAddDriverModal();
     } else {
@@ -306,6 +324,50 @@ export class DriverManagementComponent implements OnInit {
 
   formatPhone(phone: string): string {
     return `(${phone})`;
+  }
+
+  private generateDriverId(): string {
+    const existingIds = this.drivers.map(d => d.driver_id);
+    let counter = 1;
+    let newId = `DRV${counter.toString().padStart(3, '0')}`;
+    while (existingIds.includes(newId)) {
+      counter++;
+      newId = `DRV${counter.toString().padStart(3, '0')}`;
+    }
+    return newId;
+  }
+
+  updateBarChart(): void {
+    this.barChartData = {
+      labels: ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'],
+      datasets: [{
+        data: [
+          this.getExperienceLevelCount('0-2yrs'),
+          this.getExperienceLevelCount('3-5yrs'),
+          this.getExperienceLevelCount('6-10yrs'),
+          this.getExperienceLevelCount('10+yrs')
+        ],
+        backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+        borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+        borderWidth: 0.25
+      }]
+    };
+    this.barChartOptions = {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
+    };
   }
 }
 
