@@ -16,32 +16,22 @@
       <section class="charts">
         <div class="chart-card">
           <h3>Lounge Capacity and Pricing Comparison</h3>
-          <div class="bars">
-            <div class="bar" *ngFor="let l of getCapacityPriceData()" [style.--height]="(l.capacity / 100) * 100">
-              <span class="bar-value">{{ l.capacity }}</span>
-              <span class="bar-label">{{ l.name }}</span>
-              <span class="price-overlay">${{ l.price_per_hour }}/hr</span>
-            </div>
+          <div class="bar-chart">
+            <canvas *ngIf="isBrowser" baseChart [data]="barChartData[0]" [options]="barChartOptions" type="bar"></canvas>
           </div>
         </div>
 
         <div class="chart-card">
           <h3>Food, Drinks, and Shower Availability</h3>
-          <div class="bars">
-            <div class="bar" *ngFor="let f of getFoodDrinksShowerData()" [style.--height]="(f.count / (totalLounges() || 1)) * 100">
-              <span class="bar-value">{{ f.count }}</span>
-              <span class="bar-label">{{ f.label }}</span>
-            </div>
+          <div class="bar-chart">
+            <canvas *ngIf="isBrowser" baseChart [data]="barChartData[1]" [options]="barChartOptions" type="bar"></canvas>
           </div>
         </div>
 
         <div class="chart-card">
           <h3>Amenities Availability Across Lounges</h3>
-          <div class="bars">
-            <div class="bar" *ngFor="let a of amenitiesCounts" [style.--height]="(a.count / (totalLounges() || 1)) * 100">
-              <span class="bar-value">{{ a.count }}</span>
-              <span class="bar-label">{{ a.label }}</span>
-            </div>
+          <div class="bar-chart">
+            <canvas *ngIf="isBrowser" baseChart [data]="barChartData[2]" [options]="barChartOptions" type="bar"></canvas>
           </div>
         </div>
       </section>

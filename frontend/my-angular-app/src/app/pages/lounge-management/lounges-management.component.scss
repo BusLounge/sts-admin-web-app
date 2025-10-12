@@ -118,7 +118,7 @@ app-sidebar {
 .search-group input[type="text"]:focus,
 .search-group input[type="number"]:focus {
   outline: none !important;
-  border-color: var(--color-primary-500) !important;
+  border-color: var(--active) !important;
   box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1) !important;
   color: var(--color-text-primary) !important;
 }
@@ -128,7 +128,7 @@ app-sidebar {
 }
 
 .search-group input:focus {
-  border-color: var(--color-toolbar-brdborder) !important;
+  border-color: var(--active) ;
   color: var(--color-text-muted) !important;
   outline: none !important;
   box-shadow: 0 0 5px var(--color-toolbar-brdborder) !important;
@@ -160,18 +160,19 @@ app-sidebar {
 .table {
   width: 100%;
   margin: 0rem;
-  background: var(--color-neutral-200);
-  border: 1px  solid var(--color-neutral-300);
+  background: var(--statbackground);
   border-radius: 12px;
   overflow: hidden;
   display: table;
   max-height: 400px;
+  
   ;
 }
 
 .row {
   display: table-row;
   width: 100%;
+  
 }
 
 .row.header {
@@ -182,7 +183,7 @@ app-sidebar {
 
 .row.header .col {
   display: table-cell;
-  background: var(--color-neutral-400);
+  background: var(--color-table-header);
   color: #334155;
   font-weight: 700;
   padding: 0.75rem;
@@ -196,21 +197,15 @@ app-sidebar {
 .col {
   display: table-cell;
   padding: 0.75rem;
- 
-  vertical-align: middle;
-}
+  border-bottom: 1px solid var(--color-neutral-300);}
 
 .row:nth-child(even) .col {
   background: rgba(15, 23, 42, 0.015);
 }
 
-.row:hover .col {
-  background: rgba(15, 23, 42, 0.03);
-}
 
-.row.header:hover .col {
-  background: var(--color-neutral-400);
-}
+
+
 
 .row.header .col.num {
   text-align: center;
@@ -257,20 +252,31 @@ app-sidebar {
 }
 
 .chart-card {
-  background: var(--color-background-primary);
-  border: 2px solid var(--color-neutral-300);
+  background: var(--statbackground);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   padding: 10px;
   width: 100%;
-  height: 350px;
+  height: 300px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .chart-card h3 {
-  text-align: center;
+  text-align:start;
   margin: 10px 0;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom:-10px;
+}
+
+.bar-chart {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .bars {

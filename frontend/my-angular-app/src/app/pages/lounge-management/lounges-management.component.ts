@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, registerables } from 'chart.js';
 import { Lounge } from '../../core/models/lounge.model';
 import { LoungeService } from '../../core/services/lounge.service';
 
 @Component({
   selector: 'app-lounges-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
   templateUrl: './lounges-management.component.html',
   styleUrls: ['./lounges-management.component.scss']
 })
@@ -57,14 +59,27 @@ export class LoungesManagementComponent implements OnInit {
   imagePreviews: string[] = [];
   private selectedFiles: File[] = [];
 
-  constructor(private router: Router, private loungeService: LoungeService) {}
+  // Chart properties
+  barChartData: any[] = [];
+  barChartOptions: any;
+  isBrowser: boolean;
+
+  constructor(private router: Router, private loungeService: LoungeService, @Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     this.currentPage = 'lounges-management'; // Set currentPage to match sidebar item key
+    if (this.isBrowser) {
+      Chart.register(...registerables);
+    }
     this.loungeService.lounges$.subscribe(ls => {
       this.lounges = ls;
       this.filteredLounges = ls;
       this.refreshCharts();
+      if (this.isBrowser) {
+        this.updateBarCharts();
+      }
     });
   }
 
@@ -236,6 +251,54 @@ export class LoungesManagementComponent implements OnInit {
     const sCounts = this.loungeService.getServicesCounts();
     this.amenitiesCounts = Object.entries(aCounts).map(([label, count]) => ({ label, count }));
     this.servicesCounts = Object.entries(sCounts).map(([label, count]) => ({ label, count }));
+  }
+
+  updateBarCharts(): void {
+    this.barChartData = [
+      {
+        labels: this.getCapacityPriceData().map(d => d.name),
+        datasets: [{
+          data: this.getCapacityPriceData().map(d => d.capacity),
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          borderWidth: 0.25
+        }]
+      },
+      {
+        labels: this.getFoodDrinksShowerData().map(d => d.label),
+        datasets: [{
+          data: this.getFoodDrinksShowerData().map(d => d.count),
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533'],
+          borderWidth: 0.25
+        }]
+      },
+      {
+        labels: this.getFixedAmenitiesData().map(d => d.label),
+        datasets: [{
+          data: this.getFixedAmenitiesData().map(d => d.count),
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#6db9f8ff', '#fad577'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#6db9f8ff', '#fad577'],
+          borderWidth: 0.25
+        }]
+      }
+    ];
+    this.barChartOptions = {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
+    };
   }
 
   getAmenitiesServicesData() {
