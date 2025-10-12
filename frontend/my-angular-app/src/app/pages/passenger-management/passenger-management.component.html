@@ -31,7 +31,7 @@
           <svg [attr.viewBox]="'0 0 600 220'" class="line-chart"
                preserveAspectRatio="none">
             <polyline [attr.points]="getPoints()" fill="none"
-                      stroke="var(--color-bargraph)" stroke-width="3"/>
+                      stroke="var(--active)" stroke-width="3"/>
             <g *ngFor="let c of monthlyCounts; index as i">
               <circle [attr.cx]="(30 + i*((600-60)/(months.length-1)))"
                       [attr.cy]="(220-30 - (c/getMaxCount())*(220-60))"

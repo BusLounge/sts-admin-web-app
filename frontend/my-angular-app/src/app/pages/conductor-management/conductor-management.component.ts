@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import Chart from 'chart.js/auto';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ConductorService } from '../../core/services/conductor.service';
@@ -15,7 +16,7 @@ import { Conductor } from '../../core/models/conductor.model';
   templateUrl: './conductor-management.component.html',
   styleUrls: ['./conductor-management.component.scss']
 })
-export class ConductorManagementComponent implements OnInit {
+export class ConductorManagementComponent implements OnInit, AfterViewInit {
   conductors: Conductor[] = [];
   filteredConductors: Conductor[] = [];
   searchTerm: string = '';
@@ -43,12 +44,28 @@ export class ConductorManagementComponent implements OnInit {
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  constructor(private router: Router, private conductorService: ConductorService) {}
+  // Chart properties
+  barChartData: any;
+  barChartOptions: any;
+  isBrowser: boolean;
+  @ViewChild('barChartCanvas', { static: false }) barChartCanvas!: ElementRef<HTMLCanvasElement>;
+  chart: Chart | null = null;
+
+  constructor(private router: Router, private conductorService: ConductorService, @Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     this.conductorService.conductors$.subscribe(conductors => {
       this.conductors = conductors;
-      this.applyFilters();
+      this.filteredConductors = conductors;
+      if (this.isBrowser) {
+        this.updateBarChart();
+      }
+      // Apply current sorting to initial data
+      if (this.sortColumn) {
+        this.applySorting();
+      }
     });
   }
 
@@ -302,6 +319,65 @@ export class ConductorManagementComponent implements OnInit {
     const onLeaveEnd = activeEnd + onLeavePercent;
     const resignedEnd = onLeaveEnd + resignedPercent;
 
-    return `conic-gradient(var(--color-primary-500) 0deg ${activeEnd}deg, var(--color-warning-500) ${activeEnd}deg ${onLeaveEnd}deg, var(--color-danger-500) ${onLeaveEnd}deg ${resignedEnd}deg)`;
+    return `conic-gradient(var(--active) 0deg ${activeEnd}deg, var(--inactive) ${activeEnd}deg ${onLeaveEnd}deg, var(--gray) ${onLeaveEnd}deg ${resignedEnd}deg)`;
+  }
+
+  ngAfterViewInit(): void {
+    if (this.isBrowser) {
+      this.createChart();
+    }
+  }
+
+  createChart(): void {
+    if (this.barChartCanvas && this.barChartCanvas.nativeElement) {
+      const ctx = this.barChartCanvas.nativeElement.getContext('2d');
+      if (ctx) {
+        this.chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'],
+            datasets: [{
+              data: [
+                this.getExperienceLevelCount('0-2yrs'),
+                this.getExperienceLevelCount('3-5yrs'),
+                this.getExperienceLevelCount('6-10yrs'),
+                this.getExperienceLevelCount('10+yrs')
+              ],
+              backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+              borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+              borderWidth: 0.25
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+  }
+
+  updateBarChart(): void {
+    if (this.chart) {
+      this.chart.data.datasets[0].data = [
+        this.getExperienceLevelCount('0-2yrs'),
+        this.getExperienceLevelCount('3-5yrs'),
+        this.getExperienceLevelCount('6-10yrs'),
+        this.getExperienceLevelCount('10+yrs')
+      ];
+      this.chart.update();
+    }
   }
 }
