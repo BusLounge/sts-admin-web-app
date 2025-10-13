@@ -270,6 +270,11 @@ export class DriverManagementComponent implements OnInit {
     this.applyFilters();
   }
 
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
   goBusManagement(): void {
     this.router.navigate(['/bus-management']);
   }
