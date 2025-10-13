@@ -218,32 +218,39 @@
       align-items: center;
       margin-bottom: 1rem;
       gap: 1rem;
-  
+
+      .left-section {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        flex: 1;
+      }
+
       .search-container {
         position: relative;
         flex: 1;
         max-width: 500px;
-  
+
         .search-input {
-        width: 100%;
-        padding: 0.4rem 2.5rem 0.4rem 1rem;
-        border: 2px solid var(--color-border-light);
-        border-radius: 8px;
-        font-size: 0.875rem;
-        transition: all 0.2s;
-        background: var(--statbackground);
+          width: 100%;
+          padding: 0.4rem 2.5rem 0.4rem 1rem;
+          border: 2px solid var(--color-border-light);
+          border-radius: 8px;
+          font-size: 0.875rem;
+          transition: all 0.2s;
+          background: var(--statbackground);
 
-        &:focus {
-          outline: none;
-          border-color: var(--searchborder);
-          box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
+          &:focus {
+            outline: none;
+            border-color: var(--active);
+            box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
+          }
+
+          &::placeholder {
+            color: var(--gray);
+          }
         }
 
-        &::placeholder {
-          color: var(--gray);
-        }
-      }
-  
         .clear-search-btn {
           position: absolute;
           right: 0.75rem;
@@ -262,25 +269,67 @@
           font-size: 16px;
           line-height: 1;
           transition: background-color 0.2s;
-  
+
           &:hover {
             background: #4b5563;
           }
         }
       }
-  
-     .export-btn {
-      background: var(--color-buttns-light);
-      color: var(--color-text-inverse);
-      border: none;
-      border-radius: 8px;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      transition: 0.2s;
-      white-space: nowrap;
 
-      &:hover { background: var(--secondary-color); }
-     }
+      .filter-container {
+        position: relative;
+      }
+
+      .filter-select {
+        padding: 0.4rem 1rem;
+        border: 2px solid var(--color-border-light);
+        border-radius: 8px;
+        background: var(--statbackground);
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--color-text-secondary);
+
+        &:focus {
+          outline: none;
+          border-color: var(--active);
+          box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
+        }
+      }
+
+      .toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .clear-filters-btn {
+        background: #6b7280;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+
+        &:hover {
+          background: #4b5563;
+        }
+      }
+
+      .export-btn {
+        background: var(--color-buttns-light);
+        color: var(--color-text-inverse);
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+
+        &:hover { background: var(--secondary-color); }
+      }
     }
   
     .driver-table {

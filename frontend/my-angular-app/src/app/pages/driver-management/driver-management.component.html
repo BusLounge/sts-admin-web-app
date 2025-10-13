@@ -89,17 +89,31 @@
     </div>
   
     <div class="toolbar">
-      <div class="search-container">
-        <input 
-          type="text" 
-          class="search-input" 
-          placeholder="Search drivers by name, email, phone, license, ID, or experience..." 
-          [(ngModel)]="searchTerm" 
-          (input)="onSearchChange()"
-        />
-        <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+      <div class="left-section">
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search drivers by name, email, phone, license, ID, or experience..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          />
+          <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+        </div>
+
+        <div class="filter-container">
+          <select class="filter-select" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
+            <option value="All">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
       </div>
-      <button class="export-btn" (click)="exportDriversPdf()">Export Drivers History (PDF)</button>
+
+      <div class="toolbar-actions">
+        <button class="clear-filters-btn" (click)="clearFilters()" *ngIf="statusFilter !== 'All' || searchTerm">Clear Filters</button>
+        <button class="export-btn" (click)="exportDriversPdf()">Export Drivers History (PDF)</button>
+      </div>
     </div>
   
     <table class="driver-table">

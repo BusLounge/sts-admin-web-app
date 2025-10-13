@@ -21,6 +21,7 @@ export class DriverManagementComponent implements OnInit {
   drivers: Driver[] = [];
   filteredDrivers: Driver[] = [];
   searchTerm: string = '';
+  statusFilter: 'All' | 'Active' | 'Inactive' = 'All';
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
   currentPage: string = 'driver-management';
   sidebarOpen: boolean = true;
@@ -223,12 +224,19 @@ export class DriverManagementComponent implements OnInit {
     return (this.getExperienceLevelCount(level) / total) * 100;
   }
 
-  // Search functionality
-  onSearchChange(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredDrivers = this.drivers;
-    } else {
-      this.filteredDrivers = this.drivers.filter(driver =>
+  // Search and filter functionality
+  applyFilters(): void {
+    let filtered = this.drivers;
+
+    // Apply status filter
+    if (this.statusFilter !== 'All') {
+      const isActive = this.statusFilter === 'Active';
+      filtered = filtered.filter(driver => driver.is_active === isActive);
+    }
+
+    // Apply search term
+    if (this.searchTerm.trim()) {
+      filtered = filtered.filter(driver =>
         driver.first_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         driver.last_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         driver.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -239,19 +247,27 @@ export class DriverManagementComponent implements OnInit {
         driver.assigned_bus_id?.toString().includes(this.searchTerm)
       );
     }
+
+    this.filteredDrivers = filtered;
+
     // Apply current sorting to filtered results
     if (this.sortColumn) {
       this.applySorting();
     }
   }
 
-  clearSearch(): void {
+  onSearchChange(): void {
+    this.applyFilters();
+  }
+
+  onStatusFilterChange(): void {
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
     this.searchTerm = '';
-    this.filteredDrivers = this.drivers;
-    // Apply current sorting after clearing search
-    if (this.sortColumn) {
-      this.applySorting();
-    }
+    this.statusFilter = 'All';
+    this.applyFilters();
   }
 
   goBusManagement(): void {

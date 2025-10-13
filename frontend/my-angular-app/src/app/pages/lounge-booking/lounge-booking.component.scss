@@ -136,7 +136,7 @@ app-sidebar {
     box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
   }
 }
-.filters select { padding: 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; color: var(--gray); background: var(--statbackground); }
+.filters select { padding: 0.4rem 1rem; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; color: var(--color-text-secondary); background: var(--statbackground); }
 .filters .btn { padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #0b0026;color:aliceblue; }
 
 .search-container { position: relative; max-width: 500px; flex: 1; }
