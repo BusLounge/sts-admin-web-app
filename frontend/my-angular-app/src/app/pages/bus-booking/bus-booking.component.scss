@@ -1,13 +1,33 @@
 .management-container {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 24px;
-  background: var(--bg-primary);
   min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
 }
-.main-content { width: 100%; max-width: 1200px;margin-left: 72px; }
-.main-content.sidebar-open { margin-left: 240px; }
+
+app-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 260px;
+  z-index: 1000;
+}
+
+.main-content {
+  margin-left: 72px;
+  flex: 1;
+  max-width: calc(100vw - 72px);
+  width: 100%;
+  overflow-x: hidden;
+  padding: 1rem;
+  background: var(--bg-primary);
+}
+
+.main-content.sidebar-open {
+  margin-left: 260px;
+  max-width: calc(100vw - 260px);
+}
 
 .top-bar {
   display: flex;
@@ -77,7 +97,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
-  margin-top: -12px;
+  margin-top: -10px;
 
   h2 {
     margin: 0;
@@ -156,8 +176,31 @@
 .btn.small { padding: 6px 8px; font-size: 12px; }
 .btn.danger { background: var(--color-error-500); }
 
-.charts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;margin-bottom: 3rem;margin-right: -20px; }
-.chart-card { background: var(--statbackground); ; border-radius: 12px; padding: 16px;box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); h3{font-weight:600;text-align:start;font-size:16px}}
+.charts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+  margin-bottom: 3rem;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.chart-card {
+  background: var(--statbackground);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  min-width: 0;
+  
+  h3 {
+    font-weight: 600;
+    text-align: start;
+    font-size: 16px;
+  }
+}
 
 .row > div:nth-child(6), /* Seats Booked / Seat Numbers */
 .row > div:nth-child(7), /* Total Fare */
