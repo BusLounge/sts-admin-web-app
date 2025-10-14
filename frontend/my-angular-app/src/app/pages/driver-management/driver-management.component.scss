@@ -14,8 +14,31 @@
     align-items: center;
     margin-bottom: 1.5rem;
 
-    .quick-nav {
-      flex: 1;
+   .quick-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+
+      .qn-root {
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: color 0.2s;
+
+        &:hover {
+          color: var(--color-primary-700);
+        }
+      }
+
+      .qn-sep {
+        color: var(--color-text-muted);
+      }
+
+      .qn-current {
+        color: var(--color-text-primary);
+        font-weight: 500;
+      }
     }
 
     .top-icons {

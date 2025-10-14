@@ -82,7 +82,7 @@ app-sidebar {
         transition: background-color 0.2s;
 
         &:hover {
-          background: var(--color-neutral-100);
+          background-color: rgba(0, 70, 255, 0.1);
         }
 
         svg {

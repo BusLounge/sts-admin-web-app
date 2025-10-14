@@ -22,7 +22,7 @@
       color: var(--color-text-secondary);
 
       .qn-root {
-        color: var(--active);
+        color: var(--color-text-muted);
         cursor: pointer;
         transition: color 0.2s;
 
@@ -55,7 +55,7 @@
         transition: background-color 0.2s;
 
         &:hover {
-          background: var(--color-neutral-100);
+          background-color: rgba(0, 70, 255, 0.1);
         }
 
         svg {
