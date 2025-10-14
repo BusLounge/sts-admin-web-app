@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { PassengerService } from '../../core/services/passenger.service';
 import { Passenger } from '../../core/models/passenger.model';
 import jsPDF from 'jspdf';
@@ -11,7 +12,7 @@ import autoTable from 'jspdf-autotable';
 @Component({
   selector: 'app-passenger-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent,NotificationPanelComponent],
   templateUrl: './passenger-management.component.html',
   styleUrls: ['./passenger-management.component.scss']
 })
@@ -21,7 +22,7 @@ export class PassengerManagementComponent implements OnInit {
   searchTerm = '';
   currentPage: string = 'passenger-management';  // default page
   sidebarOpen: boolean = true;      // controls sidebar visibility
-
+  showNotificationPanel = false;
   // Sorting properties
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -105,6 +106,15 @@ export class PassengerManagementComponent implements OnInit {
     );
   }
 
+  
+  toggleNotificationPanel() {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
+
+  closeNotificationPanel() {
+    this.showNotificationPanel = false;
+  }
+  
   clearSearch(): void { this.searchTerm = ''; this.filteredPassengers = this.passengers; }
 
   refreshChart(): void { this.monthlyCounts = this.passengerService.getMonthlyCounts(new Date().getFullYear()); }

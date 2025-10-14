@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,13 +16,20 @@ export class SidebarComponent {
   @Output() logout = new EventEmitter<void>();
 
   isDarkMode = false;
+  private isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit() {
-    // Check if dark mode is saved in localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      this.isDarkMode = true;
-      document.documentElement.setAttribute('data-theme', 'dark');
+    // Check if dark mode is saved in localStorage (only in browser)
+    if (this.isBrowser) {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        this.isDarkMode = true;
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
     }
   }
 
@@ -31,6 +38,8 @@ export class SidebarComponent {
   }
 
   toggleDarkMode(): void {
+    if (!this.isBrowser) return;
+    
     this.isDarkMode = !this.isDarkMode;
     
     if (this.isDarkMode) {
