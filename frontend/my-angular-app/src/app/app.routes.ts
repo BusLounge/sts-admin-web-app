@@ -20,6 +20,7 @@ import { BusBookingComponent } from './pages/bus-booking/bus-booking.component';
 import { ConductorManagementComponent } from './pages/conductor-management/conductor-management.component';
 import { AddConductorComponent } from './pages/conductor-management/add-conductor.component';
 import { EditConductorComponent } from './pages/conductor-management/edit-conductor.component';
+import { NotificationDetailsComponent } from './pages/notification-details/notification-details.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -45,5 +46,6 @@ export const routes: Routes = [
   { path: 'lounge-booking', component: LoungeBookingComponent },
   { path: 'lounge-booking/edit/:id', component: EditLoungeBookingComponent },
   { path: 'bus-booking', component: BusBookingComponent },
+  { path: 'notification-details', component: NotificationDetailsComponent },
   { path: '**', redirectTo: '' }
 ];

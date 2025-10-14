@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 export interface Notification {
   id: number;
@@ -19,6 +20,8 @@ export interface Notification {
 })
 export class NotificationPanelComponent {
   @Output() close = new EventEmitter<void>();
+
+  constructor(private router: Router) {}
 
   notifications: Notification[] = [
     {
@@ -76,8 +79,7 @@ export class NotificationPanelComponent {
   }
 
   viewFullNotification(notification: Notification): void {
-    // You can implement navigation or modal opening here
-    console.log('View full notification:', notification);
-    alert(`Full Notification:\n\n${notification.title}\n\n${notification.message}`);
+    this.router.navigate(['/notification-details'], { queryParams: { id: notification.id } });
+    this.close.emit();
   }
 }
