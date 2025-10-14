@@ -15,8 +15,31 @@ export class SidebarComponent {
   @Output() navigate = new EventEmitter<string>();
   @Output() logout = new EventEmitter<void>();
 
+  isDarkMode = false;
+
+  ngOnInit() {
+    // Check if dark mode is saved in localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      this.isDarkMode = true;
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }
+
   setActivePage(page: string): void {
     this.currentPage = page;
+  }
+
+  toggleDarkMode(): void {
+    this.isDarkMode = !this.isDarkMode;
+    
+    if (this.isDarkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    }
   }
 }
 

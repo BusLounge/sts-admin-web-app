@@ -82,3 +82,60 @@
   --sidebar-active: #0046FF;
 }
 
+// Dark mode
+[data-theme="dark"] {
+  --primary-color: #8BA3D7;
+  --secondary-color: #A8C5D1;
+  --tertiary-color: #C2E5DD;
+  --background-color: #1a1a1a;
+  --text-primary: #e5e5e5;
+  --text-secondary: #b0b0b0;
+  --border-color: #2d2d2d;
+  --shadow-color: rgba(255, 255, 255, 0.1);
+
+  --color-primary-500: #8BA3D7;
+  --color-secondary-500: #A8C5D1;
+  --color-tertiary-500: #C2E5DD;
+
+  --color-neutral-100: #2d2d2d;
+  --color-neutral-200: #3d3d3d;
+  --color-neutral-300: #4d4d4d;
+  --color-neutral-400: #6d6d6d;
+  --color-neutral-500: #8d8d8d;
+  --color-neutral-600: #b0b0b0;
+  --color-neutral-700: #d0d0d0;
+  --color-neutral-800: #e5e5e5;
+  --color-neutral-900: #f5f5f5;
+
+  --color-text-muted: #7BA3FF;
+  --color-text-inverse: #1a1a1a;
+
+  --color-background-primary: #1e1e1e;
+  --color-background-dark-primary: #2d2d2d;
+  --color-background-dark-secondary: #252525;
+  --color-border-light: #3d3d3d;
+  --color-buttns-light: #5A8EFF;
+  --color-buttns-dark: #6d6d6d;
+  --color-bargraph: #8BA3D7;
+  --color-bargraphgradient: #A8C5D1;
+  --color-stat: #A8C5D1;
+  --color-chart-p: #b0b0b0;
+  --color-toolbar-brdborder: #5A8EFF;
+  --color-table-header: #2d2d2d;
+  --chart-background: #2d2d2d;
+  --searchbar-background: #2d2d2d;
+  --bardhart-labletext: #393939;
+  --statbackground: #2d2d2d;
+  --inactive: #FAA533;
+  --gray: #6d6d6d;
+  --searchborder: #5A8EFF;
+  --active: #5A8EFF;
+  --lightblu: #6db9f8ff;
+
+  // Sidebar dark mode
+  --sidebar-background: #1e1e1e;
+  --sidebar-text: #e5e5e5;
+  --sidebar-hover: #2d2d2d;
+  --sidebar-active: #5A8EFF;
+}
+
