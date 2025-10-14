@@ -33,6 +33,65 @@ app-sidebar {
 
   display: flex;
   flex-direction: column;
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .quick-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+
+      .qn-root {
+        color: var(--active);
+        cursor: pointer;
+        transition: color 0.2s;
+
+        &:hover {
+          color: var(--color-primary-700);
+        }
+      }
+
+      .qn-sep {
+        color: var(--color-text-muted);
+      }
+
+      .qn-current {
+        color: var(--color-text-primary);
+        font-weight: 500;
+      }
+    }
+
+    .top-icons {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-right:-1px;
+
+      .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background: var(--color-neutral-100);
+        }
+
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+    }
+  }
 }
 
 .page-header {
