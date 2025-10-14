@@ -76,8 +76,7 @@
 
 .bus-staff-nav-item .nav-link:hover {
   background: transparent;
-  color: black !important;
-  
+  color: var(--sidebar-text) !important;
 }
 
 .nav-item.active .nav-link {
@@ -104,10 +103,11 @@
 
 .sub-nav-item {
   margin: 4px 0;
+}
 
 .bus-staff-label {
   font-weight: 800;
-  color: black !important;
+  color: var(--sidebar-text) !important;
 }
 
 .sub-nav-link {
@@ -143,7 +143,7 @@
     }
   }
 }
-}
+
 .sidebar-footer { margin-top: 16px; }
 .logout-btn {
   display: flex;

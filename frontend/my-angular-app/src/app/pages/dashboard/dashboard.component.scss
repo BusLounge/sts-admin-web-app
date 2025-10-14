@@ -16,20 +16,11 @@
   padding: 1rem;
   margin-left: 10px;
   min-height: 100vh;
-  background-color: var(--color-background-primary); // White background for pages as requested
+  background-color: var(--bg-primary);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-
-  --color-maintenance: #ff9800;
-  --color-available: #4caf50;
-  --color-secondary-500: #3b82f6;
-  --color-bargraph: #3b82f6;
-  --color-bargraphgradient: #60a5fa;
-  --color-border-light: #e5e7eb;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
 
   .page-header {
     display: flex;
@@ -89,7 +80,7 @@
     .stat-card {
       flex: 1;
       height: 85px;
-      background: #fff;
+      background: var(--bg-secondary);
       border-radius: 12px;
       padding: 1rem 1.5rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -141,7 +132,7 @@
   }
 
   .chart {
-    background: #fff;
+    background: var(--bg-secondary);
     border-radius: 12px;
     padding: 1rem 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);

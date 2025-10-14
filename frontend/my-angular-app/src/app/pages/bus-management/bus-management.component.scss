@@ -2,7 +2,7 @@
   padding: 1rem;
   min-height: 100vh;
   box-sizing: border-box;
-  background-color: var(--color-background-primary);
+  background-color: var(--bg-primary);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -101,7 +101,7 @@
         transition: 0.3s;
 
         &:hover {
-          background: #91ADC8;
+          background: var(--color-secondary-500);
         }
       }
     }
@@ -119,7 +119,7 @@
     .stat-card {
       flex: 1;
       height: 85px;
-      background: #fff;
+      background: var(--bg-secondary);
       border-radius: 12px;
       padding: 1rem 1.5rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -247,11 +247,11 @@
       }
 
       .color-box.active {
-        background: #0046FF;
+        background: var(--active);
       }
 
       .color-box.inactive {
-        background: #FAA533;
+        background: var(--inactive);
       }
 
       .bar-chart {
@@ -597,7 +597,8 @@ app-sidebar {
         cursor: pointer;
 
         &:first-child {
-          background: #ccc;
+          background: var(--gray);
+          color: var(--text-primary);
         }
 
         &:last-child {
