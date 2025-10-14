@@ -74,6 +74,12 @@
   }
 }
 
+.bus-staff-nav-item .nav-link:hover {
+  background: transparent;
+  color: black !important;
+  
+}
+
 .nav-item.active .nav-link {
   background: var(--sidebar-hover);
   color: var(--sidebar-active);
@@ -98,6 +104,11 @@
 
 .sub-nav-item {
   margin: 4px 0;
+
+.bus-staff-label {
+  font-weight: 800;
+  color: black !important;
+}
 
 .sub-nav-link {
   display: flex;
