@@ -106,7 +106,7 @@
       .stat-card {
         flex: 1;
         height: 85px;
-        background: #fff;
+        background: var(--bg-secondary);
         border-radius: 12px;
         padding: 1rem 1.5rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -358,7 +358,7 @@
 
     th {
       background: var(--color-table-header);
-      color: #334155;
+      color: var(--color-text-primary);
       font-weight: 700;
 
     }

@@ -133,7 +133,7 @@
         grid-template-columns: repeat(12, 1fr);
         gap: 0.25rem;
         margin-top: 0.5rem;
-        color: #080808;
+        color: var(--color-text-primary);
         font-weight: 400;
       }
     }
@@ -237,7 +237,7 @@
 
     th {
       background: var(--color-table-header);
-      color: #334155;
+      color: var(--color-text-primary);
       font-weight: 700;
     }
 

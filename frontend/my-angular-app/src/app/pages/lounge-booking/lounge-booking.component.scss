@@ -211,9 +211,9 @@ app-sidebar {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.lb-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+.lb-table { width: 100%; border-collapse: collapse; background: var(--statbackground);  border-radius: 12px; overflow: hidden; }
 .lb-table th, .lb-table td { padding: .75rem; border-bottom: 1px solid var(--color-border-light); }
-.lb-table th { background: var(--color-table-header); color: #334155; text-align: left; }
+.lb-table th { background: var(--color-table-header); color:var(--color-text-primary); text-align: left; }
 .lb-table th:nth-child(5), .lb-table th:nth-child(6) { text-align: center; }
 .lb-table td:nth-child(5), .lb-table td:nth-child(6) { text-align: center; }
 .actions-cell {  gap: .5rem; align-items: center; }

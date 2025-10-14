@@ -88,18 +88,26 @@
   }
 }
 
-.filters { display: flex; gap: 0.5rem; margin-bottom:1rem; margin-top:15px }
+.filters { display: flex; gap: 0.5rem; margin-bottom:1rem; margin-top:15px;}
 .filters input {
   flex: 1;
   max-width: 500px;
   padding: 0.4rem 2.5rem 0.4rem 1rem;
   border: 2px solid var(--color-border-light);
   border-radius: 8px;
+  background-color:var(--statbackground);
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-toolbar-brdborder);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-500-rgb), 0.1);
+  }
 }
 .filters select {
   padding: 0.4rem 1rem;
   border: 2px solid var(--color-border-light);
   border-radius: 8px;
+  background-color:var(--statbackground);
 }
 .filters .btn {
   padding: 8px 12px;
