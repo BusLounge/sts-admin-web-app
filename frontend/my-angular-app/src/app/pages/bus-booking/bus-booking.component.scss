@@ -126,6 +126,7 @@
   font-size: 1rem;
   cursor: pointer;
   transition: 0.2s;
+  color: #101010;
 
   &:hover {
     transform: scale(1.1);
@@ -221,7 +222,7 @@
   z-index: 1000;
 
   .edit-container {
-    background: white;
+    background:var(--statbackground);
     padding: 20px;
     border-radius: 10px;
     max-width: 500px;
@@ -231,6 +232,7 @@
     h2 {
       margin-bottom: 20px;
       text-align: center;
+      color:var( --color-text-primary);
     }
 
     .bus-form {
@@ -250,6 +252,10 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             margin-top: 5px;
+            color: var(--color-text-primary);
+            background-color:var(--statbackground);
+
+
           }
         }
       }

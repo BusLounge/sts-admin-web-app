@@ -415,7 +415,7 @@ app-sidebar {
   z-index: 1000;
 
   .modal-content {
-    background: white;
+    background: var(--statbackground);
     padding: 20px;
     border-radius: 10px;
     max-width: 500px;
@@ -425,6 +425,7 @@ app-sidebar {
     h2 {
       margin-bottom: 20px;
       text-align: center;
+      color:var( --color-text-primary);
     }
 
     .form-row {
@@ -441,6 +442,8 @@ app-sidebar {
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 4px;
+        color: var(--color-text-primary);
+        background-color:var(--statbackground);
       }
 
       input[type="checkbox"] {
