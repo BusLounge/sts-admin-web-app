@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { BusBookingService } from '../../core/services/bus-booking.service';
 import { BusBooking } from '../../core/models/bus-booking.model';
 import { ChartData, ChartOptions } from 'chart.js';
@@ -12,7 +13,7 @@ import { Chart, registerables } from 'chart.js';
 @Component({
   selector: 'app-bus-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
   templateUrl: './bus-booking.component.html',
   styleUrls: ['./bus-booking.component.scss']
 })
@@ -20,6 +21,7 @@ export class BusBookingComponent implements OnInit {
   sidebarOpen = true;
   currentPage = 'bus-booking';
   isBrowser!: boolean;
+  showNotificationPanel = false;
 
   bookings: BusBooking[] = [];
   filtered: BusBooking[] = [];
@@ -93,6 +95,14 @@ export class BusBookingComponent implements OnInit {
   goDashboard() {
     this.currentPage = 'dashboard';
     this.router.navigate(['/dashboard']);
+  }
+
+  toggleNotificationPanel() {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
+
+  closeNotificationPanel() {
+    this.showNotificationPanel = false;
   }
 
   applyFilters() {

@@ -1,0 +1,30 @@
+<div class="notification-panel-overlay" (click)="onClose()">
+  <div class="notification-panel" (click)="$event.stopPropagation()">
+    <div class="notification-header">
+      <h3>Notifications</h3>
+      <button class="close-btn" (click)="onClose()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="notification-list">
+      <div class="notification-item" *ngFor="let notification of notifications" [attr.data-type]="notification.type">
+        <div class="notification-icon">
+          <span class="icon">{{ notification.icon }}</span>
+        </div>
+        <div class="notification-content">
+          <h4 class="notification-title">{{ notification.title }}</h4>
+          <p class="notification-message">{{ notification.message }}</p>
+          <div class="notification-footer">
+            <span class="notification-time">{{ notification.time }}</span>
+            <button class="view-full-btn" (click)="viewFullNotification(notification)">
+              View full notification
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

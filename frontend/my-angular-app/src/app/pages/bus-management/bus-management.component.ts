@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
@@ -15,7 +16,7 @@ import { Bus } from '../../core/models/bus.model';
 @Component({
   selector: 'app-bus-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
   templateUrl: './bus-management.component.html',
   styleUrls: ['./bus-management.component.scss']
 })
@@ -26,6 +27,7 @@ export class BusManagementComponent implements OnInit {
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   sidebarOpen: boolean = true;
   currentPage: string = 'bus-management';
+  showNotificationPanel = false;
 
   showAddBusModal = false;
   showEditBusModal = false;
@@ -70,6 +72,14 @@ export class BusManagementComponent implements OnInit {
 
   goDashboard() {
     this.router.navigate(['/dashboard']);
+  }
+
+  toggleNotificationPanel() {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
+
+  closeNotificationPanel() {
+    this.showNotificationPanel = false;
   }
 
   addBus() {

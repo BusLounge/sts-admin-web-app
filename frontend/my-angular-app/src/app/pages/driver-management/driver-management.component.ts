@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
@@ -13,7 +14,7 @@ import { Driver } from '../../core/models/driver.model';
 @Component({
   selector: 'app-driver-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
   templateUrl: './driver-management.component.html',
   styleUrls: ['./driver-management.component.scss']
 })
@@ -25,6 +26,7 @@ export class DriverManagementComponent implements OnInit {
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
   currentPage: string = 'driver-management';
   sidebarOpen: boolean = true;
+  showNotificationPanel = false;
 
   showAddDriverModal = false;
   isEditing = false;
@@ -119,6 +121,14 @@ export class DriverManagementComponent implements OnInit {
 
   goDashboard() {
     this.router.navigate(['/dashboard']);
+  }
+
+  toggleNotificationPanel() {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
+
+  closeNotificationPanel() {
+    this.showNotificationPanel = false;
   }
 
   updateDriver(driver: Driver) {

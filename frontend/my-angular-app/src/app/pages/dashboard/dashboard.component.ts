@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { BusService } from '../../core/services/bus.service';
 import { LoungeService } from '../../core/services/lounge.service';
 import { DriverService } from '../../core/services/driver.service';
@@ -14,13 +15,14 @@ import { PassengerService } from '../../core/services/passenger.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent],
+  imports: [CommonModule, SidebarComponent, NotificationPanelComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
   sidebarOpen = true;
   currentPage = 'dashboard';
+  showNotificationPanel = false;
 
   numBuses = 0;
   numLounges = 0;
@@ -216,6 +218,14 @@ export class DashboardComponent implements OnInit {
   navigateTo(page: string): void {
     this.currentPage = page;
     this.router.navigate([`/${page}`]);
+  }
+
+  toggleNotificationPanel(): void {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
+
+  closeNotificationPanel(): void {
+    this.showNotificationPanel = false;
   }
 
   logout(): void {
