@@ -80,6 +80,7 @@ app-sidebar {
         padding: 0.5rem;
         border-radius: 8px;
         transition: background-color 0.2s;
+        color: var(--color-text-secondary);
 
         &:hover {
           background-color: rgba(0, 70, 255, 0.1);
@@ -88,6 +89,7 @@ app-sidebar {
         svg {
           width: 24px;
           height: 24px;
+          color: var(--color-text-secondary);
         }
       }
     }

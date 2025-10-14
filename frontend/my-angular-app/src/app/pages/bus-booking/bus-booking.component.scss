@@ -7,7 +7,7 @@
   min-height: 100vh;
 }
 .main-content { width: 100%; max-width: 1200px;margin-left: 72px; }
-.main-content.sidebar-open { margin-left: 260px; }
+.main-content.sidebar-open { margin-left: 240px; }
 
 .top-bar {
   display: flex;
@@ -57,6 +57,7 @@
       padding: 0.5rem;
       border-radius: 8px;
       transition: background-color 0.2s;
+      color: var(--color-text-secondary);
 
       &:hover {
         background-color: rgba(0, 70, 255, 0.1);
@@ -65,6 +66,7 @@
       svg {
         width: 24px;
         height: 24px;
+        color: var(--color-text-secondary);
       }
     }
   }
