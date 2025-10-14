@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
 import { Lounge } from '../../core/models/lounge.model';
@@ -11,7 +12,7 @@ import { LoungeService } from '../../core/services/lounge.service';
 @Component({
   selector: 'app-lounges-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
   templateUrl: './lounges-management.component.html',
   styleUrls: ['./lounges-management.component.scss']
 })
@@ -20,6 +21,7 @@ export class LoungesManagementComponent implements OnInit {
   filteredLounges: Lounge[] = [];
   searchTerm = '';
   priceFilter: number | null = null;
+  showNotificationPanel = false;
 
   amenitiesCounts: { label: string; count: number }[] = [];
   servicesCounts: { label: string; count: number }[] = [];
@@ -206,6 +208,8 @@ export class LoungesManagementComponent implements OnInit {
     const files = input.files;
     if (!files || files.length === 0) return;
 
+  
+
     // Append to existing selections to allow multiple picks across interactions
     for (const file of Array.from(files)) {
       if (!file.type.startsWith('image/')) continue; // skip non-images
@@ -222,7 +226,14 @@ export class LoungesManagementComponent implements OnInit {
     // Clear the input to allow re-selecting the same files if needed
     input.value = '';
   }
+  
+  toggleNotificationPanel() {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
 
+  closeNotificationPanel() {
+    this.showNotificationPanel = false;
+  }
   view(l: Lounge): void {
     this.modalMode = 'view';
     this.lounge = { ...l };

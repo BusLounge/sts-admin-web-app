@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { LoungeBookingService } from '../../core/services/lounge-booking.service';
 import { LoungeBooking } from '../../core/models/lounge-booking.model';
 import { ChartData, ChartOptions } from 'chart.js';
@@ -12,7 +13,7 @@ import { Chart, registerables } from 'chart.js';
 @Component({
   selector: 'app-lounge-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective],
+  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
   templateUrl: './lounge-booking.component.html',
   styleUrls: ['./lounge-booking.component.scss']
 })
@@ -20,6 +21,8 @@ export class LoungeBookingComponent implements OnInit {
   sidebarOpen = true;
   currentPage = 'lounge-booking';
   isBrowser!: boolean;
+  showNotificationPanel = false;
+
 
   bookings: LoungeBooking[] = [];
   filtered: LoungeBooking[] = [];
@@ -184,6 +187,14 @@ export class LoungeBookingComponent implements OnInit {
     this.payStatusCounts = this.svc.countByPaymentStatus();
     this.bookStatusCounts = this.svc.countByBookingStatus();
     this.revenueMonths = this.svc.monthlyRevenue(new Date().getFullYear());
+  }
+  //notification panel
+  toggleNotificationPanel() {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
+
+  closeNotificationPanel() {
+    this.showNotificationPanel = false;
   }
 
   // Aggregate total revenue by lounge
