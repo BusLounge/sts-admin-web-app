@@ -461,7 +461,13 @@ app-sidebar {
   .main-content.sidebar-open { margin-left: 0; }
 }
 
-.conductor-table td.actions-cell { display: flex; gap: 0.5rem; align-items: center; }
+.conductor-table td.actions-cell {
+  text-align: center;
+}
+
+.conductor-table td.actions-cell .action-icon {
+  display: inline-block;
+}
 
 .action-icon {
   margin-right: 0.5rem;
