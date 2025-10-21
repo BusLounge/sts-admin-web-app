@@ -239,11 +239,11 @@ app-sidebar {
   }
 
   &.edit-icon {
-    color: #070122;
+    color:var(--color-neutral-500);
   }
 
   &.delete-icon {
-    color: #070122;
+    color:var(--color-neutral-500);
   }
 }
 .actions-cell button:nth-child(1) { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: .35rem .6rem; }

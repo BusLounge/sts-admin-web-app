@@ -309,6 +309,8 @@
           font-size: 0.875rem;
           transition: all 0.2s;
           background: var(--statbackground);
+          color: var(--color-text-primary);
+
 
           &:focus {
             outline: none;
@@ -436,7 +438,14 @@
       tbody tr:nth-child(even) {
         background: rgba(15, 23, 42, 0.015);
       }
+      
+      .actions-cell {
+       text-align: center;
 
+        .action-icon {
+          color: var(--color-neutral-500);
+        }
+      }
       button {
         margin-right: 0.5rem;
         padding: 0.35rem 0.6rem;

@@ -113,9 +113,11 @@ app-sidebar {
   flex: 1;
   max-width: 500px;
   padding: 0.4rem 2.5rem 0.4rem 1rem;
+  font-size: 0.875rem;
   border: 2px solid var(--color-border-light);
   border-radius: 8px;
   background-color:var(--statbackground);
+  color: var(--color-text-primary);
 
   &:focus {
     outline: none;
@@ -128,6 +130,7 @@ app-sidebar {
   border: 2px solid var(--color-border-light);
   border-radius: 8px;
   background-color:var(--statbackground);
+  color: var(--color-text-secondary);
 }
 .filters .btn {
   padding: 8px 12px;
@@ -146,7 +149,7 @@ app-sidebar {
   font-size: 1rem;
   cursor: pointer;
   transition: 0.2s;
-  color: #101010;
+  color:var(--color-neutral-500);
 
   &:hover {
     transform: scale(1.1);

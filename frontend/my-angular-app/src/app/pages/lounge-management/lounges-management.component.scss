@@ -179,7 +179,7 @@ app-sidebar {
   border-radius: 8px;
   font-size: 0.875rem;
   background: var(--statbackground);
-  color: var(--color-text-muted);
+  color: var(--color-text-primary);
   transition: all 0.2s;
 }
 
@@ -196,8 +196,8 @@ app-sidebar {
 }
 
 .search-group input:focus {
-  border-color: var(--active) ;
-  color: var(--color-text-muted) !important;
+  border-color: var(--active);
+  color: var(--color-text-primary) !important;
   outline: none !important;
   box-shadow: 0 0 5px var(--color-toolbar-brdborder) !important;
 }
@@ -208,7 +208,7 @@ app-sidebar {
   border: 2px solid var(--color-border-light);
   border-radius: 8px;
   font-size: 0.875rem;
-  color:var(--color-text-muted) ;
+  color: var(--color-text-primary);
 }
 
 .toolbar button {
@@ -296,7 +296,7 @@ app-sidebar {
 .action-icon {
   cursor: pointer;
   font-size: 16px;
-  color: #101010;
+  color:var(--color-neutral-500);
   transition: color 0.2s;
   margin: 0 0.5rem 0 0;
   padding: 0;

@@ -159,6 +159,8 @@
         font-size: 0.875rem;
         transition: all 0.2s;
         background: var(--statbackground);
+        color: var(--color-text-primary);
+
 
         &:focus {
           outline: none;
@@ -264,11 +266,11 @@
       }
 
       &.edit-icon {
-        color: #070122;
+        color:var(--color-neutral-500);
       }
 
       &.delete-icon {
-        color: #070122;
+        color:var(--color-neutral-500);
       }
     }
 
