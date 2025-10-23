@@ -21,31 +21,37 @@
           <div class="personal-fields">
             <div class="field-group">
               <label>Name</label>
-              <input [(ngModel)]="user.name" name="name" />
+              <input [(ngModel)]="editUser.name" name="name" />
             </div>
             <div class="field-group">
               <label>Mobile Number</label>
               <div class="mobile-input">
-                <select [(ngModel)]="user.countryCode" name="countryCode">
+                <select [(ngModel)]="editUser.countryCode" name="countryCode">
                   <option value="+971">+971</option>
                   <option value="+1">+1</option>
                   <option value="+44">+44</option>
                 </select>
-                <input [(ngModel)]="user.mobile" name="mobile" />
+                <input [(ngModel)]="editUser.mobile" name="mobile" />
               </div>
             </div>
             <div class="field-group">
-              <label>Email</label>
-              <input [(ngModel)]="user.email" name="email" />
+              <label>Work Email</label>
+              <input [(ngModel)]="editUser.email" name="email" />
             </div>
             <div class="field-group">
-              <label>About me</label>
-              <input [(ngModel)]="user.about" name="about" placeholder="Write something about yourself.." />
+              <label>Access Level</label>
+              <input [(ngModel)]="editUser.about" name="about" disabled />
             </div>
+            <div class="field-group">
+              <label>Date joined</label>
+              <input [(ngModel)]="editUser.datejoined" name="joined" disabled />
+            </div>
+            
           </div>
-          <button class="save-btn" type="submit">Save</button>
+          <button class="save-btn" type="button" (click)="onSave()">Save</button>
         </section>
         <section class="section notifications">
+          <h2 class="section-title1">Notification setting</h2>
           <h3 class="section-title">Notifications</h3>
           <div class="notifications-grid">
             <div class="notif-col">
@@ -73,24 +79,6 @@
               </div>
             </div>
           </div>
-        </section>
-        <section class="section security">
-          <h3 class="section-title">Change password</h3>
-          <div class="password-fields">
-            <div class="field-group">
-              <label>Current Password</label>
-              <input type="password" [(ngModel)]="user.currentPassword" name="currentPassword" />
-            </div>
-            <div class="field-group">
-              <label>New Password</label>
-              <input type="password" [(ngModel)]="user.newPassword" name="newPassword" />
-            </div>
-            <div class="field-group">
-              <label>Confirm Password</label>
-              <input type="password" [(ngModel)]="user.confirmPassword" name="confirmPassword" />
-            </div>
-          </div>
-          <button class="save-btn" type="submit">Save</button>
         </section>
       </form>
     </div>

@@ -1,5 +1,4 @@
 
-
 .management-container {
   background-color: var(--bg-primary);
 }
@@ -78,8 +77,9 @@
   pointer-events: none;
 }
 .profile-header h2 {
-  font-size: 2rem;
+  font-size: 1.7rem;
   font-weight: 700;
+  margin-top: 12px;
 }
 
 .profile-form {
@@ -94,10 +94,19 @@
   margin-bottom: 1.2rem;
 }
 .personal-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem 2rem;
   margin-bottom: 1.5rem;
+  justify-content: flex-start;
+}
+.field-group {
+  flex: 0 1 320px;
+  max-width: 320px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 .field-group {
   display: flex;
@@ -136,8 +145,14 @@
 .save-btn:hover {
   background: var(--color-primary-600, #5b21b6);
 }
+.section-title1 {
+  color: var(--color-text-primary);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
 .section.notifications {
-  margin-top: 2.5rem;
+  margin-top: -1rem;
 }
 .notifications-grid {
   display: flex;

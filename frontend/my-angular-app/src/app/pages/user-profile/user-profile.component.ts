@@ -13,6 +13,17 @@ import { Router } from '@angular/router';
 })
 export class UserProfileComponent {
   profileImageUrl: string | ArrayBuffer | null = null;
+  sidebarOpen = true;
+  user = {
+    name: 'John Doe',
+    countryCode: '+971',
+    mobile: '1234 1234',
+    email: 'johndoe@gmail.com',
+    about: 'Operations Admin',
+    datejoined: '2023-01-15',
+  };
+  editUser = { ...this.user };
+
   onProfileImageChange(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -23,17 +34,10 @@ export class UserProfileComponent {
       reader.readAsDataURL(input.files[0]);
     }
   }
-  sidebarOpen = true;
-  user = {
-    name: 'John Doe',
-    countryCode: '+971',
-    mobile: '1234 1234',
-    email: 'johndoe@gmail.com',
-    about: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  };
+
+  onSave() {
+    this.user = { ...this.editUser };
+  }
 
   constructor(private router: Router) {}
 

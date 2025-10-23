@@ -74,6 +74,10 @@ export class BusManagementComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
+  goUserProfile() {
+    this.router.navigate(['/user-profile']);
+  }
+
   toggleNotificationPanel() {
     this.showNotificationPanel = !this.showNotificationPanel;
   }
