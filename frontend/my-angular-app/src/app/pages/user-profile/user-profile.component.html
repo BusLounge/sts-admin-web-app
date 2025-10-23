@@ -1,0 +1,98 @@
+<div class="management-container">
+  <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="'user-profile'"
+    (toggle)="onSidebarToggle()" (navigate)="onSidebarNavigate($event)" (logout)="onSidebarLogout()"></app-sidebar>
+  <div class="main-content" [ngClass]="{'sidebar-open': sidebarOpen, 'sidebar-collapsed': !sidebarOpen}">
+    <div class="user-profile-wrapper">
+      <div class="profile-header">
+        <h2>Your Profile</h2>
+        <div class="profile-picture-row">
+          <div class="profile-picture-container">
+            <img [src]="profileImageUrl || 'assets/img/yuuu.jpg_large'" alt="Profile Picture" class="profile-picture" />
+            <label class="edit-picture-btn">
+              <input type="file" accept="image/*" (change)="onProfileImageChange($event)" hidden />
+              <span class="edit-icon">✏️</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <form class="profile-form">
+        <section class="section personal-info">
+          <h3 class="section-title">Personal info</h3>
+          <div class="personal-fields">
+            <div class="field-group">
+              <label>Name</label>
+              <input [(ngModel)]="user.name" name="name" />
+            </div>
+            <div class="field-group">
+              <label>Mobile Number</label>
+              <div class="mobile-input">
+                <select [(ngModel)]="user.countryCode" name="countryCode">
+                  <option value="+971">+971</option>
+                  <option value="+1">+1</option>
+                  <option value="+44">+44</option>
+                </select>
+                <input [(ngModel)]="user.mobile" name="mobile" />
+              </div>
+            </div>
+            <div class="field-group">
+              <label>Email</label>
+              <input [(ngModel)]="user.email" name="email" />
+            </div>
+            <div class="field-group">
+              <label>About me</label>
+              <input [(ngModel)]="user.about" name="about" placeholder="Write something about yourself.." />
+            </div>
+          </div>
+          <button class="save-btn" type="submit">Save</button>
+        </section>
+        <section class="section notifications">
+          <h3 class="section-title">Notifications</h3>
+          <div class="notifications-grid">
+            <div class="notif-col">
+              <div class="notif-row" *ngFor="let n of notificationSettings">
+                <div>
+                  <div class="notif-label">{{n.label}}</div>
+                  <div class="notif-desc">{{n.desc}}</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="n.enabled" name="notif-{{n.key}}" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="notif-col">
+              <div class="notif-row" *ngFor="let n of notificationToggles">
+                <div>
+                  <div class="notif-label">{{n.label}}</div>
+                  <div class="notif-desc">{{n.desc}}</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="n.enabled" name="notif-toggle-{{n.key}}" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="section security">
+          <h3 class="section-title">Change password</h3>
+          <div class="password-fields">
+            <div class="field-group">
+              <label>Current Password</label>
+              <input type="password" [(ngModel)]="user.currentPassword" name="currentPassword" />
+            </div>
+            <div class="field-group">
+              <label>New Password</label>
+              <input type="password" [(ngModel)]="user.newPassword" name="newPassword" />
+            </div>
+            <div class="field-group">
+              <label>Confirm Password</label>
+              <input type="password" [(ngModel)]="user.confirmPassword" name="confirmPassword" />
+            </div>
+          </div>
+          <button class="save-btn" type="submit">Save</button>
+        </section>
+      </form>
+    </div>
+  </div>
+</div>

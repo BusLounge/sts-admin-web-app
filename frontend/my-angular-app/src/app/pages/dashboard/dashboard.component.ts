@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -230,5 +229,9 @@ export class DashboardComponent implements OnInit {
 
   logout(): void {
     this.router.navigate(['/']);
+  }
+
+  goToUserProfile(): void {
+    this.router.navigate(['/user-profile']);
   }
 }
