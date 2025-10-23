@@ -527,6 +527,7 @@ app-sidebar {
 
 .actions {
   margin-top: 3px;
+  display: flex;
   gap: 15px;
   justify-content: center;
 
@@ -544,13 +545,13 @@ app-sidebar {
   }
 
   button[type="submit"] {
-    background:#647FBC;
-    color: #fff;
+    background:var( --color-buttns-light);
+    color: var(  --color-text-inverse);
   }
 
   .secondary {
     background:var(--color-buttns-dark);
-    color: #0a0a0a;
+    color: var(--color-text-primary);
   }
 }
 

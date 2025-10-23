@@ -367,7 +367,9 @@ export class DriverManagementComponent implements OnInit {
     }
     return newId;
   }
-
+ goUserProfile() {
+  this.router.navigate(['/user-profile']);
+}
   updateBarChart(): void {
     this.barChartData = {
       labels: ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'],

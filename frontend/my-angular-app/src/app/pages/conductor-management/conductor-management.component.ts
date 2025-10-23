@@ -378,7 +378,9 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
       }
     }
   }
-
+  goUserProfile() {
+  this.router.navigate(['/user-profile']);
+}
   updateBarChart(): void {
     if (this.chart) {
       this.chart.data.datasets[0].data = [

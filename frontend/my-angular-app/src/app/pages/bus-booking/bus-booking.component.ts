@@ -143,6 +143,9 @@ export class BusBookingComponent implements OnInit {
     this.bookStatusCounts = this.svc.countByBookingStatus();
     this.revenueMonths = this.svc.monthlyRevenue(new Date().getFullYear());
   }
+goUserProfile() {
+  this.router.navigate(['/user-profile']);
+}
 
   // Helpers for simple CSS charts
   getPayCount(key: 'Paid'|'Pending'|'Failed'|'Refunded') { return this.payStatusCounts[key] || 0; }

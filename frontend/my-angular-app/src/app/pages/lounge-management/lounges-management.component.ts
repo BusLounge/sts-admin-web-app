@@ -320,7 +320,9 @@ export class LoungesManagementComponent implements OnInit {
   }
 
   totalLounges(): number { return this.lounges.length; }
-
+goUserProfile() {
+  this.router.navigate(['/user-profile']);
+}
   // Sorting functionality
   onSort(column: string): void {
     if (this.sortColumn === column) {

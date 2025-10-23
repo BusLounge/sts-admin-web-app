@@ -240,7 +240,9 @@ export class LoungeBookingComponent implements OnInit {
       }
     ];
   }
-
+goUserProfile() {
+  this.router.navigate(['/user-profile']);
+}
   // Bar chart helpers
   getRevenueMaxForBars(): number {
     return Math.max(1, ...this.revenueByLounge.map(x => x.total));

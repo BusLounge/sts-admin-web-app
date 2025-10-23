@@ -163,7 +163,9 @@ export class PassengerManagementComponent implements OnInit {
     localStorage.removeItem('token');
     this.router.navigate(['/']);
   }
-
+goUserProfile() {
+  this.router.navigate(['/user-profile']);
+}
   // Sorting functionality
   onSort(column: string): void {
     if (this.sortColumn === column) {
