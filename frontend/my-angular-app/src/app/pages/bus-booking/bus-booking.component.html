@@ -55,23 +55,25 @@
       </div>
     </section>
 
-    <section class="filters">
-      <input type="text" placeholder="Search (ID, Passenger, Bus, Route, Seats)" [(ngModel)]="searchTerm" (input)="applyFilters()" />
-      <select [(ngModel)]="paymentFilter" (change)="applyFilters()">
-        <option>All</option>
-        <option>Pending</option>
-        <option>Paid</option>
-        <option>Failed</option>
-        <option>Refunded</option>
-      </select>
-      <select [(ngModel)]="statusFilter" (change)="applyFilters()">
-        <option>All</option>
-        <option>Confirmed</option>
-        <option>Pending</option>
-        <option>Cancelled</option>
-        <option>Completed</option>
-      </select>
-     
+    <section class="filters" style="display: flex; align-items: center; gap: 0.5rem; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="text" placeholder="Search (ID, Passenger, Bus, Route, Seats)" [(ngModel)]="searchTerm" (input)="applyFilters()" />
+        <select [(ngModel)]="paymentFilter" (change)="applyFilters()">
+          <option>All</option>
+          <option>Pending</option>
+          <option>Paid</option>
+          <option>Failed</option>
+          <option>Refunded</option>
+        </select>
+        <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+          <option>All</option>
+          <option>Confirmed</option>
+          <option>Pending</option>
+          <option>Cancelled</option>
+          <option>Completed</option>
+        </select>
+      </div>
+      <button class="export-btn" (click)="exportBusBookingHistoryPdf()">Export Bus Booking History</button>
     </section>
 
     <section class="table-section">

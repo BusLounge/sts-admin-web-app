@@ -1,3 +1,5 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +20,37 @@ import { Chart, registerables } from 'chart.js';
   styleUrls: ['./bus-booking.component.scss']
 })
 export class BusBookingComponent implements OnInit {
+  exportBusBookingHistoryPdf(): void {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(16);
+    doc.text('Bus Booking History', 14, 16);
+
+    const tableHead = [[
+      'Booking ID', 'Passenger ID', 'Bus Number', 'Route', 'Journey Date & Time', 'Seats Booked', 'Seat Numbers', 'Total Fare', 'Payment Status', 'Booking Status'
+    ]];
+    const tableBody = this.filtered.map(b => [
+      b.booking_id,
+      b.passenger_id,
+      b.bus_number,
+      `${b.from} → ${b.to}`,
+      new Date(b.journey_datetime).toLocaleString(),
+      b.seats_booked,
+      b.seat_numbers.join(', '),
+      `$${b.total_fare}`,
+      b.payment_status,
+      b.booking_status
+    ]);
+
+    autoTable(doc, {
+      head: tableHead,
+      body: tableBody,
+      startY: 22,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [59, 130, 246] }
+    });
+
+    doc.save('bus-booking-history.pdf');
+  }
   sidebarOpen = true;
   currentPage = 'bus-booking';
   isBrowser!: boolean;
