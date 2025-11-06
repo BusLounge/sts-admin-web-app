@@ -1,3 +1,19 @@
+// Export button style (match other pages)
+.export-btn {
+  background: var(--color-buttns-light);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 200;
+}
+.export-btn:hover {
+  background: var(--secondary-color);
+}
 .management-container {
   display: flex;
   min-height: 100vh;

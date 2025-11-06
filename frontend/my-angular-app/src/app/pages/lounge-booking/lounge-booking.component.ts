@@ -9,6 +9,8 @@ import { LoungeBooking } from '../../core/models/lounge-booking.model';
 import { ChartData, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-lounge-booking',
@@ -68,6 +70,37 @@ export class LoungeBookingComponent implements OnInit {
 
   // Remove pie chart helpers
   // getRevenuePieBackground(): string {
+    exportLoungeBookingHistoryPdf(): void {
+      const doc = new jsPDF({ orientation: 'landscape' });
+      doc.setFontSize(16);
+      doc.text('Lounge Booking History', 14, 16);
+
+      const tableHead = [[
+        'Booking ID', 'Passenger ID', 'Lounge Name', 'Date & Time', 'Duration (h)', 'Guests', 'Capacity Used', 'Total Amount', 'Payment Status', 'Booking Status'
+      ]];
+      const tableBody = this.filtered.map(b => [
+        b.booking_id,
+        b.passenger_id,
+        b.lounge_name,
+        `${new Date(b.start_datetime).toLocaleString()}`,
+        b.duration_hours,
+        b.guests,
+        b.capacity_used,
+        `$${b.total_amount}`,
+        b.payment_status,
+        b.booking_status
+      ]);
+
+      autoTable(doc, {
+        head: tableHead,
+        body: tableBody,
+        startY: 22,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [59, 130, 246] }
+      });
+
+      doc.save('lounge-booking-history.pdf');
+    }
   //   if (this.revenueByLounge.length === 0) return 'conic-gradient(#ccc 0% 100%)';
   //   const total = this.revenueByLounge.reduce((sum, item) => sum + item.total, 0);
   //   let currentPercent = 0;
