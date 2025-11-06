@@ -54,6 +54,7 @@
           <input type="text" placeholder="Search by name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
           <input type="number" placeholder="Price / hr ($)" [(ngModel)]="priceFilter" (input)="onSearchChange()" style="margin-left: 0.1rem; width: 80px; color: var(--color-text-muted);" />
         </div>
+        <button class="export-btn" (click)="exportLoungeHistoryPdf()">Export Lounge History</button>
       </section>
 
       <section class="table-section">

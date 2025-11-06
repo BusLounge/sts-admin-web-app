@@ -1,3 +1,5 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -65,6 +67,33 @@ export class LoungesManagementComponent implements OnInit {
   barChartData: any[] = [];
   barChartOptions: any;
   isBrowser: boolean;
+
+  exportLoungeHistoryPdf(): void {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(16);
+    doc.text('Lounges History', 14, 16);
+
+    const tableHead = [['Lounge Name', 'Owner', 'Address', 'Phone', 'Capacity', 'Price/hr', 'Operating Hours']];
+    const tableBody = this.filteredLounges?.map((l: Lounge) => [
+      l.name,
+      l.owner,
+      l.address,
+      l.phone,
+      String(l.capacity),
+      `$${l.price_per_hour}`,
+      l.operating_hours
+    ]) ?? [];
+
+    autoTable(doc, {
+      head: tableHead,
+      body: tableBody,
+      startY: 22,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [59, 130, 246] }
+    });
+
+    doc.save('lounges-history.pdf');
+  }
 
   constructor(private router: Router, private loungeService: LoungeService, @Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);

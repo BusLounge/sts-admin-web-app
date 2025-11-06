@@ -1,3 +1,23 @@
+.export-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+.export-btn {
+  background: var(--color-buttns-light);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 200;
+}
+.export-btn:hover {
+  background: var(--secondary-color);
+}
 .management-container {
   display: flex;
   min-height: 100vh;
@@ -212,13 +232,14 @@ app-sidebar {
 }
 
 .toolbar button {
-  padding: 8px 12px;
+  padding: 7px 12px;
   border: none;
-  background: var(--color-primary-500);
+  background: var(--color-buttns-light);
   color: var(--color-text-inverse);
   border-radius: 6px;
   cursor: pointer;
-  margin-right: 34px
+  margin-right: 34px;
+  font-size:14px;
 }
 
 .add-btn {
