@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { AdminUser, AdminLoginRequest, AdminLoginResponse, AdminChangePasswordRequest } from '../models/admin-user.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminAuthService {
-  private readonly API_URL = 'http://localhost:8080/api/v1/admin/auth';
+  private readonly API_URL = `${environment.apiUrl}/admin/auth`;
   private currentAdminSubject = new BehaviorSubject<AdminUser | null>(null);
   public currentAdmin$ = this.currentAdminSubject.asObservable();
 

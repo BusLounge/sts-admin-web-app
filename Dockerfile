@@ -2,13 +2,13 @@
 # Optimized for Choreo deployment
 
 # Stage 1: Build the Angular application
-FROM node:18 AS build
+FROM node:20 AS build
 
 WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy source code
 COPY . .
