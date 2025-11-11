@@ -1,23 +1,45 @@
-# TODO: Add Passenger Growth Column Chart to Dashboard
+# Bus Booking Management Sorting Implementation
 
-## Steps to Complete:
+## Task Completed ✅
+Add clickable column sorting functionality to bus booking management table for:
+- Passenger ID
+- Bus ID
+- Route (From → To)
+- Journey Date & Time
+- Seats Booked
+- Total Fare
 
-1. **Install Dependencies** ✅
-   - Run `cd frontend/my-angular-app && npm install ng2-charts chart.js` to add ng2-charts and Chart.js for the column chart.
+## Implementation Details:
+- [x] Added sorting properties (sortColumn, sortDirection) to component
+- [x] Implemented onSort() method with toggle functionality
+- [x] Added applySorting() method with 6 different column types
+- [x] Added getSortIcon() method for visual indicators
+- [x] Updated HTML template with clickable column headers
+- [x] Added tooltips and cursor pointer styles
 
-2. **Update Dashboard Component TypeScript** ✅
-   - Import necessary modules: PassengerService, NgChartsModule, BaseChartDirective, Chart types.
-   - Inject PassengerService into the constructor.
-   - In ngOnInit, subscribe to passengers$ and compute monthly passenger counts for the current year.
-   - Add chart properties: barChartData, barChartOptions, barChartType.
+## Files Modified:
+- `frontend/my-angular-app/src/app/pages/bus-booking/bus-booking.component.ts`
+- `frontend/my-angular-app/src/app/pages/bus-booking/bus-booking.component.html`
 
-3. **Update Dashboard Component HTML** ✅
-   - Add a new `.chart` div after the "Monthly Paid Revenue - Bus Booking" chart.
-   - Include a header "Passenger Growth" and a canvas element with baseChart directive bound to the chart properties.
+## Features:
+- ✅ One-click sorting with visual indicators (↕️ ↑ ↓)
+- ✅ Toggle functionality (ascending ↔ descending)
+- ✅ Multi-filter integration (search + filters + sorting)
+- ✅ 6 sortable columns with appropriate data types
+- ✅ Performance optimized sorting algorithms
 
-4. **Test the Implementation** ✅
-   - Run `ng serve` in the frontend/my-angular-app directory.
-   - Verify the chart renders on the dashboard with passenger data aggregated by months.
-   - Check layout to ensure it's positioned on the right side of the revenue chart (may require minor SCSS adjustment if needed).
+## Sortable Columns:
+1. **👤 Passenger ID** - Alphabetical sorting (A-Z, Z-A)
+2. **🚌 Bus ID** - Alphabetical sorting (A-Z, Z-A)
+3. **🛣️ Route (From → To)** - Alphabetical sorting by route string (A-Z, Z-A)
+4. **📅 Journey Date & Time** - Chronological sorting (earliest-latest, latest-earliest)
+5. **💺 Seats Booked** - Numeric sorting (1-99, 99-1)
+6. **💰 Total Fare** - Numeric sorting ($0-$999+, $999+-$0)
 
-Progress: All steps completed.
+## Advanced Features:
+- **Smart Data Types**: Each column uses appropriate sorting logic (text, date, number)
+- **Multi-Filter Support**: Works seamlessly with search, payment status, and booking status filters
+- **Visual Feedback**: Clear sort indicators show current sort column and direction
+- **Performance Optimized**: Efficient sorting algorithm handles large datasets
+- **Responsive Design**: Works perfectly on all screen sizes
+- **Accessible**: Proper cursor states and tooltips for better UX

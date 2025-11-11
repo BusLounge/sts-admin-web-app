@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { AdminAuthService } from '../../core/services/admin-auth.service';
 
 @Component({
   selector: 'app-login',
@@ -23,31 +24,44 @@ export class LoginComponent {
   resetSuccessMessage: string = '';
   resetErrorMessage: string = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private adminAuthService: AdminAuthService
+  ) {}
 
   onLogin() {
     if (!this.username || !this.password) {
-      this.errorMessage = 'Please enter both username and password';
+      this.errorMessage = 'Please enter both email and password';
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Simulate login process
-    setTimeout(() => {
-      this.isLoading = false;
-      
-      // For demo purposes, accept any credentials
-      // In real app, you would validate against your backend
-      if (this.username && this.password) {
+    // Real login using admin auth service
+    this.adminAuthService.login(this.username, this.password).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        console.log('Login successful', response);
         // Navigate to admin dashboard
-        console.log('Login successful');
         this.router.navigate(['/dashboard']);
-      } else {
-        this.errorMessage = 'Invalid credentials';
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Login failed', error);
+
+        // Handle different error responses
+        if (error.status === 401) {
+          this.errorMessage = 'Invalid email or password';
+        } else if (error.status === 0) {
+          this.errorMessage = 'Unable to connect to server. Please check if the backend is running.';
+        } else if (error.error?.error) {
+          this.errorMessage = error.error.error;
+        } else {
+          this.errorMessage = 'Login failed. Please try again.';
+        }
       }
-    }, 1500);
+    });
   }
 
   goBack() {
