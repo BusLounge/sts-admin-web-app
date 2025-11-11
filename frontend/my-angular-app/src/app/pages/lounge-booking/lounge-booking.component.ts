@@ -6,7 +6,6 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { LoungeBookingService } from '../../core/services/lounge-booking.service';
 import { LoungeBooking } from '../../core/models/lounge-booking.model';
-import { ChartData, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
