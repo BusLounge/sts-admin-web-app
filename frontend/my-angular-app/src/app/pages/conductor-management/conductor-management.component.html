@@ -1,0 +1,278 @@
+<div class="management-container">
+  <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="navigateTo($event)" (logout)="logout()"></app-sidebar>
+
+  <div class="main-content" [class.sidebar-open]="sidebarOpen">
+    <div class="conductor-page">
+    <div class="top-bar">
+      <nav class="quick-nav">
+        <span class="qn-root" (click)="goDashboard()">Dashboard</span>
+        <span class="qn-sep" aria-hidden="true">›</span>
+        <span class="qn-current">Conductor Management</span>
+      </nav>
+      <div class="top-icons">
+        <button class="icon-btn notification-btn" (click)="toggleNotificationPanel()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+          </svg>
+        </button>
+        <button class="icon-btn profile-btn" (click)="goUserProfile()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="page-header">
+        <h2>Conductor Management</h2>
+        <button class="add-conductor-btn" (click)="addConductor()">Add Conductor</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card total-conductors">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTotalConductors() }}</div>
+            <div class="stat-title">Total Conductors</div>
+          </div>
+        </div>
+        <div class="stat-card active-conductors">
+          <div class="stat-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22,4 12,14.01 9,11.01"></polyline></svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getActiveCount() }}</div>
+            <div class="stat-title">Active</div>
+          </div>
+        </div>
+        <div class="stat-card on-leave-conductors">
+          <div class="stat-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pause-circle"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getOnLeaveCount() }}</div>
+            <div class="stat-title">On Leave</div>
+          </div>
+        </div>
+        <div class="stat-card average-experience">
+          <div class="stat-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"></polyline></svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getAverageExperience() }}</div>
+            <div class="stat-title">Avg Experience (yrs)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-section">
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Status Overview</h3>
+            <p>Distribution of conductor employment status</p>
+          </div>
+        <div class="pie-chart">
+          <div class="pie-circle" [style.background]="getPieChartGradient()"></div>
+        </div>
+        <div class="pie-legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background: var(--active);"></span>
+            <span class="legend-label">Active: {{ getFilteredActiveCount() }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: var(--color-warning-500);"></span>
+            <span class="legend-label">On Leave: {{ getFilteredOnLeaveCount() }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: var(--gray);"></span>
+            <span class="legend-label">Resigned: {{ getFilteredResignedCount() }}</span>
+          </div>
+        </div>
+        </div>
+
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Experience Distribution</h3>
+            <p>Conductors by experience level</p>
+          </div>
+          <div class="bar-chart">
+            <canvas #barChartCanvas></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="left-section">
+          <div class="search-container">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Search by name, NIC, phone, ID, or bus..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()"
+            />
+            <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+          </div>
+
+          <div class="filter-container">
+            <select class="filter-select" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="On Leave">On Leave</option>
+              <option value="Resigned">Resigned</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-actions">
+          <button class="clear-filters-btn" (click)="clearFilters()" *ngIf="statusFilter !== 'All' || searchTerm">Clear Filters</button>
+          <button class="export-btn" (click)="exportConductorsPdf()">Export Report (PDF)</button>
+        </div>
+      </div>
+
+      <table class="conductor-table">
+        <thead>
+          <tr>
+            <th>Conductor ID</th>
+            <th (click)="onSort('full_name')" style="cursor: pointer;" title="Click to sort">
+              Full Name {{ getSortIcon('full_name') }}
+            </th>
+            <th>NIC</th>
+            <th>Phone</th>
+            <th (click)="onSort('experience')" style="cursor: pointer;" title="Click to sort">
+              Experience {{ getSortIcon('experience') }}
+            </th>
+            <th>Status</th>
+            <th (click)="onSort('assigned_bus')" style="cursor: pointer;" title="Click to sort">
+              Assigned Bus {{ getSortIcon('assigned_bus') }}
+            </th>
+            <th (click)="onSort('hire_date')" style="cursor: pointer;" title="Click to sort">
+              Hire Date {{ getSortIcon('hire_date') }}
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let conductor of filteredConductors">
+            <td>{{ conductor.conductor_id }}</td>
+            <td>{{ conductor.full_name }}</td>
+            <td>{{ conductor.nic }}</td>
+            <td>{{ conductor.phone_number }}</td>
+            <td>{{ conductor.experience_years }}yrs</td>
+            <td>
+              <span class="status-badge" [ngClass]="conductor.status.toLowerCase().replace(' ', '-')">
+                {{ conductor.status }}
+              </span>
+            </td>
+            <td>{{ conductor.assigned_bus_id || 'Unassigned' }}</td>
+            <td>{{ conductor.hired_date | date:'shortDate' }}</td>
+            <td class="actions-cell">
+              <i class="fas fa-edit action-icon edit-icon" (click)="updateConductor(conductor)" title="Update"></i>
+            </td>
+          </tr>
+        </tbody> 
+      </table>
+
+      <div class="no-results" *ngIf="filteredConductors.length === 0">
+        <p>No conductors found matching your criteria.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Conductor Modal -->
+  <div class="add-conductor-modal" *ngIf="showAddConductorModal" (click)="closeAddConductorModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Add Conductor</h2>
+      <form (ngSubmit)="saveConductor()">
+        <div class="form-row">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="newConductor.full_name" name="full_name" required />
+        </div>
+        <div class="form-row">
+          <label>NIC</label>
+          <input type="text" [(ngModel)]="newConductor.nic" name="nic" required />
+        </div>
+        <div class="form-row">
+          <label>Phone Number</label>
+          <input type="text" [(ngModel)]="newConductor.phone_number" name="phone_number" required />
+        </div>
+        <div class="form-row">
+          <label>Experience (Years)</label>
+          <input type="number" [(ngModel)]="newConductor.experience_years" name="experience_years" required min="0" />
+        </div>
+        <div class="form-row">
+          <label>Status</label>
+          <select [(ngModel)]="newConductor.status" name="status">
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Resigned">Resigned</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Assigned Bus ID</label>
+          <input type="text" [(ngModel)]="newConductor.assigned_bus_id" name="assigned_bus_id" />
+        </div>
+        <div class="form-row">
+          <label>Hire Date</label>
+          <input type="date" [(ngModel)]="newConductor.hired_date" name="hired_date" required />
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="closeAddConductorModal()">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Conductor Modal -->
+  <div class="add-conductor-modal" *ngIf="showEditConductorModal" (click)="closeEditConductorModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Edit Conductor</h2>
+      <form (ngSubmit)="saveEditConductor()" *ngIf="selectedConductor">
+        <div class="form-row">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="selectedConductor.full_name" name="edit_full_name" required />
+        </div>
+        <div class="form-row">
+          <label>NIC</label>
+          <input type="text" [(ngModel)]="selectedConductor.nic" name="edit_nic" required />
+        </div>
+        <div class="form-row">
+          <label>Phone Number</label>
+          <input type="text" [(ngModel)]="selectedConductor.phone_number" name="edit_phone_number" required />
+        </div>
+        <div class="form-row">
+          <label>Experience (Years)</label>
+          <input type="number" [(ngModel)]="selectedConductor.experience_years" name="edit_experience_years" required min="0" />
+        </div>
+        <div class="form-row">
+          <label>Status</label>
+          <select [(ngModel)]="selectedConductor.status" name="edit_status">
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Resigned">Resigned</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Assigned Bus ID</label>
+          <input type="text" [(ngModel)]="selectedConductor.assigned_bus_id" name="edit_assigned_bus_id" />
+        </div>
+        <div class="form-row">
+          <label>Hire Date</label>
+          <input type="date" [(ngModel)]="selectedConductor.hired_date" name="edit_hired_date" required />
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="closeEditConductorModal()">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<app-notification-panel *ngIf="showNotificationPanel" (close)="closeNotificationPanel()"></app-notification-panel>
+

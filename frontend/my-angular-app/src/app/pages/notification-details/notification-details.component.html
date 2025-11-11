@@ -1,0 +1,75 @@
+<div class="notification-details-container">
+  <app-sidebar 
+    [sidebarOpen]="sidebarOpen" 
+    [currentPage]="currentPage" 
+    (toggle)="sidebarOpen = !sidebarOpen" 
+    (navigate)="onNavigate($event)" 
+    (logout)="onLogout()">
+  </app-sidebar>
+
+  <div class="main-content" [class.main-content-expanded]="sidebarOpen">
+    <div class="details-page">
+      <!-- Back Navigation -->
+      <nav class="quick-nav">
+        <span class="qn-root" (click)="goBack()">Dashboard</span>
+        <span class="qn-sep" aria-hidden="true">›</span>
+        <span class="qn-current">Notification Details</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>{{ notification?.title }}</h1>
+        <p class="notification-time">{{ notification?.time }}</p>
+      </div>
+
+      <!-- Notification Details Card -->
+      <div class="details-card" *ngIf="notification">
+        <div class="card-header">
+          <div class="type-badge" [attr.data-type]="notification.type">
+            {{ notification.type | uppercase }}
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="message-section">
+            <h3>Request Message</h3>
+            <p>{{ notification.message }}</p>
+          </div>
+
+          <div class="form-section">
+            <h3>Details</h3>
+            <div class="form-grid">
+              <div class="form-field" *ngFor="let field of getFormFields()">
+                <label>{{ field.label }}</label>
+                <div class="field-value" *ngIf="!isArray(field.value)">
+                  {{ field.value }}
+                </div>
+                <div class="field-value tags" *ngIf="isArray(field.value)">
+                  <span class="tag" *ngFor="let item of field.value">{{ item }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="action-buttons">
+            <button class="btn btn-cancel" (click)="cancelRequest()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+              Cancel Request
+            </button>
+            <button class="btn btn-approve" (click)="approveRequest()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Approve Request
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,162 @@
+<div class="management-container">
+  <!-- ✅ Reusable Sidebar Component -->
+  <app-sidebar 
+    [sidebarOpen]="sidebarOpen" 
+    [currentPage]="currentPage"
+    (toggle)="sidebarOpen = !sidebarOpen" 
+    (navigate)="onNavigate($event)" 
+    (logout)="onLogout()">
+  </app-sidebar>
+
+  <!-- ✅ Main content -->
+  <div class="main-content" [class.sidebar-open]="sidebarOpen">
+    <div class="passenger-page">
+    <div class="top-bar">
+      <nav class="quick-nav">
+        <span class="qn-root" (click)="goDashboard()">Dashboard</span>
+        <span class="qn-sep" aria-hidden="true">›</span>
+        <span class="qn-current">Passenger Management</span>
+      </nav>
+      <div class="top-icons">
+       <button class="icon-btn notification-btn" (click)="toggleNotificationPanel()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+          </svg>
+        </button>
+        <button class="icon-btn profile-btn"(click)="goUserProfile()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="page-header">
+        <h2>Passenger Management</h2>
+        <button class="add-passenger-btn" (click)="addPassenger()">Add Passenger</button>
+      </div>
+
+      <div class="charts-section">
+        <div class="chart">
+          <div class="chart-header">
+            <h3>Monthly Registered Passengers</h3>
+            <p>This year</p>
+          </div>
+          <svg [attr.viewBox]="'0 0 600 220'" class="line-chart"
+               preserveAspectRatio="none">
+            <polyline [attr.points]="getPoints()" fill="none"
+                      stroke="var(--active)" stroke-width="3"/>
+            <g *ngFor="let c of monthlyCounts; index as i">
+              <circle [attr.cx]="(30 + i*((600-60)/(months.length-1)))"
+                      [attr.cy]="(220-30 - (c/getMaxCount())*(220-60))"
+                      r="3" fill="#1d4ed8"/>
+            </g>
+          </svg>
+          <div class="months">
+            <span *ngFor="let m of months">{{ m }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Passenger Modal -->
+      <div class="add-passenger-modal" *ngIf="showAddPassengerModal" (click)="closeAddPassengerModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <h2>Add Passenger</h2>
+          <form (ngSubmit)="savePassenger()">
+            <div class="form-row">
+              <label>Name</label>
+              <input type="text" [(ngModel)]="newPassenger.name" name="name" required />
+            </div>
+            <div class="form-row">
+              <label>Phone</label>
+              <input type="text" [(ngModel)]="newPassenger.phone" name="phone" required />
+            </div>
+            <div class="form-row">
+              <label>Email</label>
+              <input type="email" [(ngModel)]="newPassenger.email" name="email" required />
+            </div>
+            <div class="form-row">
+              <label>NIC</label>
+              <input type="text" [(ngModel)]="newPassenger.nic" name="nic" required />
+            </div>
+            <div class="form-actions">
+              <button type="button" (click)="closeAddPassengerModal()">Cancel</button>
+              <button type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Update Passenger Modal -->
+      <div class="update-passenger-modal" *ngIf="showUpdatePassengerModal" (click)="closeUpdatePassengerModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <h2>Update Passenger</h2>
+          <form (ngSubmit)="saveUpdatedPassenger()" *ngIf="selectedPassenger">
+            <div class="form-row">
+              <label>Name</label>
+              <input type="text" [(ngModel)]="selectedPassenger!.name" name="name" required />
+            </div>
+            <div class="form-row">
+              <label>Phone</label>
+              <input type="text" [(ngModel)]="selectedPassenger!.phone" name="phone" required />
+            </div>
+            <div class="form-row">
+              <label>Email</label>
+              <input type="email" [(ngModel)]="selectedPassenger!.email" name="email" required />
+            </div>
+            <div class="form-row">
+              <label>NIC</label>
+              <input type="text" [(ngModel)]="selectedPassenger!.nic" name="nic" required />
+            </div>
+            <div class="form-actions">
+              <button type="button" (click)="closeUpdatePassengerModal()">Cancel</button>
+              <button type="submit">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-container">
+          <input type="text" class="search-input"
+                 placeholder="Search by name, email, phone, NIC or ID..."
+                 [(ngModel)]="searchTerm" (input)="onSearchChange()"/>
+          <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+        </div>
+
+        <button class="export-btn" (click)="exportHistoryPdf()">Export Passengers History (PDF)</button>
+      </div>
+
+      <table class="passenger-table">
+        <thead>
+          <tr>
+            <th>Passenger ID</th>
+            <th (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
+              Name {{ getSortIcon('name') }}
+            </th>
+            <th class="center-col">Phone</th>
+            <th class="email-col center-col">Email</th>
+            <th class="nic-col center-col">NIC</th>
+            <th class="center-col">Created</th>
+            <th class="center-col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredPassengers">
+            <td>{{ p.passenger_id }}</td>
+            <td>{{ p.name }}</td>
+            <td class="center-col">{{ p.phone }}</td>
+            <td class="email-col center-col">{{ p.email }}</td>
+            <td class="nic-col center-col">{{ p.nic }}</td>
+            <td class="center-col">{{ p.created_at | date:'yyyy-MM-dd' }}</td>
+            <td class="actions-cell center-col">
+              <i class="fas fa-edit action-icon edit-icon" (click)="updatePassenger(p)" title="Update"></i>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<app-notification-panel *ngIf="showNotificationPanel" (close)="closeNotificationPanel()"></app-notification-panel>

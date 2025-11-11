@@ -1,0 +1,86 @@
+<div class="management-container">
+  <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="'user-profile'"
+    (toggle)="onSidebarToggle()" (navigate)="onSidebarNavigate($event)" (logout)="onSidebarLogout()"></app-sidebar>
+  <div class="main-content" [ngClass]="{'sidebar-open': sidebarOpen, 'sidebar-collapsed': !sidebarOpen}">
+    <div class="user-profile-wrapper">
+      <div class="profile-header">
+        <h2>Your Profile</h2>
+        <div class="profile-picture-row">
+          <div class="profile-picture-container">
+            <img [src]="profileImageUrl || 'assets/img/yuuu.jpg_large'" alt="Profile Picture" class="profile-picture" />
+            <label class="edit-picture-btn">
+              <input type="file" accept="image/*" (change)="onProfileImageChange($event)" hidden />
+              <span class="edit-icon">✏️</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <form class="profile-form">
+        <section class="section personal-info">
+          <h3 class="section-title">Personal info</h3>
+          <div class="personal-fields">
+            <div class="field-group">
+              <label>Name</label>
+              <input [(ngModel)]="editUser.name" name="name" />
+            </div>
+            <div class="field-group">
+              <label>Mobile Number</label>
+              <div class="mobile-input">
+                <select [(ngModel)]="editUser.countryCode" name="countryCode">
+                  <option value="+971">+971</option>
+                  <option value="+1">+1</option>
+                  <option value="+44">+44</option>
+                </select>
+                <input [(ngModel)]="editUser.mobile" name="mobile" />
+              </div>
+            </div>
+            <div class="field-group">
+              <label>Work Email</label>
+              <input [(ngModel)]="editUser.email" name="email" />
+            </div>
+            <div class="field-group">
+              <label>Access Level</label>
+              <input [(ngModel)]="editUser.about" name="about" disabled />
+            </div>
+            <div class="field-group">
+              <label>Date joined</label>
+              <input [(ngModel)]="editUser.datejoined" name="joined" disabled />
+            </div>
+            
+          </div>
+          <button class="save-btn" type="button" (click)="onSave()">Save</button>
+        </section>
+        <section class="section notifications">
+          <h2 class="section-title1">Notification setting</h2>
+          <h3 class="section-title">Notifications</h3>
+          <div class="notifications-grid">
+            <div class="notif-col">
+              <div class="notif-row" *ngFor="let n of notificationSettings">
+                <div>
+                  <div class="notif-label">{{n.label}}</div>
+                  <div class="notif-desc">{{n.desc}}</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="n.enabled" name="notif-{{n.key}}" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="notif-col">
+              <div class="notif-row" *ngFor="let n of notificationToggles">
+                <div>
+                  <div class="notif-label">{{n.label}}</div>
+                  <div class="notif-desc">{{n.desc}}</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="n.enabled" name="notif-toggle-{{n.key}}" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+      </form>
+    </div>
+  </div>
+</div>

@@ -2,12 +2,18 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessC
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
-export const appConfig: ApplicationConfig = {
+export const baseConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideRouter(routes), provideClientHydration(withEventReplay())
+    provideRouter(routes)
+  ]
+};
+
+export const appConfig: ApplicationConfig = {
+  ...baseConfig,
+  providers: [
+    ...baseConfig.providers
   ]
 };
