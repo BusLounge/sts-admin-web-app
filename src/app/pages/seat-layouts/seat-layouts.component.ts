@@ -112,11 +112,16 @@ export class SeatLayoutsComponent implements OnInit {
   }
 
   saveTemplate() {
-    if (!this.templateName || this.seatMap.length === 0) {
+    // Count total selected seats
+    const totalSeats = this.seatMap.reduce((total, row) =>
+      total + row.filter(seat => seat).length, 0
+    );
+
+    if (!this.templateName || totalSeats === 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Validation Error',
-        detail: 'Please provide template name and configure seats'
+        detail: 'Please provide template name and select at least one seat'
       });
       return;
     }

@@ -64,4 +64,14 @@
   <div class="seat-summary">
     Total seats configured: <strong>{{ getTotalSeats() }}</strong>
   </div>
+
+  <div class="row-controls">
+    <button type="button" class="row-btn remove-btn" (click)="removeRow()" [disabled]="totalRows <= 1" title="Remove row">
+      <i class="pi pi-minus"></i> Remove Row
+    </button>
+    <span class="row-count">{{ totalRows }} rows</span>
+    <button type="button" class="row-btn add-btn" (click)="addRow()" title="Add row">
+      <i class="pi pi-plus"></i> Add Row
+    </button>
+  </div>
 </div>

@@ -26,9 +26,9 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
   }
 
   initializeSeatMap() {
-    // Initialize with all seats selected by default
+    // Initialize with default pattern: window seats selected (X X _ _ X X)
     this.seatMap = Array(this.totalRows).fill(null).map(() =>
-      Array(this.seatsPerRow).fill(true)
+      [true, true, false, false, true, true]
     );
     this.emitSeatMap();
   }
@@ -38,9 +38,9 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
     const newRows = this.totalRows;
 
     if (newRows > currentRows) {
-      // Add new rows at the end with all seats selected
+      // Add new rows at the end with default pattern (X X _ _ X X)
       for (let i = currentRows; i < newRows; i++) {
-        this.seatMap.push(Array(this.seatsPerRow).fill(true));
+        this.seatMap.push([true, true, false, false, true, true]);
       }
     } else if (newRows < currentRows) {
       // Remove rows from the end
@@ -100,5 +100,19 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
     return this.seatMap.reduce((total, row) =>
       total + row.filter(seat => seat).length, 0
     );
+  }
+
+  addRow() {
+    this.totalRows++;
+    this.seatMap.push([true, true, false, false, true, true]);
+    this.emitSeatMap();
+  }
+
+  removeRow() {
+    if (this.totalRows > 1) {
+      this.totalRows--;
+      this.seatMap.pop();
+      this.emitSeatMap();
+    }
   }
 }
