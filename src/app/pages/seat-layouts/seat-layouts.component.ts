@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 // PrimeNG imports
@@ -76,25 +76,9 @@ export class SeatLayoutsComponent implements OnInit {
 
   loadTemplates() {
     this.loading.set(true);
-    const token = localStorage.getItem('access_token');
-
-    if (!token) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Authentication Required',
-        detail: 'Please log in to view seat layout templates'
-      });
-      this.loading.set(false);
-      return;
-    }
-
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
 
     this.http.get<{ templates: SeatLayoutTemplate[], count: number }>(
-      `${environment.apiUrl}/admin/seat-layouts`,
-      { headers }
+      `${environment.apiUrl}/admin/seat-layouts`
     ).subscribe({
       next: (response) => {
         this.templates.set(response.templates);
@@ -137,21 +121,6 @@ export class SeatLayoutsComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Authentication Required',
-        detail: 'Please log in to create templates'
-      });
-      return;
-    }
-
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-
     const requestBody = {
       template_name: this.templateName,
       total_rows: this.totalRows,
@@ -161,8 +130,7 @@ export class SeatLayoutsComponent implements OnInit {
 
     this.http.post(
       `${environment.apiUrl}/admin/seat-layouts`,
-      requestBody,
-      { headers }
+      requestBody
     ).subscribe({
       next: (response: any) => {
         this.messageService.add({
@@ -185,23 +153,8 @@ export class SeatLayoutsComponent implements OnInit {
   }
 
   viewTemplate(template: SeatLayoutTemplate) {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Authentication Required',
-        detail: 'Please log in to view template details'
-      });
-      return;
-    }
-
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-
     this.http.get(
-      `${environment.apiUrl}/admin/seat-layouts/${template.id}`,
-      { headers }
+      `${environment.apiUrl}/admin/seat-layouts/${template.id}`
     ).subscribe({
       next: (response: any) => {
         this.previewTemplate = response;
@@ -224,23 +177,8 @@ export class SeatLayoutsComponent implements OnInit {
       header: 'Confirm Delete',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Authentication Required',
-            detail: 'Please log in to delete templates'
-          });
-          return;
-        }
-
-        const headers = new HttpHeaders({
-          'Authorization': `Bearer ${token}`
-        });
-
         this.http.delete(
-          `${environment.apiUrl}/admin/seat-layouts/${template.id}`,
-          { headers }
+          `${environment.apiUrl}/admin/seat-layouts/${template.id}`
         ).subscribe({
           next: () => {
             this.messageService.add({
