@@ -23,6 +23,7 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^20.3.10",
     "@angular/common": "^20.2.0",
     "@angular/compiler": "^20.2.0",
     "@angular/core": "^20.2.0",
@@ -37,6 +38,8 @@
     "jspdf": "^3.0.2",
     "jspdf-autotable": "^5.0.2",
     "ng2-charts": "^8.0.0",
+    "primeicons": "^7.0.0",
+    "primeng": "^20.3.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
