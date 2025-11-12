@@ -110,9 +110,9 @@
 
       <div class="form-field">
         <label>Seat Configuration *</label>
-        <p class="help-text">Click on boxes to select seats. Window seats are auto-detected.</p>
+        <p class="help-text">Click on boxes to select seats. Use +/- buttons to add/remove rows.</p>
         <app-seat-selector
-          [totalRows]="totalRows"
+          [(totalRows)]="totalRows"
           (seatMapChange)="onSeatMapChange($event)">
         </app-seat-selector>
       </div>

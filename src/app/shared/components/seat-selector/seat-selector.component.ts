@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 export class SeatSelectorComponent implements OnInit, OnChanges {
   @Input() totalRows: number = 5;
   @Output() seatMapChange = new EventEmitter<boolean[][]>();
+  @Output() totalRowsChange = new EventEmitter<number>();
 
   seatMap: boolean[][] = [];
   seatsPerRow = 6; // 3 left + 3 right
@@ -105,6 +106,7 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
   addRow() {
     this.totalRows++;
     this.seatMap.push([true, true, false, false, true, true]);
+    this.totalRowsChange.emit(this.totalRows);
     this.emitSeatMap();
   }
 
@@ -112,6 +114,7 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
     if (this.totalRows > 1) {
       this.totalRows--;
       this.seatMap.pop();
+      this.totalRowsChange.emit(this.totalRows);
       this.emitSeatMap();
     }
   }
