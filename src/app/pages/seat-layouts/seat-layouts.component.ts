@@ -76,7 +76,17 @@ export class SeatLayoutsComponent implements OnInit {
 
   loadTemplates() {
     this.loading.set(true);
-    const token = localStorage.getItem('adminAccessToken');
+    const token = localStorage.getItem('access_token');
+
+    if (!token) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Authentication Required',
+        detail: 'Please log in to view seat layout templates'
+      });
+      this.loading.set(false);
+      return;
+    }
 
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
@@ -92,10 +102,13 @@ export class SeatLayoutsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to load templates:', error);
+        const errorMessage = error.status === 401
+          ? 'Session expired. Please log in again.'
+          : error.error?.error || 'Failed to load seat layout templates';
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to load seat layout templates'
+          detail: errorMessage
         });
         this.loading.set(false);
       }
@@ -124,7 +137,16 @@ export class SeatLayoutsComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('adminAccessToken');
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Authentication Required',
+        detail: 'Please log in to create templates'
+      });
+      return;
+    }
+
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -163,7 +185,16 @@ export class SeatLayoutsComponent implements OnInit {
   }
 
   viewTemplate(template: SeatLayoutTemplate) {
-    const token = localStorage.getItem('adminAccessToken');
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Authentication Required',
+        detail: 'Please log in to view template details'
+      });
+      return;
+    }
+
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
@@ -193,7 +224,16 @@ export class SeatLayoutsComponent implements OnInit {
       header: 'Confirm Delete',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        const token = localStorage.getItem('adminAccessToken');
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Authentication Required',
+            detail: 'Please log in to delete templates'
+          });
+          return;
+        }
+
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${token}`
         });

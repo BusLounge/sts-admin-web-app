@@ -21,7 +21,7 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['totalRows']) {
-      this.initializeSeatMap();
+      this.adjustSeatMapForRowChange();
     }
   }
 
@@ -30,6 +30,23 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
     this.seatMap = Array(this.totalRows).fill(null).map(() =>
       Array(this.seatsPerRow).fill(true)
     );
+    this.emitSeatMap();
+  }
+
+  adjustSeatMapForRowChange() {
+    const currentRows = this.seatMap.length;
+    const newRows = this.totalRows;
+
+    if (newRows > currentRows) {
+      // Add new rows at the end with all seats selected
+      for (let i = currentRows; i < newRows; i++) {
+        this.seatMap.push(Array(this.seatsPerRow).fill(true));
+      }
+    } else if (newRows < currentRows) {
+      // Remove rows from the end
+      this.seatMap = this.seatMap.slice(0, newRows);
+    }
+
     this.emitSeatMap();
   }
 
@@ -44,13 +61,29 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
 
   getRowLabel(rowIndex: number): string {
     // Convert 0-based index to alphabetic label (A, B, C...)
+    let label: string;
     if (rowIndex < 26) {
-      return String.fromCharCode(65 + rowIndex);
+      label = String.fromCharCode(65 + rowIndex);
+    } else {
+      // For rows > 26, use AA, AB, etc.
+      const firstLetter = String.fromCharCode(65 + Math.floor(rowIndex / 26) - 1);
+      const secondLetter = String.fromCharCode(65 + (rowIndex % 26));
+      label = firstLetter + secondLetter;
     }
-    // For rows > 26, use AA, AB, etc.
-    const firstLetter = String.fromCharCode(65 + Math.floor(rowIndex / 26) - 1);
-    const secondLetter = String.fromCharCode(65 + (rowIndex % 26));
-    return firstLetter + secondLetter;
+
+    // Add row number in brackets
+    const rowNumber = rowIndex + 1;
+    const suffix = this.getOrdinalSuffix(rowNumber);
+    return `${label} (${rowNumber}${suffix} row)`;
+  }
+
+  getOrdinalSuffix(num: number): string {
+    const j = num % 10;
+    const k = num % 100;
+    if (j === 1 && k !== 11) return 'st';
+    if (j === 2 && k !== 12) return 'nd';
+    if (j === 3 && k !== 13) return 'rd';
+    return 'th';
   }
 
   isSeatSelected(rowIndex: number, seatIndex: number): boolean {
