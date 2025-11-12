@@ -33,7 +33,7 @@
             [class.aisle]="seatIndex === 2"
             (click)="toggleSeat(rowIndex, seatIndex)">
             <div class="seat-number" *ngIf="isSeatSelected(rowIndex, seatIndex)">
-              {{ seatIndex + 1 }}
+              {{ getActualSeatNumber(rowIndex, seatIndex) }}
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@
             [class.aisle]="seat === 3"
             (click)="toggleSeat(rowIndex, seat)">
             <div class="seat-number" *ngIf="isSeatSelected(rowIndex, seat)">
-              {{ seat + 1 }}
+              {{ getActualSeatNumber(rowIndex, seat) }}
             </div>
           </div>
         </div>

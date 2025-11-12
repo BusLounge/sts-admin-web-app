@@ -103,7 +103,10 @@ export class SeatLayoutsComponent implements OnInit {
     this.templateName = '';
     this.description = '';
     this.totalRows = 5;
-    this.seatMap = [];
+    // Initialize with default pattern (X X _ _ X X) to match child component
+    this.seatMap = Array(this.totalRows).fill(null).map(() =>
+      [true, true, false, false, true, true]
+    );
     this.displayDialog.set(true);
   }
 

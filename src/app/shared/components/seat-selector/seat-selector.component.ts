@@ -103,6 +103,17 @@ export class SeatSelectorComponent implements OnInit, OnChanges {
     );
   }
 
+  getActualSeatNumber(rowIndex: number, seatIndex: number): number {
+    // Calculate continuous seat number based on selected seats in this row
+    let seatNumber = 0;
+    for (let i = 0; i <= seatIndex; i++) {
+      if (this.seatMap[rowIndex][i]) {
+        seatNumber++;
+      }
+    }
+    return seatNumber;
+  }
+
   addRow() {
     this.totalRows++;
     this.seatMap.push([true, true, false, false, true, true]);
