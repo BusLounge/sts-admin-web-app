@@ -30,6 +30,13 @@ export class LoginComponent {
   ) {}
 
   onLogin() {
+    // TEMPORARY: Navigate directly to dashboard for development
+    console.log('Temporarily navigating to dashboard for development.');
+    this.router.navigate(['/dashboard']);
+
+    // Uncomment below code for actual login logic
+
+    /*
     if (!this.username || !this.password) {
       this.errorMessage = 'Please enter both email and password';
       return;
@@ -105,6 +112,7 @@ export class LoginComponent {
         }
       }
     });
+    */
   }
 
   goBack() {

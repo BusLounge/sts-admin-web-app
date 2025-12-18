@@ -1,0 +1,12 @@
+<nav class="navbar">
+  <div class="nav-items">
+    <a *ngFor="let item of menuItems" 
+       [routerLink]="item.route" 
+       class="nav-item" 
+       [class.active]="isActive(item.route)">
+      <i [class]="item.icon"></i>
+      <span>{{ item.label }}</span>
+      <span *ngIf="item.badge" class="badge">{{ item.badge }}</span>
+    </a>
+  </div>
+</nav>

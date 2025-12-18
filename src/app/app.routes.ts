@@ -23,12 +23,14 @@ import { EditConductorComponent } from './pages/conductor-management/edit-conduc
 import { NotificationDetailsComponent } from './pages/notification-details/notification-details.component';
 import { UserProfileComponent } from './pages/user-profile/user-profile.component';
 import { SeatLayoutsComponent } from './pages/seat-layouts/seat-layouts.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent },
+  { path: 'settings', component: SettingsComponent },
   { path: 'bus-management', component: BusManagementComponent },
   { path: 'bus-management/edit/:id', component: EditBusComponent },
   { path: 'driver-management', component: DriverManagementComponent },
