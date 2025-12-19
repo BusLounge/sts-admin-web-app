@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { BusService } from '../../core/services/bus.service';
 import { LoungeService } from '../../core/services/lounge.service';
 import { DriverService } from '../../core/services/driver.service';
@@ -14,19 +14,18 @@ import { PassengerService } from '../../core/services/passenger.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, NotificationPanelComponent],
+  imports: [CommonModule, NotificationPanelComponent, NavbarComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  sidebarOpen = true;
-  currentPage = 'dashboard';
   showNotificationPanel = false;
 
   numBuses = 0;
   numLounges = 0;
   numDrivers = 0;
   numConductors = 0;
+  totalLoungeRevenue = 0;
 
   // Chart data
   busStatusCounts: Record<string, number> = {};
@@ -84,6 +83,7 @@ export class DashboardComponent implements OnInit {
 
     this.loungeBookingService.bookings$.subscribe(bookings => {
       this.loungeRevenueByLounge = this.computeLoungeRevenue(bookings);
+      this.totalLoungeRevenue = bookings.reduce((sum, b) => sum + (b.payment_status === 'Paid' ? b.total_amount : 0), 0);
     });
 
     this.passengerService.passengers$.subscribe(passengers => {
@@ -210,25 +210,12 @@ export class DashboardComponent implements OnInit {
     return '#0046FF';
   }
 
-  toggleSidebar(): void {
-    this.sidebarOpen = !this.sidebarOpen;
-  }
-
-  navigateTo(page: string): void {
-    this.currentPage = page;
-    this.router.navigate([`/${page}`]);
-  }
-
   toggleNotificationPanel(): void {
     this.showNotificationPanel = !this.showNotificationPanel;
   }
 
   closeNotificationPanel(): void {
     this.showNotificationPanel = false;
-  }
-
-  logout(): void {
-    this.router.navigate(['/']);
   }
 
   goToUserProfile(): void {
