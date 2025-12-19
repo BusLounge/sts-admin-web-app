@@ -1,6 +1,24 @@
 <div class="settings-container">
-  <div class="header-breadcrumb">
-    <span class="breadcrumb-link">Dashboard</span> > <span class="breadcrumb-current">Settings</span>
+  <div class="top-navigation-row">
+    <div class="app-branding">
+      <div class="logo-circle">
+        <i class="fas fa-bus"></i>
+      </div>
+      <span class="app-name">BusLounge</span>
+    </div>
+    <app-navbar></app-navbar>
+    <div class="header-actions">
+      <button class="icon-btn notification-btn" (click)="toggleNotificationPanel()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+      </button>
+      <button class="icon-btn profile-btn" (click)="goToUserProfile()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </button>
+    </div>
   </div>
   
   <div class="settings-header">
@@ -31,7 +49,7 @@
         <div class="profile-header">
           <h2>Your Profile</h2>
           <div class="avatar-container">
-            <p-avatar icon="pi pi-user" styleClass="mr-2" size="xlarge" shape="circle" [style]="{'background-color': '#ccc', 'color': '#fff'}"></p-avatar>
+            <p-avatar icon="pi pi-user" styleClass="mr-2 profile-avatar" size="xlarge" shape="circle"></p-avatar>
           </div>
         </div>
 
@@ -41,37 +59,37 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Full Name</label>
-              <input type="text" pInputText [(ngModel)]="userProfile.fullName" />
+              <input type="text" pInputText [(ngModel)]="userProfile.fullName" placeholder="Full Name" />
             </div>
             
             <div class="form-group">
               <label>User Name</label>
-              <input type="text" pInputText [(ngModel)]="userProfile.userName" />
+              <input type="text" pInputText [(ngModel)]="userProfile.userName" placeholder="User Name" />
             </div>
             
             <div class="form-group">
               <label>Access Level</label>
-              <input type="text" pInputText [(ngModel)]="userProfile.accessLevel" [disabled]="true" />
+              <input type="text" pInputText [(ngModel)]="userProfile.accessLevel" [disabled]="true" placeholder="Access Level" />
             </div>
             
             <div class="form-group">
               <label>Date Joined</label>
-              <input type="text" pInputText [(ngModel)]="userProfile.dateJoined" [disabled]="true" />
+              <input type="text" pInputText [(ngModel)]="userProfile.dateJoined" [disabled]="true" placeholder="Date Joined" />
             </div>
             
             <div class="form-group">
               <label>Contact Number</label>
-              <input type="text" pInputText [(ngModel)]="userProfile.contactNumber" />
+              <input type="text" pInputText [(ngModel)]="userProfile.contactNumber" placeholder="Contact Number" />
             </div>
             
             <div class="form-group">
               <label>Emergency Contact</label>
-              <input type="text" pInputText [(ngModel)]="userProfile.emergencyContact" />
+              <input type="text" pInputText [(ngModel)]="userProfile.emergencyContact" placeholder="Emergency Contact" />
             </div>
             
             <div class="form-group full-width">
               <label>Work Email</label>
-              <input type="text" pInputText [(ngModel)]="userProfile.workEmail" />
+              <input type="text" pInputText [(ngModel)]="userProfile.workEmail" placeholder="Work Email" />
             </div>
           </div>
           
@@ -80,11 +98,298 @@
           </div>
         </div>
       </div>
+
+      <div *ngIf="activeSection === 'Users & Roles'" class="users-section">
+        <ng-container *ngIf="userViewMode === 'list'">
+          <div class="section-header">
+            <div>
+              <h2>Users & Roles</h2>
+              <p>Manage who can access the system</p>
+            </div>
+          </div>
+
+          <div class="users-toolbar">
+            <div class="search-wrapper">
+              <i class="pi pi-search"></i>
+              <input type="text" pInputText placeholder="Search users" />
+            </div>
+            <button pButton label="Add user" class="p-button-primary add-user-btn" (click)="showAddUser()"></button>
+          </div>
+
+          <p-table [value]="users" [tableStyle]="{'min-width': '60rem'}" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>User ID</th>
+                <th>Full Name</th>
+                <th>User Name</th>
+                <th>Contact Num</th>
+                <th>Email</th>
+                <th>Last Activity</th>
+                <th>Role</th>
+                <th>Permissions</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-user>
+              <tr>
+                <td>{{user.id}}</td>
+                <td>{{user.fullName}}</td>
+                <td>{{user.userName}}</td>
+                <td>{{user.contact}}</td>
+                <td>{{user.email}}</td>
+                <td>{{user.lastActivity}}</td>
+                <td>{{user.role}}</td>
+                <td>{{user.permissions}}</td>
+                <td><span class="status-active">{{user.status}}</span></td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="icon-btn" (click)="viewUser(user)"><i class="pi pi-eye"></i></button>
+                    <button class="icon-btn" (click)="editUser(user)"><i class="pi pi-pencil"></i></button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </ng-container>
+
+        <ng-container *ngIf="userViewMode === 'add'">
+          <div class="section-header">
+            <div>
+              <h2>Add New User</h2>
+              <p>Add a new member to the system</p>
+            </div>
+          </div>
+
+          <div class="add-user-form">
+            <h3>User Details</h3>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" pInputText [(ngModel)]="newUser.fullName" />
+              </div>
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" pInputText [(ngModel)]="newUser.userName" />
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="text" pInputText [(ngModel)]="newUser.email" />
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Contact Number</label>
+                <input type="text" pInputText [(ngModel)]="newUser.contactNumber" />
+              </div>
+              <div class="form-group">
+                <label>Emergency Contact</label>
+                <input type="text" pInputText [(ngModel)]="newUser.emergencyContact" />
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Role</label>
+                <input type="text" pInputText [(ngModel)]="newUser.role" />
+              </div>
+            </div>
+
+            <div class="permissions-section">
+              <h3>Permissions</h3>
+              <div class="permissions-scroll-container">
+                <div class="permission-column" *ngFor="let group of permissionGroups; let i = index">
+                  <div class="group-header">
+                    <p-checkbox [(ngModel)]="group.selected" [binary]="true" [inputId]="'group_' + i" (onChange)="toggleGroupPermissions(group)"></p-checkbox>
+                    <label [for]="'group_' + i">{{group.name}}</label>
+                  </div>
+                  <div class="permission-list">
+                    <div class="permission-item" *ngFor="let permission of group.permissions; let j = index">
+                      <p-checkbox [(ngModel)]="permission.selected" [binary]="true" [inputId]="'perm_' + i + '_' + j" (onChange)="checkGroupPermissions(group)"></p-checkbox>
+                      <label [for]="'perm_' + i + '_' + j">{{permission.name}}</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h3>Password</h3>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" pInputText [(ngModel)]="newUser.password" />
+              </div>
+              <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" pInputText [(ngModel)]="newUser.confirmPassword" />
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button pButton label="Cancel" class="p-button-secondary" (click)="cancelAddUser()"></button>
+              <button pButton label="Save" class="p-button-primary"></button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="userViewMode === 'edit'">
+          <div class="section-header">
+            <div>
+              <h2>Edit User</h2>
+              <p>Update user details</p>
+            </div>
+          </div>
+
+          <div class="add-user-form">
+            <h3>User Details</h3>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" pInputText [(ngModel)]="selectedUser.fullName" />
+              </div>
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" pInputText [(ngModel)]="selectedUser.userName" />
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="text" pInputText [(ngModel)]="selectedUser.email" />
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Contact Number</label>
+                <input type="text" pInputText [(ngModel)]="selectedUser.contactNumber" />
+              </div>
+              <div class="form-group">
+                <label>Emergency Contact</label>
+                <input type="text" pInputText [(ngModel)]="selectedUser.emergencyContact" />
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Role</label>
+                <input type="text" pInputText [(ngModel)]="selectedUser.role" />
+              </div>
+            </div>
+
+            <div class="permissions-section">
+              <h3>Permissions</h3>
+              <div class="permissions-scroll-container">
+                <div class="permission-column" *ngFor="let group of permissionGroups; let i = index">
+                  <div class="group-header">
+                    <p-checkbox [(ngModel)]="group.selected" [binary]="true" [inputId]="'edit_group_' + i" (onChange)="toggleGroupPermissions(group)"></p-checkbox>
+                    <label [for]="'edit_group_' + i">{{group.name}}</label>
+                  </div>
+                  <div class="permission-list">
+                    <div class="permission-item" *ngFor="let permission of group.permissions; let j = index">
+                      <p-checkbox [(ngModel)]="permission.selected" [binary]="true" [inputId]="'edit_perm_' + i + '_' + j" (onChange)="checkGroupPermissions(group)"></p-checkbox>
+                      <label [for]="'edit_perm_' + i + '_' + j">{{permission.name}}</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h3>Password</h3>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" pInputText [(ngModel)]="selectedUser.password" placeholder="Leave blank to keep current" />
+              </div>
+              <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" pInputText [(ngModel)]="selectedUser.confirmPassword" placeholder="Leave blank to keep current" />
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button pButton label="Cancel" class="p-button-secondary" (click)="cancelAddUser()"></button>
+              <button pButton label="Update" class="p-button-primary"></button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="userViewMode === 'view'">
+          <div class="section-header">
+            <div>
+              <h2>View User</h2>
+              <p>View user details</p>
+            </div>
+          </div>
+
+          <div class="add-user-form">
+            <h3>User Details</h3>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" pInputText [ngModel]="selectedUser.fullName" [disabled]="true" />
+              </div>
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" pInputText [ngModel]="selectedUser.userName" [disabled]="true" />
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="text" pInputText [ngModel]="selectedUser.email" [disabled]="true" />
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Contact Number</label>
+                <input type="text" pInputText [ngModel]="selectedUser.contactNumber" [disabled]="true" />
+              </div>
+              <div class="form-group">
+                <label>Emergency Contact</label>
+                <input type="text" pInputText [ngModel]="selectedUser.emergencyContact" [disabled]="true" />
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Role</label>
+                <input type="text" pInputText [ngModel]="selectedUser.role" [disabled]="true" />
+              </div>
+            </div>
+
+            <div class="permissions-section">
+              <h3>Permissions</h3>
+              <div class="permissions-scroll-container">
+                <div class="permission-column" *ngFor="let group of permissionGroups; let i = index">
+                  <div class="group-header">
+                    <p-checkbox [ngModel]="group.selected" [binary]="true" [inputId]="'view_group_' + i" [disabled]="true"></p-checkbox>
+                    <label [for]="'view_group_' + i">{{group.name}}</label>
+                  </div>
+                  <div class="permission-list">
+                    <div class="permission-item" *ngFor="let permission of group.permissions; let j = index">
+                      <p-checkbox [ngModel]="permission.selected" [binary]="true" [inputId]="'view_perm_' + i + '_' + j" [disabled]="true"></p-checkbox>
+                      <label [for]="'view_perm_' + i + '_' + j">{{permission.name}}</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button pButton label="Close" class="p-button-secondary" (click)="cancelAddUser()"></button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
       
-      <div *ngIf="activeSection !== 'Profile Setting'" class="placeholder-content">
+      <div *ngIf="activeSection !== 'Profile Setting' && activeSection !== 'Users & Roles'" class="placeholder-content">
         <h2>{{ activeSection }}</h2>
         <p>Content for {{ activeSection }} goes here.</p>
       </div>
     </div>
   </div>
+  
+  <app-notification-panel 
+    *ngIf="showNotificationPanel" 
+    (close)="closeNotificationPanel()">
+  </app-notification-panel>
 </div>
