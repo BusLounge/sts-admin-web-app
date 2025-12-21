@@ -2,6 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
+interface MenuItem {
+  label: string;
+  icon: string;
+  route: string;
+  badge?: number;
+  children?: { label: string; route: string; }[];
+}
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -10,7 +18,7 @@ import { Router, RouterModule } from '@angular/router';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
-  menuItems = [
+  menuItems: MenuItem[] = [
     { label: 'Dashboard', icon: 'fas fa-th-large', route: '/dashboard' },
     { label: 'Bus', icon: 'fas fa-bus', route: '/bus-management' },
     { label: 'Driver', icon: 'fas fa-user-tie', route: '/driver-management' },
@@ -19,9 +27,20 @@ export class NavbarComponent implements OnInit {
     { label: 'Lounge', icon: 'fas fa-couch', route: '/lounges-management' },
     { label: 'Bus Bookings', icon: 'fas fa-ticket-alt', route: '/bus-booking' },
     { label: 'Lounge Bookings', icon: 'fas fa-clipboard-list', route: '/lounge-booking' },
-    { label: 'Support', icon: 'fas fa-headset', route: '/support', badge: 3 },
+    { 
+      label: 'Support', 
+      icon: 'fas fa-headset', 
+      route: '/support', 
+      badge: 3,
+      children: [
+        { label: 'Complaints', route: '/complaints' },
+        { label: 'Feedback', route: '/feedback' }
+      ]
+    },
     { label: 'Setting', icon: 'fas fa-cog', route: '/settings' }
   ];
+
+  activeDropdown: string | null = null;
 
   constructor(private router: Router) {}
 
@@ -29,5 +48,13 @@ export class NavbarComponent implements OnInit {
 
   isActive(route: string): boolean {
     return this.router.url === route;
+  }
+
+  toggleDropdown(label: string) {
+    if (this.activeDropdown === label) {
+      this.activeDropdown = null;
+    } else {
+      this.activeDropdown = label;
+    }
   }
 }

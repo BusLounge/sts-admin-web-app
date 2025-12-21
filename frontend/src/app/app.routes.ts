@@ -24,6 +24,8 @@ import { NotificationDetailsComponent } from './pages/notification-details/notif
 import { UserProfileComponent } from './pages/user-profile/user-profile.component';
 import { SeatLayoutsComponent } from './pages/seat-layouts/seat-layouts.component';
 import { SettingsComponent } from './pages/settings/settings.component';
+import { ComplaintManagementComponent } from './pages/complaint-management/complaint-management.component';
+import { FeedbackManagementComponent } from './pages/feedback-management/feedback-management.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -31,6 +33,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'settings', component: SettingsComponent },
+  { path: 'complaints', component: ComplaintManagementComponent },
+  { path: 'feedback', component: FeedbackManagementComponent },
   { path: 'bus-management', component: BusManagementComponent },
   { path: 'bus-management/edit/:id', component: EditBusComponent },
   { path: 'driver-management', component: DriverManagementComponent },
