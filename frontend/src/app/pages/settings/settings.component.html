@@ -192,7 +192,21 @@
             <div class="form-grid-3">
               <div class="form-group">
                 <label>Role</label>
-                <input type="text" pInputText [(ngModel)]="newUser.role" />
+                <input type="text" pInputText [(ngModel)]="selectedUser.role" />
+              </div>
+              <div class="form-group account-status-group">
+                <div class="status-header">
+                  <label>Account Status:</label>
+                  <label class="switch">
+                    <input type="checkbox" [(ngModel)]="selectedUser.isActive" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="status-text-display">
+                  <span [ngClass]="selectedUser.isActive ? 'status-label-active' : 'status-label-inactive'">
+                    {{ selectedUser.isActive ? 'User is Active' : 'User is Inactive' }}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -228,7 +242,7 @@
             
             <div class="form-actions">
               <button pButton label="Cancel" class="p-button-secondary" (click)="cancelAddUser()"></button>
-              <button pButton label="Save" class="p-button-primary"></button>
+              <button pButton label="Save" class="p-button-primary" (click)="saveNewUser()"></button>
             </div>
           </div>
         </ng-container>
@@ -274,6 +288,20 @@
                 <label>Role</label>
                 <input type="text" pInputText [(ngModel)]="selectedUser.role" />
               </div>
+              <div class="form-group account-status-group">
+                <div class="status-header">
+                  <label>Account Status:</label>
+                  <label class="switch">
+                    <input type="checkbox" [(ngModel)]="selectedUser.isActive" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="status-text-display">
+                  <span [ngClass]="selectedUser.isActive ? 'status-label-active' : 'status-label-inactive'">
+                    {{ selectedUser.isActive ? 'User is Active' : 'User is Inactive' }}
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div class="permissions-section">
@@ -308,7 +336,7 @@
             
             <div class="form-actions">
               <button pButton label="Cancel" class="p-button-secondary" (click)="cancelAddUser()"></button>
-              <button pButton label="Update" class="p-button-primary"></button>
+              <button pButton label="Update" class="p-button-primary" (click)="updateUser()"></button>
             </div>
           </div>
         </ng-container>
@@ -354,6 +382,20 @@
                 <label>Role</label>
                 <input type="text" pInputText [ngModel]="selectedUser.role" [disabled]="true" />
               </div>
+              <div class="form-group account-status-group">
+                <div class="status-header">
+                  <label>Account Status:</label>
+                  <label class="switch">
+                    <input type="checkbox" [ngModel]="selectedUser.isActive" [disabled]="true" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="status-text-display">
+                  <span [ngClass]="selectedUser.isActive ? 'status-label-active' : 'status-label-inactive'">
+                    {{ selectedUser.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div class="permissions-section">
@@ -381,7 +423,460 @@
         </ng-container>
       </div>
       
-      <div *ngIf="activeSection !== 'Profile Setting' && activeSection !== 'Users & Roles'" class="placeholder-content">
+      <div *ngIf="activeSection === 'Notification Settings'" class="notification-settings-section">
+        <div class="section-header">
+          <h2>Notification Settings</h2>
+        </div>
+        
+        <div class="notification-grid">
+          <!-- Left Column -->
+          <div class="notification-card">
+            <h3>Notifications</h3>
+            
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Bus Notification</h4>
+                <p>Add new bus requests,Modification bus details...</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.busNotification">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Driver Notification</h4>
+                <p>Add new driver requests,Modification driver details...</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.driverNotification">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Conductor Notification</h4>
+                <p>Add new conductor requests,Modification conductor details</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.conductorNotification">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Lounges Notification</h4>
+                <p>Add new lounges requests,Modification lounge details</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.loungesNotification">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Lounge Booking Notifications</h4>
+                <p>Add new lounge bookings,Modification lounge booking details</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.loungeBookingNotification">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Bus Booking Notifications</h4>
+                <p>Add new Bus bookings,Modification Bus booking details</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.busBookingNotification">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Complaints Notifications</h4>
+                <p>This notifications send by Customer service,other teams .</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.complaintsNotification">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Feedbacks</h4>
+                <p>This Notifications come from Feedback module in system</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.feedbacks">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Complaints</h4>
+                <p>This Notifications come from complaints module in system</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.complaints">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="notification-card">
+            <h3>Quiet Hours</h3>
+            <p class="card-subtitle">For when notifications should be muted</p>
+            
+            <div class="notification-item quiet-hours-toggle">
+              <div class="notification-info">
+                <h4>Enable Quiet Hours</h4>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.quietHours.enabled">
+                <span class="slider"></span>
+              </label>
+            </div>
+            
+            <div class="radio-group" [class.disabled]="!notificationSettings.quietHours.enabled">
+              <div class="radio-item">
+                <input type="radio" id="qh1" name="quietHours" value="1 hour" [(ngModel)]="notificationSettings.quietHours.duration" [disabled]="!notificationSettings.quietHours.enabled">
+                <label for="qh1">1 hour</label>
+              </div>
+              <div class="radio-item">
+                <input type="radio" id="qh4" name="quietHours" value="4 Hours" [(ngModel)]="notificationSettings.quietHours.duration" [disabled]="!notificationSettings.quietHours.enabled">
+                <label for="qh4">4 Hours</label>
+              </div>
+              <div class="radio-item">
+                <input type="radio" id="qh8" name="quietHours" value="8 Hours" [(ngModel)]="notificationSettings.quietHours.duration" [disabled]="!notificationSettings.quietHours.enabled">
+                <label for="qh8">8 Hours</label>
+              </div>
+            </div>
+
+            <div class="notification-item mt-large">
+              <div class="notification-info">
+                <h4>Enable Desktop Notifications</h4>
+                <p>Allow the system to show real-time pop-up alerts on your computer screen.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.desktopNotifications">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Enable Unread Notification Badge</h4>
+                <p>Display a red badge showing the number of unread notifications on the top bar.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.unreadBadge">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Notification Sounds</h4>
+                <p>Play a sound whenever a new notification arrives.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.notificationSounds">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Email Alerts</h4>
+                <p>Receive an email whenever a new system or user notification is triggered.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.emailAlerts">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-info">
+                <h4>Auto-Mark as Read</h4>
+                <p>Automatically mark notifications as read after they are opened.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="notificationSettings.autoMarkRead">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="activeSection === 'System Appearance'" class="system-preferences-section">
+        <div class="section-header">
+          <h2>System Appearance</h2>
+          <p>Customize your interface appearance</p>
+        </div>
+
+        <div class="preferences-card">
+          <h3>Appearance</h3>
+          <p class="card-subtitle">Select your preferred theme</p>
+          
+          <div class="theme-selection-grid">
+             <div class="theme-option" [class.selected]="systemPreferences.theme === 'system'" (click)="selectTheme('system')">
+              <div class="theme-preview">
+                <!-- REPLACE THIS SRC WITH YOUR SYSTEM DEFAULT IMAGE PATH -->
+                <img src="assets/img/Default.jpg" alt="System Default">
+                <div class="check-circle" *ngIf="systemPreferences.theme === 'system'">
+                  <i class="pi pi-check"></i>
+                </div>
+              </div>
+              <span class="theme-label">System Default</span>
+            </div>
+
+            <div class="theme-option" [class.selected]="systemPreferences.theme === 'light'" (click)="selectTheme('light')">
+              <div class="theme-preview">
+                <!-- REPLACE THIS SRC WITH YOUR LIGHT MODE IMAGE PATH -->
+                <img src="assets/img/Light-mode.jpg" alt="Light Mode">
+                <div class="check-circle" *ngIf="systemPreferences.theme === 'light'">
+                  <i class="pi pi-check"></i>
+                </div>
+              </div>
+              <span class="theme-label">Light Mode</span>
+            </div>
+
+            <div class="theme-option" [class.selected]="systemPreferences.theme === 'dark'" (click)="selectTheme('dark')">
+              <div class="theme-preview">
+                <!-- REPLACE THIS SRC WITH YOUR DARK MODE IMAGE PATH -->
+                <img src="assets/img/dark-mode.jpg" alt="Dark Mode">
+                <div class="check-circle" *ngIf="systemPreferences.theme === 'dark'">
+                  <i class="pi pi-check"></i>
+                </div>
+              </div>
+              <span class="theme-label">Dark Mode</span>
+            </div>
+
+           
+          </div>
+        </div>
+        
+        <div class="form-actions" style="margin-top: 20px;">
+          <button pButton label="Cancel" class="p-button-secondary" (click)="cancelSystemPreferences()"></button>
+          <button pButton label="Save" class="p-button-primary" (click)="saveSystemPreferences()"></button>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'Security & Privacy'" class="security-privacy-section">
+        <div class="section-header">
+          <h2>Security & Privacy</h2>
+          <p>Manage account security, session settings, and privacy preferences to protect your admin profile.</p>
+        </div>
+
+        <div class="security-grid">
+          <!-- Left Column -->
+          <div class="grid-column">
+            <!-- Password & Account Security -->
+            <div class="security-card">
+              <h3>Password & Account Security</h3>
+              
+              <div class="form-group mt-20">
+                <label>Change password</label>
+                <p class="helper-text">Please enter your current password to change your password</p>
+              </div>
+
+              <div class="form-group">
+                <label>Your password</label>
+                <input type="password" pInputText placeholder="Enter current password" [(ngModel)]="securitySettings.currentPassword" />
+              </div>
+
+              <div class="form-group">
+                <label>New password</label>
+                <input type="password" pInputText placeholder="Enter new password" [(ngModel)]="securitySettings.newPassword" />
+                <p class="helper-text small">Your new password must be 8-12 character long</p>
+              </div>
+
+              <div class="form-group">
+                <label>Re-enter your new password</label>
+                <input type="password" pInputText placeholder="Confirm password" [(ngModel)]="securitySettings.confirmPassword" />
+              </div>
+
+              <div class="form-actions">
+                <button pButton label="Update" class="p-button-primary"></button>
+                <button pButton label="Cancel" class="p-button-secondary"></button>
+              </div>
+            </div>
+
+            <!-- Login Details -->
+            <div class="security-card">
+              <h3>Login Details</h3>
+              <div class="form-group horizontal">
+                <label>Last Login:</label>
+                <input type="text" pInputText [readonly]="true" [(ngModel)]="securitySettings.lastLogin" class="readonly-input" />
+              </div>
+              <div class="form-group horizontal">
+                <label>Logged in IP:</label>
+                <input type="text" pInputText [readonly]="true" [(ngModel)]="securitySettings.loggedInIp" class="readonly-input" />
+              </div>
+            </div>
+
+            <!-- Authentication Settings -->
+            <div class="security-card">
+              <h3>Authentication Settings</h3>
+              
+              <div class="toggle-item">
+                <label>Require Password for Sensitive Actions</label>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="securitySettings.requirePasswordForSensitive">
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <div class="label-group">
+                  <label>Login Alerts</label>
+                  <p>notification when login happens from new device or location</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="securitySettings.loginAlerts">
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <div class="label-group">
+                  <label>Failed Login Attempt Protection</label>
+                  <p>Lock account after 5 failed attempts</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="securitySettings.failedLoginProtection">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="grid-column">
+            <!-- Device & Browser Security -->
+            <div class="security-card">
+              <h3>Device & Browser Security</h3>
+              
+              <div class="active-sessions-section">
+                <h4>Active sessions</h4>
+                <div class="table-responsive">
+                  <table class="simple-table">
+                    <thead>
+                      <tr>
+                        <th>Username</th>
+                        <th>Device</th>
+                        <th>Workstation</th>
+                        <th>Login time</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let session of activeSessions">
+                        <td>{{session.username}}</td>
+                        <td>{{session.device}}</td>
+                        <td>{{session.workstation}}</td>
+                        <td>{{session.time}}</td>
+                        <td>{{session.status}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="toggle-item mt-20">
+                <label>Allow Login From New Device</label>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="securitySettings.allowNewDeviceLogin">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Data & Privacy Management -->
+            <div class="security-card">
+              <h3>Data & Privacy Management</h3>
+              
+              <div class="privacy-grid">
+                <div class="privacy-column">
+                  <h4>Profile Visibility</h4>
+                  <div class="checkbox-group">
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.profileVisibility.adminsOnly" [binary]="true" inputId="pv_admin"></p-checkbox>
+                      <label for="pv_admin">Admins only</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.profileVisibility.operationsManagers" [binary]="true" inputId="pv_ops"></p-checkbox>
+                      <label for="pv_ops">Operations Managers</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.profileVisibility.bookingManagers" [binary]="true" inputId="pv_book"></p-checkbox>
+                      <label for="pv_book">Bookings & Lounge Managers</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.profileVisibility.everyone" [binary]="true" inputId="pv_all"></p-checkbox>
+                      <label for="pv_all">Everyone</label>
+                    </div>
+                  </div>
+
+                  <h4 class="mt-20">Export & Download Controls</h4>
+                  <div class="checkbox-group">
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.exportControls.adminsOnly" [binary]="true" inputId="ed_admin"></p-checkbox>
+                      <label for="ed_admin">Admins only</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.exportControls.operationsManagers" [binary]="true" inputId="ed_ops"></p-checkbox>
+                      <label for="ed_ops">Operations Managers</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.exportControls.bookingManagers" [binary]="true" inputId="ed_book"></p-checkbox>
+                      <label for="ed_book">Bookings & Lounge Managers</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.exportControls.everyone" [binary]="true" inputId="ed_all"></p-checkbox>
+                      <label for="ed_all">Everyone</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="privacy-column">
+                  <h4>Privacy Notifications</h4>
+                  <p class="helper-text">Admin gets alerts when:</p>
+                  <div class="checkbox-group">
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.privacyNotifications.viewSensitiveInfo" [binary]="true" inputId="pn_view"></p-checkbox>
+                      <label for="pn_view">Someone views sensitive info</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.privacyNotifications.downloadReport" [binary]="true" inputId="pn_down"></p-checkbox>
+                      <label for="pn_down">Someone downloads a report</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <p-checkbox [(ngModel)]="privacySettings.privacyNotifications.updatePrivacy" [binary]="true" inputId="pn_upd"></p-checkbox>
+                      <label for="pn_upd">Someone updates profile privacy settings</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection !== 'Profile Setting' && activeSection !== 'Users & Roles' && activeSection !== 'Notification Settings' && activeSection !== 'System Appearance' && activeSection !== 'Security & Privacy'" class="placeholder-content">
         <h2>{{ activeSection }}</h2>
         <p>Content for {{ activeSection }} goes here.</p>
       </div>
