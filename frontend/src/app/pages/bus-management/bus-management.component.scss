@@ -453,12 +453,12 @@
           cursor: pointer;
 
           &:first-child {
-            background: var(--bg-hover);
+            background: var(--color-buttns-dark);
             color: var(--text-primary);
           }
 
           &:last-child {
-            background: var(--primary-color);
+            background: var(--color-buttns-light);
             color: white;
           }
         }

@@ -2,7 +2,7 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
@@ -14,7 +14,7 @@ import { Driver } from '../../core/models/driver.model';
 @Component({
   selector: 'app-driver-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, BaseChartDirective, NotificationPanelComponent],
   templateUrl: './driver-management.component.html',
   styleUrls: ['./driver-management.component.scss']
 })
@@ -24,8 +24,6 @@ export class DriverManagementComponent implements OnInit {
   searchTerm: string = '';
   statusFilter: 'All' | 'Active' | 'Inactive' = 'All';
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
-  currentPage: string = 'driver-management';
-  sidebarOpen: boolean = true;
   showNotificationPanel = false;
 
   showAddDriverModal = false;
@@ -53,9 +51,6 @@ export class DriverManagementComponent implements OnInit {
   barChartData: any;
   barChartOptions: any;
   isBrowser: boolean;
-
-  navigateTo(page: string) { this.router.navigate([`/${page}`]); }
-  logout() { this.router.navigate(['/']); }
 
   constructor(private router: Router, private driverService: DriverService, @Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
