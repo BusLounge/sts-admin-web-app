@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
@@ -9,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 
 interface Feedback {
   id: string;
@@ -34,7 +36,8 @@ interface Feedback {
     ButtonModule,
     DialogModule,
     TextareaModule,
-    NavbarComponent
+    NavbarComponent,
+    NotificationPanelComponent
   ],
   templateUrl: './feedback-management.component.html',
   styleUrls: ['./feedback-management.component.scss']
@@ -44,6 +47,7 @@ export class FeedbackManagementComponent {
   displayViewModal: boolean = false;
   selectedFeedback: Feedback | null = null;
   replyMessage: string = '';
+  showNotificationPanel = false;
   
   stats = [
     { title: 'Total Feedback', count: 5, icon: 'pi pi-users', color: 'blue' },
@@ -58,11 +62,12 @@ export class FeedbackManagementComponent {
     { id: 'FB0004', role: 'Passenger', name: 'Sunil gamage', message: 'Ride was safe', rating: 1, date: '2025-11-26', status: 'Reviewed' },
     { id: 'FB0005', role: 'Passenger', name: 'Sunimal gamage', message: 'Bus was clean and comfortable', rating: 3, date: '2025-11-20', status: 'New' }
   ];
-
   statusOptions = [
     { label: 'New', value: 'New' },
     { label: 'Reviewed', value: 'Reviewed' }
   ];
+
+  constructor(private router: Router) {}
 
   setActiveTab(tab: string) {
     this.activeTab = tab;
@@ -95,5 +100,17 @@ export class FeedbackManagementComponent {
       this.displayViewModal = false;
       this.selectedFeedback = null;
     }
+  }
+
+  toggleNotificationPanel() {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
+
+  closeNotificationPanel() {
+    this.showNotificationPanel = false;
+  }
+
+  goUserProfile() {
+    this.router.navigate(['/user-profile']);
   }
 }

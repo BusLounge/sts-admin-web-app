@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -47,7 +48,7 @@ export class ComplaintManagementComponent implements OnInit {
   selectedComplaint: any = {};
   solutionText: string = '';
 
-  constructor() {}
+  constructor(private router: Router) {}
 
   ngOnInit() {
     this.loadComplaints();
@@ -263,5 +264,9 @@ export class ComplaintManagementComponent implements OnInit {
 
   closeNotificationPanel() {
     this.showNotificationPanel = false;
+  }
+
+  goUserProfile() {
+    this.router.navigate(['/user-profile']);
   }
 }

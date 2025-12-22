@@ -54,17 +54,19 @@
         background: none;
         border: none;
         cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 50%;
+        padding: 0.1rem;
+        border-radius: 8px;
         transition: background-color 0.2s;
-        color: var(--text-secondary);
+        color: var(--color-text-secondary);
 
         &:hover {
-          background-color: var(--color-neutral-200);
+          background-color: rgba(0, 70, 255, 0.1);
         }
 
-        i {
-          font-size: 1.2rem;
+        svg {
+          width: 24px;
+          height: 24px;
+          color: var(--color-text-secondary);
         }
       }
     }

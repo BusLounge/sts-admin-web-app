@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { PassengerService } from '../../core/services/passenger.service';
 import { Passenger } from '../../core/models/passenger.model';
@@ -12,7 +12,7 @@ import autoTable from 'jspdf-autotable';
 @Component({
   selector: 'app-passenger-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent,NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent],
   templateUrl: './passenger-management.component.html',
   styleUrls: ['./passenger-management.component.scss']
 })
@@ -21,16 +21,10 @@ export class PassengerManagementComponent implements OnInit {
   filteredPassengers: Passenger[] = [];
   searchTerm = '';
   currentPage: string = 'passenger-management';  // default page
-  sidebarOpen: boolean = true;      // controls sidebar visibility
   showNotificationPanel = false;
   // Sorting properties
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
-
-  onNavigate(page: string) {
-    this.currentPage = page;
-    this.router.navigate([`/${page}`]);
-  }
 
 
   monthlyCounts: number[] = [];
@@ -46,9 +40,17 @@ export class PassengerManagementComponent implements OnInit {
     });
   }
 
-  goDashboard(): void { this.router.navigate(['/dashboard']); }
-  goBusManagement(): void { this.router.navigate(['/bus-management']); }
-  goDriverManagement(): void { this.router.navigate(['/driver-management']); }
+  goUserProfile() {
+    this.router.navigate(['/user-profile']);
+  }
+
+  toggleNotificationPanel() {
+    this.showNotificationPanel = !this.showNotificationPanel;
+  }
+
+  closeNotificationPanel() {
+    this.showNotificationPanel = false;
+  }
 
   showAddPassengerModal: boolean = false;
   newPassenger: Partial<Passenger> = {};
@@ -105,15 +107,6 @@ export class PassengerManagementComponent implements OnInit {
       p.passenger_id.toLowerCase().includes(q)
     );
   }
-
-  
-  toggleNotificationPanel() {
-    this.showNotificationPanel = !this.showNotificationPanel;
-  }
-
-  closeNotificationPanel() {
-    this.showNotificationPanel = false;
-  }
   
   clearSearch(): void { this.searchTerm = ''; this.filteredPassengers = this.passengers; }
 
@@ -163,9 +156,7 @@ export class PassengerManagementComponent implements OnInit {
     localStorage.removeItem('token');
     this.router.navigate(['/']);
   }
-goUserProfile() {
-  this.router.navigate(['/user-profile']);
-}
+
   // Sorting functionality
   onSort(column: string): void {
     if (this.sortColumn === column) {
