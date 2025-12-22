@@ -4,8 +4,8 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { BusBookingService } from '../../core/services/bus-booking.service';
 import { BusBooking } from '../../core/models/bus-booking.model';
 import { ChartData, ChartOptions } from 'chart.js';
@@ -15,7 +15,7 @@ import { Chart, registerables } from 'chart.js';
 @Component({
   selector: 'app-bus-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, BaseChartDirective, NotificationPanelComponent, NavbarComponent],
   templateUrl: './bus-booking.component.html',
   styleUrls: ['./bus-booking.component.scss']
 })
@@ -51,7 +51,7 @@ export class BusBookingComponent implements OnInit {
 
     doc.save('bus-booking-history.pdf');
   }
-  sidebarOpen = true;
+  
   currentPage = 'bus-booking';
   isBrowser!: boolean;
   showNotificationPanel = false;
@@ -116,10 +116,6 @@ export class BusBookingComponent implements OnInit {
     });
   }
 
-  onNavigate(page: string) {
-    this.currentPage = page;
-    this.router.navigate([`/${page}`]);
-  }
   onLogout() {
     localStorage.removeItem('token');
     this.router.navigate(['/']);

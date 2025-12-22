@@ -4,8 +4,8 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
 import { Lounge } from '../../core/models/lounge.model';
@@ -14,7 +14,7 @@ import { LoungeService } from '../../core/services/lounge.service';
 @Component({
   selector: 'app-lounges-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, BaseChartDirective, NotificationPanelComponent, NavbarComponent],
   templateUrl: './lounges-management.component.html',
   styleUrls: ['./lounges-management.component.scss']
 })
@@ -28,7 +28,6 @@ export class LoungesManagementComponent implements OnInit {
   amenitiesCounts: { label: string; count: number }[] = [];
   servicesCounts: { label: string; count: number }[] = [];
 
-  sidebarOpen = true;
   currentPage = 'lounges';
 
   // Sorting properties

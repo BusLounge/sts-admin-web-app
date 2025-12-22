@@ -2,8 +2,8 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { LoungeBookingService } from '../../core/services/lounge-booking.service';
 import { LoungeBooking } from '../../core/models/lounge-booking.model';
 import { ChartData, ChartOptions } from 'chart.js';
@@ -15,12 +15,11 @@ import autoTable from 'jspdf-autotable';
 @Component({
   selector: 'app-lounge-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, BaseChartDirective, NotificationPanelComponent, NavbarComponent],
   templateUrl: './lounge-booking.component.html',
   styleUrls: ['./lounge-booking.component.scss']
 })
 export class LoungeBookingComponent implements OnInit {
-  sidebarOpen = true;
   currentPage = 'lounge-booking';
   isBrowser!: boolean;
   showNotificationPanel = false;
