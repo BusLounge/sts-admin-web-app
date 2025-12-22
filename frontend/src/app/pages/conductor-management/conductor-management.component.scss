@@ -1,56 +1,67 @@
-.conductor-page {
-  padding: 1rem;
+.conductor-container {
   min-height: 100vh;
-  box-sizing: border-box;
   background-color: var(--bg-primary);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  color: var(--text-primary);
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
 
-  .top-bar {
+  // New Navbar Styles
+  .top-navigation-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 0.5rem 0;
 
-    .quick-nav {
+    .app-branding {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      color: var(--color-text-secondary);
+      gap: 0.2rem;
+      padding-right: 10px;
 
-      .qn-root {
-        color: var(--active);
-        cursor: pointer;
-        transition: color 0.2s;
+      .logo-circle {
+        width: 28px;
+        height: 28px;
+        background: var(--primary-color);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        box-shadow: 0 2px 8px rgba(7, 78, 242, 0.3);
+        transform: rotate(-5deg);
+        transition: transform 0.3s ease;
 
         &:hover {
-          color: var(--color-primary-700);
+          transform: rotate(0deg) scale(1.05);
         }
       }
 
-      .qn-sep {
-        color: var(--color-text-muted);
-      }
-
-      .qn-current {
-        color: var(--color-text-primary);
-        font-weight: 500;
+      .app-name {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.3px;
+        background: linear-gradient(135deg, var(--logo), var(--logo));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
     }
 
-    .top-icons {
+    .header-actions {
       display: flex;
-      align-items: center;
       gap: 1rem;
+      align-items: center;
 
       .icon-btn {
         background: none;
         border: none;
         cursor: pointer;
-        padding: 0.5rem;
+        padding: 0.1rem;
         border-radius: 8px;
         transition: background-color 0.2s;
         color: var(--color-text-secondary);
@@ -68,31 +79,42 @@
     }
   }
 
+  // Restored Content Styles
   .page-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 1.5rem;
 
-    h2 {
-      margin: 0;
-      font-size: 1.75rem;
-      font-weight: 800;
-      letter-spacing: 0.2px;
-      color: var(--color-text-primary);
+    .header-content {
+      flex: 1;
+
+      h2 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        color: var(--text-primary);
+      }
     }
 
-    .add-conductor-btn {
-      background: var(--color-buttns-light);
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: 0.3s;
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
 
-      &:hover {
-        background: #91ADC8;
+      .add-conductor-btn {
+        background: var(--color-buttns-light, #3b82f6);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s;
+
+        &:hover {
+          background: var(--color-secondary-500, #2563eb);
+        }
       }
     }
   }
@@ -138,22 +160,21 @@
         }
 
         .stat-content {
-          display: contents;
-          flex-direction: row;
+          display: flex;
+          flex-direction: column;
           justify-content: center;
+          flex: 1;
+        }
 
-          .stat-title {
-            color: var(--color-text-secondary);
-            font-weight: 400;
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
-          }
+        .stat-value {
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--color-text-primary);
+        }
 
-          .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--color-text-primary);
-          }
+        .stat-title {
+          font-size: 1rem;
+          color: var(--color-text-secondary);
         }
       }
     }

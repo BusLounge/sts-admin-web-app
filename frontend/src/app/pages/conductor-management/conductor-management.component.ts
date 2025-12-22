@@ -2,18 +2,19 @@ import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ViewChild, Eleme
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+
 import Chart from 'chart.js/auto';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ConductorService } from '../../core/services/conductor.service';
 import { Conductor } from '../../core/models/conductor.model';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 
 @Component({
   selector: 'app-conductor-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent],
   templateUrl: './conductor-management.component.html',
   styleUrls: ['./conductor-management.component.scss']
 })
@@ -23,8 +24,6 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   searchTerm: string = '';
   statusFilter: string = 'All';
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
-  currentPage: string = 'conductor-management';
-  sidebarOpen: boolean = true;
   showNotificationPanel = false;
 
   showAddConductorModal = false;
@@ -70,9 +69,6 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
-  navigateTo(page: string) { this.router.navigate([`/${page}`]); }
-  logout() { this.router.navigate(['/']); }
 
   addConductor() {
     this.showAddConductorModal = true;

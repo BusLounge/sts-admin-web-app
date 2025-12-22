@@ -214,6 +214,11 @@ export class DriverManagementComponent implements OnInit {
     return (this.getInactiveCount() / total) * 100;
   }
 
+  getDriverPieBackground(): string {
+    const active = this.getActivePercentage();
+    return `conic-gradient(#0046FF 0% ${active}%, #FAA533 ${active}% 100%)`;
+  }
+
   getExperienceLevelCount(level: string): number {
     switch (level) {
       case '0-2yrs': return this.drivers.filter(d => d.experience_years >= 0 && d.experience_years <= 2).length;
