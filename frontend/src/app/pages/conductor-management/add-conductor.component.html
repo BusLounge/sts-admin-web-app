@@ -29,33 +29,16 @@
         </div>
 
         <div class="form-row">
-          <label>Status<span class="req">*</span></label>
-          <select [(ngModel)]="form.status" name="status" required>
-            <option value="Active">Active</option>
-            <option value="On Leave">On Leave</option>
-            <option value="Resigned">Resigned</option>
-          </select>
-        </div>
-
-        <div class="form-row">
-          <label>Assigned Bus ID</label>
-          <input type="text" [(ngModel)]="form.assigned_bus_id" name="assigned_bus_id" placeholder="e.g., BUS001"
-            #busIdModel="ngModel" (input)="onAssignedBusIdChange()"
-            [class.error-input]="validationErrors.assigned_bus_id && (busIdModel.dirty || busIdModel.touched || isFormSubmitted)" />
-          <small class="error" *ngIf="validationErrors.assigned_bus_id && (busIdModel.dirty || busIdModel.touched || isFormSubmitted)">{{ validationErrors.assigned_bus_id }}</small>
+          <label>License Number<span class="req">*</span></label>
+          <input type="text" [(ngModel)]="form.license_number" name="license_number" placeholder="e.g., LIC-NEP-0001" required
+            #licenseModel="ngModel" (input)="onLicenseNumberChange()"
+            [class.error-input]="validationErrors.license_number && (licenseModel.dirty || licenseModel.touched || isFormSubmitted)" />
+          <small class="error" *ngIf="validationErrors.license_number && (licenseModel.dirty || licenseModel.touched || isFormSubmitted)">{{ validationErrors.license_number }}</small>
         </div>
       </div>
 
       <!-- Right Column -->
       <div class="form-column">
-        <div class="form-row">
-          <label>NIC (National Identity Card)<span class="req">*</span></label>
-          <input type="text" [(ngModel)]="form.nic" name="nic" placeholder="e.g., 123456789V or 123456789012" required
-            #nicModel="ngModel" (input)="onNICChange()"
-            [class.error-input]="validationErrors.nic && (nicModel.dirty || nicModel.touched || isFormSubmitted)" />
-          <small class="error" *ngIf="validationErrors.nic && (nicModel.dirty || nicModel.touched || isFormSubmitted)">{{ validationErrors.nic }}</small>
-        </div>
-
         <div class="form-row">
           <label>Experience (Years)<span class="req">*</span></label>
           <input type="number" [(ngModel)]="form.experience_years" name="experience_years" placeholder="e.g., 5" min="0" max="50" required
@@ -70,6 +53,37 @@
             #hireDateModel="ngModel" (input)="onHireDateChange()"
             [class.error-input]="validationErrors.hired_date && (hireDateModel.dirty || hireDateModel.touched || isFormSubmitted)" />
           <small class="error" *ngIf="validationErrors.hired_date && (hireDateModel.dirty || hireDateModel.touched || isFormSubmitted)">{{ validationErrors.hired_date }}</small>
+        </div>
+
+        <div class="form-row">
+          <label>Status<span class="req">*</span></label>
+          <select [(ngModel)]="form.status" name="status" required>
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Resigned">Resigned</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>License Expire Date<span class="req">*</span></label>
+          <input type="date" [(ngModel)]="form.license_expiry_date" name="license_expiry_date" required
+            #licenseExpiryModel="ngModel" (input)="onLicenseExpiryChange()"
+            [class.error-input]="validationErrors.license_expiry_date && (licenseExpiryModel.dirty || licenseExpiryModel.touched || isFormSubmitted)" />
+          <small class="error" *ngIf="validationErrors.license_expiry_date && (licenseExpiryModel.dirty || licenseExpiryModel.touched || isFormSubmitted)">{{ validationErrors.license_expiry_date }}</small>
+        </div>
+
+        <div class="form-row">
+          <label>Verification</label>
+          <select [(ngModel)]="form.verification_status" name="verification_status">
+            <option value="Pending">Pending</option>
+            <option value="Verified">Verified</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>Verification Note</label>
+          <textarea [(ngModel)]="form.verification_note" name="verification_note" rows="3" placeholder="Notes about license / document verification..."></textarea>
         </div>
       </div>
     </div>

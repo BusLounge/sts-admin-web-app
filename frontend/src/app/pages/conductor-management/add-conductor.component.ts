@@ -7,20 +7,23 @@ import { Conductor } from '../../core/models/conductor.model';
 
 interface AddConductorForm {
   full_name: string;
-  nic: string;
   phone_number: string;
   experience_years: number | null;
+  license_number: string;
+  license_expiry_date: string;
+  verification_status: 'Verified' | 'Pending' | 'Rejected';
+  verification_note: string;
   status: 'Active' | 'On Leave' | 'Resigned';
-  assigned_bus_id: string;
   hired_date: string;
 }
 
 interface ValidationErrors {
   full_name?: string | null;
-  nic?: string | null;
   phone_number?: string | null;
   experience_years?: string | null;
-  assigned_bus_id?: string | null;
+  license_number?: string | null;
+  license_expiry_date?: string | null;
+  verification_status?: string | null;
   hired_date?: string | null;
 }
 
@@ -34,11 +37,13 @@ interface ValidationErrors {
 export class AddConductorComponent {
   form: AddConductorForm = {
     full_name: '',
-    nic: '',
     phone_number: '',
     experience_years: null,
+    license_number: '',
+    license_expiry_date: '',
+    verification_status: 'Pending',
+    verification_note: '',
     status: 'Active',
-    assigned_bus_id: '',
     hired_date: ''
   };
 
@@ -57,13 +62,6 @@ export class AddConductorComponent {
     return null;
   }
 
-  private validateNIC(nic: string): string | null {
-    if (!nic || nic.trim() === '') return 'NIC is required';
-    const pattern = /^\d{9}[Vv]|\d{12}$/; // 9 digits + V or 12 digits
-    if (!pattern.test(nic.trim())) return 'NIC must be 9 digits + V or 12 digits';
-    return null;
-  }
-
   private validatePhoneNumber(phone: string): string | null {
     if (!phone || phone.trim() === '') return 'Phone Number is required';
     const pattern = /^\d{10}$/; // Exactly 10 digits
@@ -78,10 +76,16 @@ export class AddConductorComponent {
     return null;
   }
 
-  private validateAssignedBusId(busId: string): string | null {
-    if (!busId) return null; // Optional field
-    const pattern = /^BUS\d{3,}$/i;
-    if (!pattern.test(busId.trim())) return 'Assigned Bus ID must look like BUS001';
+  private validateLicenseNumber(license: string): string | null {
+    if (!license || license.trim() === '') return 'License Number is required';
+    if (license.trim().length < 3) return 'License Number must be at least 3 characters';
+    return null;
+  }
+
+  private validateLicenseExpiryDate(dateStr: string): string | null {
+    if (!dateStr) return 'License Expire Date is required';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Invalid date';
     return null;
   }
 
@@ -96,18 +100,18 @@ export class AddConductorComponent {
 
   // Real-time handlers
   onFullNameChange(): void { this.validationErrors.full_name = this.validateFullName(this.form.full_name); }
-  onNICChange(): void { this.validationErrors.nic = this.validateNIC(this.form.nic); }
   onPhoneNumberChange(): void { this.validationErrors.phone_number = this.validatePhoneNumber(this.form.phone_number); }
   onExperienceChange(): void { this.validationErrors.experience_years = this.validateExperience(this.form.experience_years); }
-  onAssignedBusIdChange(): void { this.validationErrors.assigned_bus_id = this.validateAssignedBusId(this.form.assigned_bus_id); }
+  onLicenseNumberChange(): void { this.validationErrors.license_number = this.validateLicenseNumber(this.form.license_number); }
+  onLicenseExpiryChange(): void { this.validationErrors.license_expiry_date = this.validateLicenseExpiryDate(this.form.license_expiry_date); }
   onHireDateChange(): void { this.validationErrors.hired_date = this.validateHireDate(this.form.hired_date); }
 
   isFormValid(): boolean {
     return !this.validateFullName(this.form.full_name) &&
-           !this.validateNIC(this.form.nic) &&
            !this.validatePhoneNumber(this.form.phone_number) &&
            !this.validateExperience(this.form.experience_years) &&
-           !this.validateAssignedBusId(this.form.assigned_bus_id) &&
+           !this.validateLicenseNumber(this.form.license_number) &&
+           !this.validateLicenseExpiryDate(this.form.license_expiry_date) &&
            !this.validateHireDate(this.form.hired_date);
   }
 
@@ -117,10 +121,10 @@ export class AddConductorComponent {
     // Validate all fields
     this.validationErrors = {
       full_name: this.validateFullName(this.form.full_name),
-      nic: this.validateNIC(this.form.nic),
       phone_number: this.validatePhoneNumber(this.form.phone_number),
       experience_years: this.validateExperience(this.form.experience_years),
-      assigned_bus_id: this.validateAssignedBusId(this.form.assigned_bus_id),
+      license_number: this.validateLicenseNumber(this.form.license_number),
+      license_expiry_date: this.validateLicenseExpiryDate(this.form.license_expiry_date),
       hired_date: this.validateHireDate(this.form.hired_date)
     };
 
@@ -132,11 +136,15 @@ export class AddConductorComponent {
     const newConductor: Conductor = {
       conductor_id: this.generateConductorId(),
       full_name: this.form.full_name.trim(),
-      nic: this.form.nic.trim().toUpperCase(),
+      nic: '',
       phone_number: this.form.phone_number.trim(),
       experience_years: this.form.experience_years as number,
+      license_number: this.form.license_number.trim(),
+      license_expiry_date: this.form.license_expiry_date,
+      verification_status: this.form.verification_status,
+      verification_note: this.form.verification_note.trim(),
       status: this.form.status,
-      assigned_bus_id: this.form.assigned_bus_id.trim(),
+      assigned_bus_id: '',
       hired_date: this.form.hired_date
     };
 

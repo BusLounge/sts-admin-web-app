@@ -34,6 +34,10 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
     nic: '',
     phone_number: '',
     experience_years: 0,
+    license_number: '',
+    license_expiry_date: new Date().toISOString().split('T')[0],
+    verification_status: 'Pending',
+    verification_note: '',
     status: 'Active',
     assigned_bus_id: '',
     hired_date: new Date().toISOString().split('T')[0]
@@ -81,6 +85,10 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
       nic: '',
       phone_number: '',
       experience_years: 0,
+      license_number: '',
+      license_expiry_date: new Date().toISOString().split('T')[0],
+      verification_status: 'Pending',
+      verification_note: '',
       status: 'Active',
       assigned_bus_id: '',
       hired_date: new Date().toISOString().split('T')[0]
@@ -88,14 +96,18 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   }
 
   saveConductor() {
-    if (this.newConductor.full_name && this.newConductor.nic && this.newConductor.phone_number) {
+    if (this.newConductor.full_name && this.newConductor.phone_number) {
       this.conductorService.addConductor({
         full_name: this.newConductor.full_name,
-        nic: this.newConductor.nic,
+        nic: this.newConductor.nic || '',
         phone_number: this.newConductor.phone_number,
         experience_years: this.newConductor.experience_years,
+        license_number: this.newConductor.license_number,
+        license_expiry_date: this.newConductor.license_expiry_date,
+        verification_status: this.newConductor.verification_status,
+        verification_note: this.newConductor.verification_note,
         status: this.newConductor.status,
-        assigned_bus_id: this.newConductor.assigned_bus_id,
+        assigned_bus_id: this.newConductor.assigned_bus_id || '',
         hired_date: this.newConductor.hired_date
       });
       this.closeAddConductorModal();
@@ -141,16 +153,17 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
     doc.setFontSize(16);
     doc.text('Conductors Management Report', 14, 16);
 
-    const tableHead = [['Conductor ID', 'Full Name', 'NIC', 'Phone', 'Experience', 'Status', 'Assigned Bus', 'Hire Date']];
+    const tableHead = [['Conductor ID', 'Conductor Name', 'Contact', 'License Number', 'License Expire Date', 'Experience Yrs', 'Verification', 'Verification Note', 'Status']];
     const tableBody = this.filteredConductors.map(c => [
       c.conductor_id,
       c.full_name,
-      c.nic,
       c.phone_number,
       `${c.experience_years}yrs`,
+      c.license_number,
+      new Date(c.license_expiry_date).toLocaleDateString(),
+      c.verification_status,
+      c.verification_note || '-',
       c.status,
-      c.assigned_bus_id || 'Unassigned',
-      new Date(c.hired_date).toLocaleDateString()
     ]);
 
     autoTable(doc, {
@@ -186,8 +199,8 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   // Filtered stats helpers for pie chart
   getFilteredTotalConductors(): number { return this.filteredConductors.length; }
   getFilteredActiveCount(): number { return this.filteredConductors.filter(c => c.status === 'Active').length; }
-  getFilteredOnLeaveCount(): number { return this.filteredConductors.filter(c => c.status === 'On Leave').length; }
-  getFilteredResignedCount(): number { return this.filteredConductors.filter(c => c.status === 'Resigned').length; }
+  // Treat any non-active status as Inactive for charts
+  getFilteredInactiveCount(): number { return this.filteredConductors.filter(c => c.status !== 'Active').length; }
 
   // Search and filter functionality
   onSearchChange(): void {
@@ -314,18 +327,15 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
     if (total === 0) return 'conic-gradient(gray 0deg 360deg)';
 
     const activeCount = this.getFilteredActiveCount();
-    const onLeaveCount = this.getFilteredOnLeaveCount();
-    const resignedCount = this.getFilteredResignedCount();
+    const inactiveCount = this.getFilteredInactiveCount();
 
     const activePercent = (activeCount / total) * 360;
-    const onLeavePercent = (onLeaveCount / total) * 360;
-    const resignedPercent = (resignedCount / total) * 360;
+    const inactivePercent = (inactiveCount / total) * 360;
 
     const activeEnd = activePercent;
-    const onLeaveEnd = activeEnd + onLeavePercent;
-    const resignedEnd = onLeaveEnd + resignedPercent;
+    const inactiveEnd = activeEnd + inactivePercent;
 
-    return `conic-gradient(var(--active) 0deg ${activeEnd}deg, var(--inactive) ${activeEnd}deg ${onLeaveEnd}deg, var(--gray) ${onLeaveEnd}deg ${resignedEnd}deg)`;
+    return `conic-gradient(var(--active) 0deg ${activeEnd}deg, var(--inactive) ${activeEnd}deg ${inactiveEnd}deg)`;
   }
 
   ngAfterViewInit(): void {

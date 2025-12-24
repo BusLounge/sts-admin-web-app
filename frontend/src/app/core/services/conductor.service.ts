@@ -11,6 +11,10 @@ export class ConductorService {
       nic: '123456789012',
       phone_number: '9841234567',
       experience_years: 5,
+      license_number: 'LIC-NEP-0001',
+      license_expiry_date: '2026-01-15',
+      verification_status: 'Verified',
+      verification_note: 'All documents verified.',
       status: 'Active',
       assigned_bus_id: 'BUS001',
       hired_date: '2020-01-15'
@@ -21,6 +25,10 @@ export class ConductorService {
       nic: '987654321098',
       phone_number: '9847654321',
       experience_years: 3,
+      license_number: 'LIC-NEP-0002',
+      license_expiry_date: '2025-11-30',
+      verification_status: 'Pending',
+      verification_note: 'Waiting for NIC confirmation.',
       status: 'On Leave',
       assigned_bus_id: 'BUS002',
       hired_date: '2021-03-20'
@@ -31,6 +39,10 @@ export class ConductorService {
       nic: '456789123456',
       phone_number: '9849876543',
       experience_years: 8,
+      license_number: 'LIC-NEP-0003',
+      license_expiry_date: '2027-07-01',
+      verification_status: 'Verified',
+      verification_note: 'Background check completed.',
       status: 'Active',
       assigned_bus_id: 'BUS003',
       hired_date: '2018-09-10'
@@ -41,6 +53,10 @@ export class ConductorService {
       nic: '789123456789',
       phone_number: '9851234567',
       experience_years: 2,
+      license_number: 'LIC-NEP-0004',
+      license_expiry_date: '2024-12-31',
+      verification_status: 'Rejected',
+      verification_note: 'License expired.',
       status: 'Resigned',
       assigned_bus_id: '',
       hired_date: '2022-05-15'

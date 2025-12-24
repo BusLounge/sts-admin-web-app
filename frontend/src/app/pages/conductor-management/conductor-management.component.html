@@ -74,7 +74,7 @@
         <div class="chart">
           <div class="chart-header">
             <h3>Status Overview</h3>
-            <p>Distribution of conductor employment status</p>
+          <p>Distribution of active vs inactive conductors</p>
           </div>
         <div class="pie-chart">
           <div class="pie-circle" [style.background]="getPieChartGradient()"></div>
@@ -85,12 +85,8 @@
             <span class="legend-label">Active: {{ getFilteredActiveCount() }}</span>
           </div>
           <div class="legend-item">
-            <span class="legend-color" style="background: var(--color-warning-500);"></span>
-            <span class="legend-label">On Leave: {{ getFilteredOnLeaveCount() }}</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-color" style="background: var(--gray);"></span>
-            <span class="legend-label">Resigned: {{ getFilteredResignedCount() }}</span>
+          <span class="legend-color" style="background: var(--inactive);"></span>
+          <span class="legend-label">Inactive: {{ getFilteredInactiveCount() }}</span>
           </div>
         </div>
         </div>
@@ -140,37 +136,35 @@
           <tr>
             <th>Conductor ID</th>
             <th (click)="onSort('full_name')" style="cursor: pointer;" title="Click to sort">
-              Full Name {{ getSortIcon('full_name') }}
+              Conductor Name {{ getSortIcon('full_name') }}
             </th>
-            <th>NIC</th>
-            <th>Phone</th>
+            <th>Contact</th>
+            <th>License Number</th>
+            <th>License Expire Date</th>
             <th (click)="onSort('experience')" style="cursor: pointer;" title="Click to sort">
-              Experience {{ getSortIcon('experience') }}
+              Experience Yrs {{ getSortIcon('experience') }}
             </th>
+            <th>Verification</th>
+            <th>Verification Note</th>
             <th>Status</th>
-            <th (click)="onSort('assigned_bus')" style="cursor: pointer;" title="Click to sort">
-              Assigned Bus {{ getSortIcon('assigned_bus') }}
-            </th>
-            <th (click)="onSort('hire_date')" style="cursor: pointer;" title="Click to sort">
-              Hire Date {{ getSortIcon('hire_date') }}
-            </th>
-            <th>Actions</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let conductor of filteredConductors">
             <td>{{ conductor.conductor_id }}</td>
             <td>{{ conductor.full_name }}</td>
-            <td>{{ conductor.nic }}</td>
             <td>{{ conductor.phone_number }}</td>
+            <td>{{ conductor.license_number }}</td>
+            <td>{{ conductor.license_expiry_date | date:'shortDate' }}</td>
             <td>{{ conductor.experience_years }}yrs</td>
+            <td>{{ conductor.verification_status }}</td>
+            <td>{{ conductor.verification_note || '-' }}</td>
             <td>
               <span class="status-badge" [ngClass]="conductor.status.toLowerCase().replace(' ', '-')">
                 {{ conductor.status }}
               </span>
             </td>
-            <td>{{ conductor.assigned_bus_id || 'Unassigned' }}</td>
-            <td>{{ conductor.hired_date | date:'shortDate' }}</td>
             <td class="actions-cell">
               <i class="fas fa-edit action-icon edit-icon" (click)="updateConductor(conductor)" title="Update"></i>
             </td>
@@ -187,37 +181,50 @@
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h2>Add Conductor</h2>
       <form (ngSubmit)="saveConductor()">
-        <div class="form-row">
-          <label>Full Name</label>
-          <input type="text" [(ngModel)]="newConductor.full_name" name="full_name" required />
-        </div>
-        <div class="form-row">
-          <label>NIC</label>
-          <input type="text" [(ngModel)]="newConductor.nic" name="nic" required />
-        </div>
-        <div class="form-row">
-          <label>Phone Number</label>
-          <input type="text" [(ngModel)]="newConductor.phone_number" name="phone_number" required />
-        </div>
-        <div class="form-row">
-          <label>Experience (Years)</label>
-          <input type="number" [(ngModel)]="newConductor.experience_years" name="experience_years" required min="0" />
-        </div>
-        <div class="form-row">
-          <label>Status</label>
-          <select [(ngModel)]="newConductor.status" name="status">
-            <option value="Active">Active</option>
-            <option value="On Leave">On Leave</option>
-            <option value="Resigned">Resigned</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Assigned Bus ID</label>
-          <input type="text" [(ngModel)]="newConductor.assigned_bus_id" name="assigned_bus_id" />
-        </div>
-        <div class="form-row">
-          <label>Hire Date</label>
-          <input type="date" [(ngModel)]="newConductor.hired_date" name="hired_date" required />
+        <div class="form-grid">
+          <!-- Left column -->
+          <div class="form-row">
+            <label>Conductor Name</label>
+            <input type="text" [(ngModel)]="newConductor.full_name" name="full_name" required />
+          </div>
+          <div class="form-row">
+            <label>Contact Num</label>
+            <input type="text" [(ngModel)]="newConductor.phone_number" name="phone_number" required />
+          </div>
+          <div class="form-row">
+            <label>License Number</label>
+            <input type="text" [(ngModel)]="newConductor.license_number" name="license_number" required />
+          </div>
+          <div class="form-row">
+            <label>Experience (Years)</label>
+            <input type="number" [(ngModel)]="newConductor.experience_years" name="experience_years" required min="0" />
+          </div>
+
+          <!-- Right column -->
+          <div class="form-row">
+            <label>License Expiry</label>
+            <input type="date" [(ngModel)]="newConductor.license_expiry_date" name="license_expiry_date" required />
+          </div>
+          <div class="form-row">
+            <label>Hire Date</label>
+            <input type="date" [(ngModel)]="newConductor.hired_date" name="hired_date" required />
+          </div>
+          <div class="form-row">
+            <label>Verification Note</label>
+            <textarea [(ngModel)]="newConductor.verification_note" name="verification_note" rows="2" placeholder="Enter verification notes..."></textarea>
+          </div>
+          <div class="form-row inline">
+            <label>Status</label>
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                [ngModel]="newConductor.status === 'Active'"
+                (ngModelChange)="newConductor.status = $event ? 'Active' : 'On Leave'"
+                name="status_active"
+              />
+              <span>Active</span>
+            </label>
+          </div>
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeAddConductorModal()">Cancel</button>
@@ -232,37 +239,50 @@
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h2>Edit Conductor</h2>
       <form (ngSubmit)="saveEditConductor()" *ngIf="selectedConductor">
-        <div class="form-row">
-          <label>Full Name</label>
-          <input type="text" [(ngModel)]="selectedConductor.full_name" name="edit_full_name" required />
-        </div>
-        <div class="form-row">
-          <label>NIC</label>
-          <input type="text" [(ngModel)]="selectedConductor.nic" name="edit_nic" required />
-        </div>
-        <div class="form-row">
-          <label>Phone Number</label>
-          <input type="text" [(ngModel)]="selectedConductor.phone_number" name="edit_phone_number" required />
-        </div>
-        <div class="form-row">
-          <label>Experience (Years)</label>
-          <input type="number" [(ngModel)]="selectedConductor.experience_years" name="edit_experience_years" required min="0" />
-        </div>
-        <div class="form-row">
-          <label>Status</label>
-          <select [(ngModel)]="selectedConductor.status" name="edit_status">
-            <option value="Active">Active</option>
-            <option value="On Leave">On Leave</option>
-            <option value="Resigned">Resigned</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Assigned Bus ID</label>
-          <input type="text" [(ngModel)]="selectedConductor.assigned_bus_id" name="edit_assigned_bus_id" />
-        </div>
-        <div class="form-row">
-          <label>Hire Date</label>
-          <input type="date" [(ngModel)]="selectedConductor.hired_date" name="edit_hired_date" required />
+        <div class="form-grid">
+          <!-- Left column -->
+          <div class="form-row">
+            <label>Conductor Name</label>
+            <input type="text" [(ngModel)]="selectedConductor.full_name" name="edit_full_name" required />
+          </div>
+          <div class="form-row">
+            <label>Contact Num</label>
+            <input type="text" [(ngModel)]="selectedConductor.phone_number" name="edit_phone_number" required />
+          </div>
+          <div class="form-row">
+            <label>License Number</label>
+            <input type="text" [(ngModel)]="selectedConductor.license_number" name="edit_license_number" required />
+          </div>
+          <div class="form-row">
+            <label>Experience (Years)</label>
+            <input type="number" [(ngModel)]="selectedConductor.experience_years" name="edit_experience_years" required min="0" />
+          </div>
+
+          <!-- Right column -->
+          <div class="form-row">
+            <label>License Expiry</label>
+            <input type="date" [(ngModel)]="selectedConductor.license_expiry_date" name="edit_license_expiry_date" required />
+          </div>
+          <div class="form-row">
+            <label>Hire Date</label>
+            <input type="date" [(ngModel)]="selectedConductor.hired_date" name="edit_hired_date" required />
+          </div>
+          <div class="form-row">
+            <label>Verification Note</label>
+            <textarea [(ngModel)]="selectedConductor.verification_note" name="edit_verification_note" rows="2" placeholder="Enter verification notes..."></textarea>
+          </div>
+          <div class="form-row inline">
+            <label>Status</label>
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                [ngModel]="selectedConductor.status === 'Active'"
+                (ngModelChange)="selectedConductor.status = $event ? 'Active' : 'On Leave'"
+                name="edit_status_active"
+              />
+              <span>Active</span>
+            </label>
+          </div>
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeEditConductorModal()">Cancel</button>
