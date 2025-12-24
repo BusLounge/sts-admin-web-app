@@ -134,19 +134,27 @@
       <table class="conductor-table">
         <thead>
           <tr>
-            <th>Conductor ID</th>
+            <th (click)="onSort('conductor_id')" style="cursor: pointer;" title="Click to sort">
+              Conductor ID {{ getSortIcon('conductor_id') }}
+            </th>
             <th (click)="onSort('full_name')" style="cursor: pointer;" title="Click to sort">
               Conductor Name {{ getSortIcon('full_name') }}
             </th>
             <th>Contact</th>
             <th>License Number</th>
-            <th>License Expire Date</th>
-            <th (click)="onSort('experience')" style="cursor: pointer;" title="Click to sort">
-              Experience Yrs {{ getSortIcon('experience') }}
+            <th (click)="onSort('license_expiry_date')" style="cursor: pointer;" title="Click to sort">
+              License Expire Date {{ getSortIcon('license_expiry_date') }}
             </th>
-            <th>Verification</th>
+            <th (click)="onSort('experience_years')" style="cursor: pointer;" title="Click to sort">
+              Experience Yrs {{ getSortIcon('experience_years') }}
+            </th>
+            <th (click)="onSort('verification_status')" style="cursor: pointer;" title="Click to sort">
+              Verification {{ getSortIcon('verification_status') }}
+            </th>
             <th>Verification Note</th>
-            <th>Status</th>
+            <th (click)="onSort('status')" style="cursor: pointer;" title="Click to sort">
+              Status {{ getSortIcon('status') }}
+            </th>
             <th>Action</th>
           </tr>
         </thead>

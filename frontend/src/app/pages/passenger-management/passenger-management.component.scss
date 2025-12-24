@@ -109,8 +109,8 @@
   }
 
   .charts-section {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 1.5rem;
     margin-bottom: 1.5rem;
 
@@ -119,33 +119,114 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       border-radius: 12px;
       padding: 1rem;
+    }
 
-      .chart-header {
-        margin-bottom: 1rem;
+    .top-chart .chart-header h3 {
+      margin: 0 0 0.75rem 0;
+      font-weight: 600;
+    }
 
-        
-        h3 {
-          margin-bottom: -1rem;
-          font-weight: 600;
+    .line-chart {
+      width: 100%;
+      height: 240px;
+    }
+
+    .months {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+      color: var(--color-text-primary);
+      font-weight: 400;
+    }
+
+    .bottom-charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+
+      @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-header h3 {
+        margin: 0 0 0.75rem 0;
+        font-weight: 600;
+      }
+
+      .category-chart {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+
+        .category-pie {
+          width: 160px;
+          height: 160px;
+          border-radius: 50%;
+          background: conic-gradient(
+            #3b82f6 0 90deg,
+            #f97316 90deg 150deg,
+            #4b5563 150deg 240deg,
+            #10b981 240deg 300deg,
+            #9ca3af 300deg 360deg
+          );
         }
-        p{
-          color:var(--color-chart-p);
+
+        .category-legend {
+          display: grid;
+          gap: 0.4rem;
+
+          .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+          }
+
+          .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+
+            &.lounge { background: #3b82f6; }
+            &.first-time { background: #f97316; }
+            &.regular { background: #4b5563; }
+            &.vip { background: #10b981; }
+            &.non-lounge { background: #9ca3af; }
+          }
         }
       }
 
-      .line-chart {
-        width: 100%;
-        height: 240px;
-        
-      }
+      .route-chart {
+        .route-bars {
+          display: flex;
+          align-items: flex-end;
+          gap: 0.75rem;
+          height: 180px;
+          margin-top: 0.5rem;
 
-      .months {
-        display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 0.25rem;
-        margin-top: 0.5rem;
-        color: var(--color-text-primary);
-        font-weight: 400;
+          .route-bar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.4rem;
+
+            .bar {
+              width: 80%;
+              height: calc(var(--value) * 100%);
+              border-radius: 6px;
+              background: #3b82f6;
+            }
+
+            .label {
+              font-size: 0.75rem;
+              text-align: center;
+              color: var(--color-text-primary);
+            }
+          }
+        }
       }
     }
   }

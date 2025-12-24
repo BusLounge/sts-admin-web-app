@@ -285,21 +285,34 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
       let bValue: any;
 
       switch (this.sortColumn) {
+        case 'conductor_id':
+          aValue = a.conductor_id.toLowerCase();
+          bValue = b.conductor_id.toLowerCase();
+          break;
         case 'full_name':
           aValue = a.full_name.toLowerCase();
           bValue = b.full_name.toLowerCase();
           break;
         case 'experience':
+        case 'experience_years':
           aValue = a.experience_years;
           bValue = b.experience_years;
           break;
-        case 'assigned_bus':
-          aValue = a.assigned_bus_id || '';
-          bValue = b.assigned_bus_id || '';
+        case 'license_expiry_date':
+          aValue = new Date(a.license_expiry_date).getTime();
+          bValue = new Date(b.license_expiry_date).getTime();
           break;
         case 'hire_date':
           aValue = new Date(a.hired_date);
           bValue = new Date(b.hired_date);
+          break;
+        case 'verification_status':
+          aValue = (a.verification_status || '').toLowerCase();
+          bValue = (b.verification_status || '').toLowerCase();
+          break;
+        case 'status':
+          aValue = a.status.toLowerCase();
+          bValue = b.status.toLowerCase();
           break;
         default:
           return 0;

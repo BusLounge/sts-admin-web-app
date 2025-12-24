@@ -25,130 +25,104 @@
     <div class="header-content">
       <h2>Passenger Management</h2>
     </div>
-    <div class="header-actions">
-      <button class="add-passenger-btn" (click)="addPassenger()">Add Passenger</button>
-    </div>
+    <!-- Add Passenger button removed as per design -->
   </div>
 
   <div class="charts-section">
-        <div class="chart">
-          <div class="chart-header">
-            <h3>Monthly Registered Passengers</h3>
-            <p>This year</p>
+    <!-- Top: Passenger growth line chart -->
+    <div class="chart top-chart">
+      <div class="chart-header">
+        <h3>Passenger growth</h3>
+      </div>
+      <svg [attr.viewBox]="'0 0 600 220'" class="line-chart" preserveAspectRatio="none">
+        <polyline
+          [attr.points]="getPoints()"
+          fill="none"
+          stroke="var(--active)"
+          stroke-width="3"
+        />
+        <g *ngFor="let c of monthlyCounts; index as i">
+          <circle
+            [attr.cx]="(30 + i*((600-60)/(months.length-1)))"
+            [attr.cy]="(220-30 - (c/getMaxCount())*(220-60))"
+            r="3"
+            fill="#1d4ed8"
+          />
+        </g>
+      </svg>
+      <div class="months">
+        <span *ngFor="let m of months">{{ m }}</span>
+      </div>
+    </div>
+
+    <!-- Bottom: two summary charts row -->
+    <div class="bottom-charts">
+      <!-- Passenger category distribution (pie) -->
+      <div class="chart">
+        <div class="chart-header">
+          <h3>Passenger Category Distribution Chart</h3>
+        </div>
+        <div class="category-chart">
+          <div class="category-pie"></div>
+          <div class="category-legend">
+            <div class="legend-item">
+              <span class="legend-color lounge"></span>
+              <span class="legend-label">L-Lounge Users</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color first-time"></span>
+              <span class="legend-label">First-Time Passengers</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color regular"></span>
+              <span class="legend-label">Regular Passengers</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color vip"></span>
+              <span class="legend-label">VIP Passengers</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color non-lounge"></span>
+              <span class="legend-label">Non-Lounge Users</span>
+            </div>
           </div>
-          <svg [attr.viewBox]="'0 0 600 220'" class="line-chart"
-               preserveAspectRatio="none">
-            <polyline [attr.points]="getPoints()" fill="none"
-                      stroke="var(--active)" stroke-width="3"/>
-            <g *ngFor="let c of monthlyCounts; index as i">
-              <circle [attr.cx]="(30 + i*((600-60)/(months.length-1)))"
-                      [attr.cy]="(220-30 - (c/getMaxCount())*(220-60))"
-                      r="3" fill="#1d4ed8"/>
-            </g>
-          </svg>
-          <div class="months">
-            <span *ngFor="let m of months">{{ m }}</span>
+        </div>
+      </div>
+
+      <!-- Passenger booking by route (bar) -->
+      <div class="chart">
+        <div class="chart-header">
+          <h3>Passenger Booking by Route Chart</h3>
+        </div>
+        <div class="route-chart">
+          <div class="route-bars">
+            <div class="route-bar" style="--value: 0.65">
+              <div class="bar"></div>
+              <span class="label">Colombo–Galle</span>
+            </div>
+            <div class="route-bar" style="--value: 0.4">
+              <div class="bar"></div>
+              <span class="label">Colombo–Gampaha</span>
+            </div>
+            <div class="route-bar" style="--value: 0.95">
+              <div class="bar"></div>
+              <span class="label">Colombo–Negombo</span>
+            </div>
+            <div class="route-bar" style="--value: 0.2">
+              <div class="bar"></div>
+              <span class="label">Colombo–Jaffna</span>
+            </div>
+            <div class="route-bar" style="--value: 0.6">
+              <div class="bar"></div>
+              <span class="label">Colombo–Matara</span>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Add Passenger Modal -->
-      <div class="add-passenger-modal" *ngIf="showAddPassengerModal" (click)="closeAddPassengerModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <h2>Add Passenger</h2>
-          <form (ngSubmit)="savePassenger()">
-            <div class="form-row">
-              <label>Name</label>
-              <input type="text" [(ngModel)]="newPassenger.name" name="name" required />
-            </div>
-            <div class="form-row">
-              <label>Phone</label>
-              <input type="text" [(ngModel)]="newPassenger.phone" name="phone" required />
-            </div>
-            <div class="form-row">
-              <label>Email</label>
-              <input type="email" [(ngModel)]="newPassenger.email" name="email" required />
-            </div>
-            <div class="form-row">
-              <label>NIC</label>
-              <input type="text" [(ngModel)]="newPassenger.nic" name="nic" required />
-            </div>
-            <div class="form-actions">
-              <button type="button" (click)="closeAddPassengerModal()">Cancel</button>
-              <button type="submit">Save</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Update Passenger Modal -->
-      <div class="update-passenger-modal" *ngIf="showUpdatePassengerModal" (click)="closeUpdatePassengerModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <h2>Update Passenger</h2>
-          <form (ngSubmit)="saveUpdatedPassenger()" *ngIf="selectedPassenger">
-            <div class="form-row">
-              <label>Name</label>
-              <input type="text" [(ngModel)]="selectedPassenger!.name" name="name" required />
-            </div>
-            <div class="form-row">
-              <label>Phone</label>
-              <input type="text" [(ngModel)]="selectedPassenger!.phone" name="phone" required />
-            </div>
-            <div class="form-row">
-              <label>Email</label>
-              <input type="email" [(ngModel)]="selectedPassenger!.email" name="email" required />
-            </div>
-            <div class="form-row">
-              <label>NIC</label>
-              <input type="text" [(ngModel)]="selectedPassenger!.nic" name="nic" required />
-            </div>
-            <div class="form-actions">
-              <button type="button" (click)="closeUpdatePassengerModal()">Cancel</button>
-              <button type="submit">Update</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div class="toolbar">
-        <div class="search-container">
-          <input type="text" class="search-input"
-                 placeholder="Search by name, email, phone, NIC or ID..."
-                 [(ngModel)]="searchTerm" (input)="onSearchChange()"/>
-          <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
-        </div>
-
-        <button class="export-btn" (click)="exportHistoryPdf()">Export Passengers History (PDF)</button>
-      </div>
-
-      <table class="passenger-table">
-        <thead>
-          <tr>
-            <th>Passenger ID</th>
-            <th (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
-              Name {{ getSortIcon('name') }}
-            </th>
-            <th class="center-col">Phone</th>
-            <th class="email-col center-col">Email</th>
-            <th class="nic-col center-col">NIC</th>
-            <th class="center-col">Created</th>
-            <th class="center-col">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of filteredPassengers">
-            <td>{{ p.passenger_id }}</td>
-            <td>{{ p.name }}</td>
-            <td class="center-col">{{ p.phone }}</td>
-            <td class="email-col center-col">{{ p.email }}</td>
-            <td class="nic-col center-col">{{ p.nic }}</td>
-            <td class="center-col">{{ p.created_at | date:'yyyy-MM-dd' }}</td>
-            <td class="actions-cell center-col">
-              <i class="fas fa-edit action-icon edit-icon" (click)="updatePassenger(p)" title="Update"></i>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Modal dialogs, search toolbar and table intentionally removed for cleaner dashboard view -->
 </div>
 
 <!-- Notification Panel -->
