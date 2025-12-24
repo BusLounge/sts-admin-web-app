@@ -388,7 +388,7 @@
         transform: scale(1.1);
       }
 
-      &.edit-icon { color: #3b82f6; }
+      &.edit-icon { color:var(--color-neutral-500); }
       &.toggle-icon.fa-toggle-on { color: #10b981; }
       &.toggle-icon.fa-toggle-off { color: #ef4444; }
     }

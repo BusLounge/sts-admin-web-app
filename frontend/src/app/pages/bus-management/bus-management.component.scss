@@ -74,10 +74,58 @@
           width: 24px;
           height: 24px;
           color: var(--color-text-secondary);
+      }
+    }
+  }
+
+  // Document modal styles
+  .selected-files {
+    margin-top: 15px;
+
+    h4 {
+      margin-bottom: 10px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: var(--bg-secondary);
+        border-radius: 4px;
+        margin-bottom: 5px;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+
+        .remove-file-btn {
+          background: #ef4444;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+          font-size: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: 10px;
+
+          &:hover {
+            background: #dc2626;
+          }
         }
       }
     }
   }
+}
 
   // Restored Content Styles
   .page-header {
@@ -384,9 +432,38 @@
         transform: scale(1.1);
       }
 
-      &.edit-icon { color: #3b82f6; }
+      &.edit-icon { color:var(--color-neutral-500); }
       &.toggle-icon.fa-toggle-on { color: #10b981; }
       &.toggle-icon.fa-toggle-off { color: #ef4444; }
+    }
+
+    .upload-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #059669;
+      }
+
+      i {
+        font-size: 10px;
+      }
+    }
+
+    .document-count {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      font-weight: 500;
     }
   }
 
@@ -460,6 +537,54 @@
           &:last-child {
             background: var(--color-buttns-light);
             color: white;
+          }
+        }
+      }
+
+      // Document modal styles
+      .selected-files {
+        margin-top: 15px;
+
+        h4 {
+          margin-bottom: 10px;
+          color: var(--text-primary);
+          font-size: 0.9rem;
+        }
+
+        ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+
+          li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+
+            .remove-file-btn {
+              background: #ef4444;
+              color: white;
+              border: none;
+              border-radius: 50%;
+              width: 20px;
+              height: 20px;
+              cursor: pointer;
+              font-size: 12px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-left: 10px;
+
+              &:hover {
+                background: #dc2626;
+              }
+            }
           }
         }
       }

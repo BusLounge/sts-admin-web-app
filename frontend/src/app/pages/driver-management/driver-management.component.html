@@ -135,38 +135,48 @@
     <table class="driver-table">
       <thead>
         <tr>
-          <th>Driver ID</th>
+          <th (click)="onSort('driver_id')" style="cursor: pointer;" title="Click to sort">
+            Driver ID {{ getSortIcon('driver_id') }}
+          </th>
           <th (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
-            Name {{ getSortIcon('name') }}
+            Driver Name {{ getSortIcon('name') }}
           </th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>License No.</th>
-          <th (click)="onSort('experience')" style="cursor: pointer;" title="Click to sort">
-            Experience {{ getSortIcon('experience') }}
+          <th>Contact Num</th>
+          <th>License Number</th>
+          <th (click)="onSort('license_expiry')" style="cursor: pointer;" title="Click to sort">
+            License Expire date {{ getSortIcon('license_expiry') }}
           </th>
-          <th>Status</th>
-          <th (click)="onSort('assigned_bus')" style="cursor: pointer;" title="Click to sort">
-            Assigned Bus {{ getSortIcon('assigned_bus') }}
+          <th (click)="onSort('experience_years')" style="cursor: pointer;" title="Click to sort">
+            Experience Yrs {{ getSortIcon('experience_years') }}
           </th>
-          <th>Actions</th>
+          <th (click)="onSort('hire_date')" style="cursor: pointer;" title="Click to sort">
+            Hire Date {{ getSortIcon('hire_date') }}
+          </th>
+          <th (click)="onSort('verification')" style="cursor: pointer;" title="Click to sort">
+            Verification {{ getSortIcon('verification') }}
+          </th>
+          <th>Verification Note</th>
+          <th (click)="onSort('is_active')" style="cursor: pointer;" title="Click to sort">
+            Status {{ getSortIcon('is_active') }}
+          </th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let driver of filteredDrivers">
           <td>{{ driver.driver_id }}</td>
           <td>{{ driver.first_name }} {{ driver.last_name }}</td>
-          <td>{{ driver.email }}</td>
           <td>{{ formatPhone(driver.phone) }}</td>
           <td>{{ driver.license_number }}</td>
-          <td>{{ driver.experience_years }}yrs</td>
+          <td>{{ driver.license_expiry | date:'shortDate' }}</td>
+          <td>{{ driver.experience_years }}</td>
+          <td>{{ driver.hire_date | date:'shortDate' }}</td>
+          <td>{{ driver.verification || 'Pending' }}</td>
+          <td>{{ driver.verificationNote || '-' }}</td>
           <td>{{ driver.is_active ? 'Active' : 'Inactive' }}</td>
-          <td>{{ driver.assigned_bus_id || 'Unassigned' }}</td>
           <td class="actions-cell">
             <i class="fas fa-edit action-icon edit-icon" (click)="updateDriver(driver)" title="Update"></i>
-            <i class="fas {{ driver.is_active ? 'fa-toggle-on' : 'fa-toggle-off' }} action-icon toggle-icon" (click)="toggleActive(driver)" [title]="driver.is_active ? 'Deactivate' : 'Activate'"></i>
-          </td>
-        </tr>
+            
       </tbody>
     </table>
 
@@ -177,19 +187,13 @@
       <form (ngSubmit)="saveDriver()">
         <div class="form-grid">
           <div class="form-row">
-            <label>First Name</label>
+            <label>Driver Name</label>
             <input type="text" [(ngModel)]="newDriver.first_name" name="first_name" required />
           </div>
+          
+          
           <div class="form-row">
-            <label>Last Name</label>
-            <input type="text" [(ngModel)]="newDriver.last_name" name="last_name" required />
-          </div>
-          <div class="form-row">
-            <label>Email</label>
-            <input type="email" [(ngModel)]="newDriver.email" name="email" required />
-          </div>
-          <div class="form-row">
-            <label>Phone</label>
+            <label>Contact Num</label>
             <input type="text" [(ngModel)]="newDriver.phone" name="phone" required />
           </div>
           <div class="form-row">
@@ -204,13 +208,15 @@
             <label>License Expiry</label>
             <input type="date" [(ngModel)]="newDriver.license_expiry" name="license_expiry" />
           </div>
-          <div class="form-row">
-            <label>Assigned Bus ID</label>
-            <input type="text" [(ngModel)]="newDriver.assigned_bus_id" name="assigned_bus_id" />
-          </div>
+          
           <div class="form-row">
             <label>Hire Date</label>
             <input type="date" [(ngModel)]="newDriver.hire_date" name="hire_date" />
+          </div>
+          
+          <div class="form-row">
+            <label>Verification Note</label>
+            <textarea [(ngModel)]="newDriver.verificationNote" name="verificationNote" rows="3" placeholder="Enter verification notes..."></textarea>
           </div>
           <div class="form-row">
             <label>Status</label>

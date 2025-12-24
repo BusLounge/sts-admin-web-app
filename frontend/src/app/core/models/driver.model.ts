@@ -10,6 +10,8 @@ export interface Driver {
     is_active: boolean;
     assigned_bus_id: string;
     hire_date: string;
+    verification: string;
+    verificationNote: string;
   }
 
 

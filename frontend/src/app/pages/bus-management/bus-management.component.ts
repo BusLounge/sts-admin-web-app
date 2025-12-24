@@ -33,13 +33,26 @@ export class BusManagementComponent implements OnInit {
 
   newBus: Omit<Bus, 'bus_id'> = {
     bus_number: '',
+    company: '',
+    contact: '',
+    permitNum: '',
+    regnum: '',
     capacity: 0,
     type: 'AC',
+    assigned_route_id: '',
+    approvedFare: 0,
     is_active: true,
-    assigned_route_id: ''
+    verificationStatus: 'Pending',
+    documents: []
   };
 
   selectedBus: Bus | null = null;
+
+  // Document upload properties
+  showDocumentModal = false;
+  selectedBusForDocuments: Bus | null = null;
+  selectedFiles: File[] = [];
+  selectedDocumentType: string = '';
 
   // Sorting properties
   sortColumn: string = '';
@@ -93,22 +106,23 @@ export class BusManagementComponent implements OnInit {
     this.showAddBusModal = false;
     this.newBus = {
       bus_number: '',
+      company: '',
+      contact: '',
+      permitNum: '',
+      regnum: '',
       capacity: 0,
       type: 'AC',
+      assigned_route_id: '',
+      approvedFare: 0,
       is_active: true,
-      assigned_route_id: ''
+      verificationStatus: 'Pending',
+      documents: []
     };
   }
 
   saveBus() {
-    if (this.newBus.bus_number && this.newBus.capacity > 0 && this.newBus.assigned_route_id) {
-      this.busService.addBus({
-        bus_number: this.newBus.bus_number,
-        capacity: this.newBus.capacity,
-        type: this.newBus.type,
-        is_active: this.newBus.is_active,
-        assigned_route_id: this.newBus.assigned_route_id
-      });
+    if (this.newBus.bus_number && this.newBus.company && this.newBus.contact && this.newBus.permitNum && this.newBus.regnum && this.newBus.capacity > 0 && this.newBus.assigned_route_id && this.newBus.approvedFare >= 0) {
+      this.busService.addBus(this.newBus);
       this.closeAddBusModal();
     } else {
       alert('Please fill all required fields');
@@ -121,7 +135,7 @@ export class BusManagementComponent implements OnInit {
   }
 
   saveEditBus() {
-    if (this.selectedBus && this.selectedBus.bus_number && this.selectedBus.capacity > 0 && this.selectedBus.assigned_route_id) {
+    if (this.selectedBus && this.selectedBus.bus_number && this.selectedBus.company && this.selectedBus.contact && this.selectedBus.permitNum && this.selectedBus.regnum && this.selectedBus.capacity > 0 && this.selectedBus.assigned_route_id && this.selectedBus.approvedFare >= 0) {
       this.busService.updateBus(this.selectedBus);
       this.closeEditBusModal();
     } else {
@@ -153,21 +167,26 @@ export class BusManagementComponent implements OnInit {
     doc.setFontSize(16);
     doc.text('Buses History', 14, 16);
 
-    const tableHead = [['Bus ID', 'Bus Number', 'Capacity', 'Type', 'Status', 'Route ID']];
+    const tableHead = [['Bus ID', 'Company', 'Contact', 'Permit Num', 'Reg Num', 'Bus Type', 'Seats', 'Route', 'Approved Fare', 'Status', 'Verification Status']];
     const tableBody = this.buses.map(b => [
       b.bus_id,
-      b.bus_number,
-      String(b.capacity),
+      b.company,
+      b.contact,
+      b.permitNum,
+      b.regnum,
       b.type,
+      String(b.capacity),
+      b.assigned_route_id,
+      String(b.approvedFare),
       b.is_active ? 'Active' : 'Inactive',
-      b.assigned_route_id
+      b.verificationStatus
     ]);
 
     autoTable(doc, {
       head: tableHead,
       body: tableBody,
       startY: 22,
-      styles: { fontSize: 10 },
+      styles: { fontSize: 8 },
       headStyles: { fillColor: [59, 130, 246] }
     });
 
@@ -333,17 +352,49 @@ export class BusManagementComponent implements OnInit {
       let bValue: any;
 
       switch (this.sortColumn) {
+        case 'bus_id':
+          aValue = a.bus_id;
+          bValue = b.bus_id;
+          break;
+        case 'company':
+          aValue = a.company.toLowerCase();
+          bValue = b.company.toLowerCase();
+          break;
+        case 'contact':
+          aValue = a.contact.toLowerCase();
+          bValue = b.contact.toLowerCase();
+          break;
+        case 'permitNum':
+          aValue = a.permitNum.toLowerCase();
+          bValue = b.permitNum.toLowerCase();
+          break;
+        case 'regnum':
+          aValue = a.regnum.toLowerCase();
+          bValue = b.regnum.toLowerCase();
+          break;
+        case 'type':
+          aValue = a.type.toLowerCase();
+          bValue = b.type.toLowerCase();
+          break;
         case 'capacity':
           aValue = a.capacity;
           bValue = b.capacity;
           break;
-        case 'bus_number':
-          aValue = a.bus_number.toLowerCase();
-          bValue = b.bus_number.toLowerCase();
-          break;
         case 'route_id':
           aValue = a.assigned_route_id || '';
           bValue = b.assigned_route_id || '';
+          break;
+        case 'approvedFare':
+          aValue = a.approvedFare;
+          bValue = b.approvedFare;
+          break;
+        case 'is_active':
+          aValue = a.is_active ? 1 : 0;
+          bValue = b.is_active ? 1 : 0;
+          break;
+        case 'verificationStatus':
+          aValue = a.verificationStatus.toLowerCase();
+          bValue = b.verificationStatus.toLowerCase();
           break;
         default:
           return 0;
@@ -364,5 +415,50 @@ export class BusManagementComponent implements OnInit {
       return ' ⇅'; // Both arrows for unsorted columns
     }
     return this.sortDirection === 'asc' ? ' ↑' : ' ↓';
+  }
+
+  // Getters and setters for documents field to handle string/array conversion
+  get newBusDocuments(): string {
+    return this.newBus.documents ? this.newBus.documents.join(', ') : '';
+  }
+
+  set newBusDocuments(value: string) {
+    this.newBus.documents = value ? value.split(',').map(s => s.trim()).filter(s => s) : [];
+  }
+
+  get selectedBusDocuments(): string {
+    return this.selectedBus?.documents ? this.selectedBus.documents.join(', ') : '';
+  }
+
+  set selectedBusDocuments(value: string) {
+    if (this.selectedBus) {
+      this.selectedBus.documents = value ? value.split(',').map(s => s.trim()).filter(s => s) : [];
+    }
+  }
+
+  // Document upload modal methods
+  closeDocumentModal() {
+    this.showDocumentModal = false;
+    this.selectedBusForDocuments = null;
+    this.selectedFiles = [];
+    this.selectedDocumentType = '';
+  }
+
+  uploadDocuments() {
+    if (this.selectedFiles.length > 0 && this.selectedDocumentType && this.selectedBusForDocuments) {
+      // TODO: Implement actual file upload logic
+      console.log('Uploading documents for bus:', this.selectedBusForDocuments.bus_number);
+      console.log('Document type:', this.selectedDocumentType);
+      console.log('Files:', this.selectedFiles);
+      this.closeDocumentModal();
+    }
+  }
+
+  onFileSelected(event: any) {
+    this.selectedFiles = Array.from(event.target.files);
+  }
+
+  removeFile(index: number) {
+    this.selectedFiles.splice(index, 1);
   }
 }

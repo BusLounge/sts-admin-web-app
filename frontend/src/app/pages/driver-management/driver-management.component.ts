@@ -40,7 +40,9 @@ export class DriverManagementComponent implements OnInit {
     is_active: true,
     license_expiry: '',
     assigned_bus_id: '',
-    hire_date: ''
+    hire_date: '',
+    verification: 'Pending',
+    verificationNote: ''
   };
 
   // Sorting properties
@@ -93,7 +95,9 @@ export class DriverManagementComponent implements OnInit {
       is_active: true,
       license_expiry: '',
       assigned_bus_id: '',
-      hire_date: ''
+      hire_date: '',
+      verification: 'Pending',
+      verificationNote: ''
     };
   }
 
@@ -139,7 +143,9 @@ export class DriverManagementComponent implements OnInit {
       is_active: driver.is_active,
       license_expiry: driver.license_expiry,
       assigned_bus_id: driver.assigned_bus_id,
-      hire_date: driver.hire_date
+      hire_date: driver.hire_date,
+      verification: driver.verification,
+      verificationNote: driver.verificationNote
     };
     this.showAddDriverModal = true;
   }
@@ -320,17 +326,33 @@ export class DriverManagementComponent implements OnInit {
       let bValue: any;
 
       switch (this.sortColumn) {
+        case 'driver_id':
+          aValue = a.driver_id.toLowerCase();
+          bValue = b.driver_id.toLowerCase();
+          break;
         case 'name':
           aValue = `${a.first_name} ${a.last_name}`.toLowerCase();
           bValue = `${b.first_name} ${b.last_name}`.toLowerCase();
           break;
-        case 'assigned_bus':
-          aValue = a.assigned_bus_id || '';
-          bValue = b.assigned_bus_id || '';
+        case 'license_expiry':
+          aValue = new Date(a.license_expiry || '1970-01-01').getTime();
+          bValue = new Date(b.license_expiry || '1970-01-01').getTime();
           break;
-        case 'experience':
+        case 'experience_years':
           aValue = a.experience_years;
           bValue = b.experience_years;
+          break;
+        case 'hire_date':
+          aValue = new Date(a.hire_date || '1970-01-01').getTime();
+          bValue = new Date(b.hire_date || '1970-01-01').getTime();
+          break;
+        case 'verification':
+          aValue = a.verification || '';
+          bValue = b.verification || '';
+          break;
+        case 'is_active':
+          aValue = a.is_active;
+          bValue = b.is_active;
           break;
         default:
           return 0;

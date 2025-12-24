@@ -174,7 +174,9 @@ export class AddDriverComponent {
       experience_years: this.form.experience_years as number,
       is_active: this.form.is_active,
       assigned_bus_id: this.form.assigned_bus_id.trim(),
-      hire_date: this.form.hire_date
+      hire_date: this.form.hire_date,
+      verification: 'Pending',
+      verificationNote: ''
     };
     this.driverService.addDriver(newDriver);
     this.isSubmitting = false;
