@@ -231,6 +231,10 @@
           <h3>Bus Details</h3>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="form-row">
+              <label>Bus Number</label>
+              <input type="text" [(ngModel)]="newBus.bus_number" name="bus_number" required />
+            </div>
+            <div class="form-row">
               <label>Permit Number</label>
               <input type="text" [(ngModel)]="newBus.permitNum" name="permitNum" required />
             </div>
@@ -306,6 +310,10 @@
         <div class="form-section">
           <h3>Bus Details</h3>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-row">
+              <label>Bus Number</label>
+              <input type="text" [(ngModel)]="selectedBus.bus_number" name="bus_number" required />
+            </div>
             <div class="form-row">
               <label>Permit Number</label>
               <input type="text" [(ngModel)]="selectedBus.permitNum" name="permitNum" required />

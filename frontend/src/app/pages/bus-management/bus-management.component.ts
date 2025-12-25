@@ -125,11 +125,15 @@ export class BusManagementComponent implements OnInit {
   }
 
   saveBus() {
-    if (this.newBus.bus_number && this.newBus.company && this.newBus.contact && this.newBus.permitNum && this.newBus.regnum && this.newBus.capacity > 0 && this.newBus.assigned_route_id && this.newBus.approvedFare >= 0) {
+    if (this.newBus.bus_number && this.newBus.company && this.newBus.nic_number && this.newBus.email && this.newBus.contact && this.newBus.permitNum && this.newBus.regnum && this.newBus.capacity > 0 && this.newBus.assigned_route_id && this.newBus.approvedFare >= 0) {
       this.busService.addBus(this.newBus);
       this.closeAddBusModal();
     } else {
-      alert('Please fill all required fields');
+      if (this.newBus.capacity <= 0) {
+        alert('Seats must be greater than 0');
+      } else {
+        alert('Please fill all required fields');
+      }
     }
   }
 

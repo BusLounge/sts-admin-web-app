@@ -86,6 +86,9 @@
           <div class="col num" (click)="onSort('price_per_hour')" style="cursor: pointer;" title="Click to sort">
             Price/hour {{ getSortIcon('price_per_hour') }}
           </div>
+          <div class="col" (click)="onSort('lounge_status')" style="cursor: pointer;" title="Click to sort">
+            Lounge Status {{ getSortIcon('lounge_status') }}
+          </div>
           <div class="col" (click)="onSort('verification')" style="cursor: pointer;" title="Click to sort">
             Verification {{ getSortIcon('verification') }}
           </div>
@@ -103,6 +106,7 @@
           <div class="col">{{ l.address }}</div>
           <div class="col num">{{ l.capacity }}</div>
           <div class="col num">${{ l.price_per_hour }}</div>
+          <div class="col">{{ l.lounge_status }}</div>
           <div class="col">{{ l.verification }}</div>
           <div class="col">{{ l.verification_note }}</div>
           <div class="col actions">

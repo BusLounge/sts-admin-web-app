@@ -29,6 +29,7 @@ export class DriverManagementComponent implements OnInit {
   showAddDriverModal = false;
   isEditing = false;
   editingDriver: Driver | null = null;
+  driverName: string = '';
 
   newDriver: Omit<Driver, 'driver_id'> = {
     first_name: '',
@@ -78,6 +79,7 @@ export class DriverManagementComponent implements OnInit {
   addDriver() {
     this.isEditing = false;
     this.editingDriver = null;
+    this.driverName = '';
     this.showAddDriverModal = true;
   }
 
@@ -85,6 +87,7 @@ export class DriverManagementComponent implements OnInit {
     this.showAddDriverModal = false;
     this.isEditing = false;
     this.editingDriver = null;
+    this.driverName = '';
     this.newDriver = {
       first_name: '',
       last_name: '',
@@ -102,7 +105,13 @@ export class DriverManagementComponent implements OnInit {
   }
 
   saveDriver() {
-    if (this.newDriver.first_name && this.newDriver.last_name && this.newDriver.email && this.newDriver.phone && this.newDriver.license_number && this.newDriver.experience_years >= 0) {
+    // Split driverName into first and last name
+    const nameParts = this.driverName.trim().split(' ');
+    this.newDriver.first_name = nameParts[0] || '';
+    this.newDriver.last_name = nameParts.slice(1).join(' ') || '';
+
+    // Relaxed validation: removed email check as it is not in the form
+    if (this.newDriver.first_name && this.newDriver.phone && this.newDriver.license_number && this.newDriver.experience_years >= 0) {
       if (this.isEditing && this.editingDriver) {
         const updatedDriver = { ...this.editingDriver, ...this.newDriver };
         this.driverService.updateDriver(updatedDriver);
@@ -133,6 +142,7 @@ export class DriverManagementComponent implements OnInit {
   updateDriver(driver: Driver) {
     this.isEditing = true;
     this.editingDriver = driver;
+    this.driverName = `${driver.first_name} ${driver.last_name}`;
     this.newDriver = {
       first_name: driver.first_name,
       last_name: driver.last_name,
