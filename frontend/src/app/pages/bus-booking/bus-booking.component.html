@@ -26,6 +26,9 @@
     <div class="header-content">
       <h2>Bus Booking Management</h2>
     </div>
+    <div class="header-actions">
+      <button class="add-btn" (click)="openAddModal()">+ Add Bus Booking</button>
+    </div>
   </div>
 
   <div class="content">
@@ -82,39 +85,61 @@
     <section class="table-section">
       <div class="table">
         <div class="row header">
-          <div class="col">Bus Booking ID</div>
-          <div class="col" (click)="onSort('passenger_id')" style="cursor: pointer;" title="Click to sort">
-            Passenger ID {{ getSortIcon('passenger_id') }}
+          <div class="col" (click)="onSort('booking_id')" style="cursor: pointer;" title="Click to sort">
+            Booking ID {{ getSortIcon('booking_id') }}
+          </div>
+          <div class="col" (click)="onSort('trip_schedule_id')" style="cursor: pointer;" title="Click to sort">
+            Trip Schedule ID {{ getSortIcon('trip_schedule_id') }}
           </div>
           <div class="col" (click)="onSort('bus_number')" style="cursor: pointer;" title="Click to sort">
-            Bus ID {{ getSortIcon('bus_number') }}
+            BusID {{ getSortIcon('bus_number') }}
+          </div>
+          <div class="col" (click)="onSort('passenger_name')" style="cursor: pointer;" title="Click to sort">
+            Passenger Name {{ getSortIcon('passenger_name') }}
+          </div>
+          <div class="col" (click)="onSort('passenger_phone')" style="cursor: pointer;" title="Click to sort">
+            Passenger Phone {{ getSortIcon('passenger_phone') }}
+          </div>
+          <div class="col" (click)="onSort('ref_num')" style="cursor: pointer;" title="Click to sort">
+            Ref NUM {{ getSortIcon('ref_num') }}
           </div>
           <div class="col" (click)="onSort('route')" style="cursor: pointer;" title="Click to sort">
-            Route (From → To) {{ getSortIcon('route') }}
+            Route {{ getSortIcon('route') }}
           </div>
           <div class="col" (click)="onSort('journey_datetime')" style="cursor: pointer;" title="Click to sort">
-            Journey Date & Time {{ getSortIcon('journey_datetime') }}
+            Date & Time {{ getSortIcon('journey_datetime') }}
           </div>
-          <div class="col" (click)="onSort('seats_booked')" style="cursor: pointer;" title="Click to sort">
-            Seats Booked {{ getSortIcon('seats_booked') }}
+          <div class="col" (click)="onSort('bus_type')" style="cursor: pointer;" title="Click to sort">
+            Bus Type {{ getSortIcon('bus_type') }}
+          </div>
+          <div class="col" (click)="onSort('seat_numbers')" style="cursor: pointer;" title="Click to sort">
+            Seat No {{ getSortIcon('seat_numbers') }}
           </div>
           <div class="col" (click)="onSort('total_fare')" style="cursor: pointer;" title="Click to sort">
             Total Fare {{ getSortIcon('total_fare') }}
           </div>
-          <div class="col">Payment Status</div>
-          <div class="col">Booking Status</div>
+          <div class="col" (click)="onSort('payment_status')" style="cursor: pointer;" title="Click to sort">
+            Payment Status {{ getSortIcon('payment_status') }}
+          </div>
+          <div class="col" (click)="onSort('booking_status')" style="cursor: pointer;" title="Click to sort">
+            Booking Status {{ getSortIcon('booking_status') }}
+          </div>
           <div class="col actions-col">Actions</div>
         </div>
         <div class="row" *ngFor="let b of filtered">
           <div class="col">{{ b.booking_id }}</div>
-          <div class="col">{{ b.passenger_id }}</div>
+          <div class="col">{{ b.trip_schedule_id || '-' }}</div>
           <div class="col">{{ b.bus_number }}</div>
+          <div class="col">{{ b.passenger_name }}</div>
+          <div class="col">{{ b.passenger_phone || '-' }}</div>
+          <div class="col">{{ b.ref_num || '-' }}</div>
           <div class="col">{{ b.from }} → {{ b.to }}</div>
           <div class="col">{{ b.journey_datetime | date: 'medium' }}</div>
-          <div class="col">{{ b.seats_booked }} / {{ b.seat_numbers.join(', ') }}</div>
-          <div class="col">{{ b.total_fare  }}</div>
+          <div class="col">{{ b.bus_type || '-' }}</div>
+          <div class="col">{{ b.seat_numbers.join(', ') }}</div>
+          <div class="col">{{ b.total_fare }}</div>
           <div class="col center-align">
-            <select [(ngModel)]="b.payment_status" (change)="onPaymentStatusChange(b)">
+            <select [(ngModel)]="b.payment_status" (change)="onPaymentStatusChange(b)" [class]="'status-dropdown ' + b.payment_status.toLowerCase()">
               <option value="Paid">Paid</option>
               <option value="Pending">Pending</option>
               <option value="Failed">Failed</option>
@@ -122,7 +147,7 @@
             </select>
           </div>
           <div class="col center-align">
-            <select [(ngModel)]="b.booking_status" (change)="onBookingStatusChange(b)">
+            <select [(ngModel)]="b.booking_status" (change)="onBookingStatusChange(b)" [class]="'status-dropdown ' + b.booking_status.toLowerCase()">
               <option value="Confirmed">Confirmed</option>
               <option value="Pending">Pending</option>
               <option value="Cancelled">Cancelled</option>
@@ -138,88 +163,107 @@
   </div>
 </div>
 
-<!-- Edit Bus Booking Modal -->
+<!-- Edit/Add Bus Booking Modal -->
 <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
   <div class="edit-container" (click)="$event.stopPropagation()">
-    <h2>Edit Bus Booking</h2>
-    <form (ngSubmit)="saveEditBooking()" *ngIf="selectedBooking" class="bus-form">
-      <div class="form-row">
-        <label>
-          Booking ID
-          <input [value]="selectedBooking.booking_id" readonly />
-        </label>
-        <label>
-          Passenger ID
-          <input [value]="selectedBooking.passenger_id" readonly />
-        </label>
+    <h2>{{ isEditMode ? 'Edit Bus Booking' : 'Add Bus Booking' }}</h2>
+    <form (ngSubmit)="saveBooking()" *ngIf="selectedBooking" class="form-grid">
+      
+      <!-- Booking ID (Readonly, Edit Mode Only) -->
+      <div class="form-row" *ngIf="isEditMode">
+        <label>Booking ID</label>
+        <input [value]="selectedBooking.booking_id" readonly />
       </div>
-      <div class="form-row">
-        <label>
-          Passenger Name
-          <input type="text" [(ngModel)]="selectedBooking.passenger_name" name="passenger_name" required />
-        </label>
-        <label>
-          Bus Number
-          <input type="text" [(ngModel)]="selectedBooking.bus_number" name="bus_number" required />
-        </label>
+
+      <!-- Trip Schedule ID -->
+      <div class="form-row" *ngIf="isEditMode">
+        <label>Trip Schedule ID</label>
+        <input type="text" [(ngModel)]="selectedBooking.trip_schedule_id" name="trip_schedule_id" placeholder="Optional" />
       </div>
-      <div class="form-row">
-        <label>
-          Bus Name
-          <input type="text" [(ngModel)]="selectedBooking.bus_name" name="bus_name" />
-        </label>
-        <label>
-          From
-          <input type="text" [(ngModel)]="selectedBooking.from" name="from" required />
-        </label>
+
+      <!-- Bus ID -->
+      <div class="form-row" *ngIf="isEditMode">
+        <label>Bus ID</label>
+        <input type="text" [(ngModel)]="selectedBooking.bus_number" name="bus_number" required />
       </div>
+
+      <!-- Passenger Name -->
       <div class="form-row">
-        <label>
-          To
-          <input type="text" [(ngModel)]="selectedBooking.to" name="to" required />
-        </label>
-        <label>
-          Journey Date & Time
-          <input type="datetime-local" [(ngModel)]="selectedBooking.journey_datetime" name="journey_datetime" required />
-        </label>
+        <label>Passenger Name</label>
+        <input type="text" [(ngModel)]="selectedBooking.passenger_name" name="passenger_name" required />
       </div>
+
+      <!-- Passenger Phone -->
       <div class="form-row">
-        <label>
-          Seats Booked
-          <input type="number" [(ngModel)]="selectedBooking.seats_booked" name="seats_booked" required min="1" />
-        </label>
-        <label>
-          Seat Numbers (comma separated)
-          <input type="text" [(ngModel)]="formSeatNumbers" name="formSeatNumbers" required />
-        </label>
+        <label>Passenger Phone</label>
+        <input type="text" [(ngModel)]="selectedBooking.passenger_phone" name="passenger_phone" />
       </div>
+
+      <!-- Ref NUM -->
+      <div class="form-row" *ngIf="isEditMode">
+        <label>Ref NUM</label>
+        <input type="text" [(ngModel)]="selectedBooking.ref_num" name="ref_num" />
+      </div>
+
+      <!-- Route From -->
       <div class="form-row">
-        <label>
-          Total Fare
-          <input type="number" [(ngModel)]="selectedBooking.total_fare" name="total_fare" required min="0" step="0.01" />
-        </label>
-        <label>
-          Payment Status
-          <select [(ngModel)]="selectedBooking.payment_status" name="payment_status">
-            <option value="Paid">Paid</option>
-            <option value="Pending">Pending</option>
-            <option value="Failed">Failed</option>
-            <option value="Refunded">Refunded</option>
-          </select>
-        </label>
+        <label>From</label>
+        <input type="text" [(ngModel)]="selectedBooking.from" name="from" required />
       </div>
+
+      <!-- Route To -->
       <div class="form-row">
-        <label>
-          Booking Status
-          <select [(ngModel)]="selectedBooking.booking_status" name="booking_status">
-            <option value="Confirmed">Confirmed</option>
-            <option value="Pending">Pending</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </label>
+        <label>To</label>
+        <input type="text" [(ngModel)]="selectedBooking.to" name="to" required />
       </div>
-      <div class="form-actions">
+
+      <!-- Date & Time -->
+      <div class="form-row">
+        <label>Date & Time</label>
+        <input type="datetime-local" [(ngModel)]="selectedBooking.journey_datetime" name="journey_datetime" required />
+      </div>
+
+      <!-- Bus Type -->
+      <div class="form-row">
+        <label>Bus Type</label>
+        <input type="text" [(ngModel)]="selectedBooking.bus_type" name="bus_type" />
+      </div>
+
+      <!-- Seat No -->
+      <div class="form-row">
+        <label>Seat No (comma separated)</label>
+        <input type="text" [(ngModel)]="formSeatNumbers" name="formSeatNumbers" required />
+      </div>
+
+      <!-- Total Fare -->
+      <div class="form-row">
+        <label>Total Fare</label>
+        <input type="number" [(ngModel)]="selectedBooking.total_fare" name="total_fare" required min="0" step="0.01" />
+      </div>
+
+      <!-- Payment Status -->
+      <div class="form-row" *ngIf="isEditMode">
+        <label>Payment Status</label>
+        <select [(ngModel)]="selectedBooking.payment_status" name="payment_status">
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending</option>
+          <option value="Failed">Failed</option>
+          <option value="Refunded">Refunded</option>
+        </select>
+      </div>
+
+      <!-- Booking Status -->
+      <div class="form-row" *ngIf="isEditMode">
+        <label>Booking Status</label>
+        <select [(ngModel)]="selectedBooking.booking_status" name="booking_status">
+          <option value="Confirmed">Confirmed</option>
+          <option value="Pending">Pending</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+
+      <div class="form-actions full-width">
         <button type="button" (click)="closeEditModal()">Cancel</button>
         <button type="submit">Save</button>
       </div>

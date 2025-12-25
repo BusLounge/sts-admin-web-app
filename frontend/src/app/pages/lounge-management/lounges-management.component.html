@@ -175,6 +175,10 @@
           <label>Operating Hours</label>
           <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" [readonly]="modalMode === 'view'" />
         </div>
+        <div class="form-row full-width">
+          <label>Verification Note</label>
+          <textarea [(ngModel)]="lounge.verification_note" name="verification_note" rows="3" placeholder="Enter verification notes..." [readonly]="modalMode === 'view'"></textarea>
+        </div>
       </div>
 
       <!-- Image Upload -->
@@ -215,7 +219,7 @@
 
       <!-- Services -->
       <div class="form-row full-width">
-        <label>Services</label>
+        <label>MarketPlace</label>
         <div class="checkbox-grid">
           <div *ngFor="let service of availableServices" class="checkbox-item">
             <input

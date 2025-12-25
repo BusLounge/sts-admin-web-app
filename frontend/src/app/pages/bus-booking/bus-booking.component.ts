@@ -26,15 +26,18 @@ export class BusBookingComponent implements OnInit {
     doc.text('Bus Booking History', 14, 16);
 
     const tableHead = [[
-      'Booking ID', 'Passenger ID', 'Bus Number', 'Route', 'Journey Date & Time', 'Seats Booked', 'Seat Numbers', 'Total Fare', 'Payment Status', 'Booking Status'
+      'Booking ID', 'Trip Schedule ID', 'BusID', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Route', 'Date & Time', 'Bus Type', 'Seat No', 'Total Fare', 'Payment Status', 'Booking Status'
     ]];
     const tableBody = this.filtered.map(b => [
       b.booking_id,
-      b.passenger_id,
+      b.trip_schedule_id || '-',
       b.bus_number,
+      b.passenger_name,
+      b.passenger_phone || '-',
+      b.ref_num || '-',
       `${b.from} → ${b.to}`,
       new Date(b.journey_datetime).toLocaleString(),
-      b.seats_booked,
+      b.bus_type || '-',
       b.seat_numbers.join(', '),
       `$${b.total_fare}`,
       b.payment_status,
@@ -45,7 +48,7 @@ export class BusBookingComponent implements OnInit {
       head: tableHead,
       body: tableBody,
       startY: 22,
-      styles: { fontSize: 10 },
+      styles: { fontSize: 8 },
       headStyles: { fillColor: [59, 130, 246] }
     });
 
@@ -94,6 +97,7 @@ export class BusBookingComponent implements OnInit {
 
   // Modal properties
   showEditModal = false;
+  isEditMode = false;
   selectedBooking: BusBooking | null = null;
   formSeatNumbers = '';
 
@@ -139,11 +143,16 @@ export class BusBookingComponent implements OnInit {
     this.filtered = this.bookings.filter(b => {
       const matchesSearch = !q || [
         b.booking_id,
+        b.trip_schedule_id || '',
         b.passenger_id,
         b.passenger_name,
+        b.passenger_phone || '',
+        b.ref_num || '',
         b.bus_number,
         b.bus_name || '',
-        `${b.from} ${b.to}`,
+        b.bus_type || '',
+        b.from,
+        b.to,
         b.seat_numbers.join(' ')
       ].some(x => x.toLowerCase().includes(q)) ||
       b.total_fare.toString().includes(q) || b.seats_booked.toString().includes(q);
@@ -152,12 +161,42 @@ export class BusBookingComponent implements OnInit {
       const matchesStatus = this.statusFilter === 'All' || b.booking_status === this.statusFilter;
       return matchesSearch && matchesPay && matchesStatus;
     });
+    
+    // Re-apply sorting after filtering
+    if (this.sortColumn) {
+      this.applySorting();
+    }
   }
 
   clearSearch() { this.searchTerm = ''; this.applyFilters(); }
 
   viewBooking(b: BusBooking) { alert(`View ${b.booking_id}`); }
+  
+  openAddModal() {
+    this.isEditMode = false;
+    this.selectedBooking = {
+      booking_id: `BBK-${Math.floor(Math.random() * 10000)}`, // Temp ID generation
+      passenger_id: `PAS-${Math.floor(Math.random() * 1000)}`,
+      passenger_name: '',
+      passenger_phone: '',
+      bus_number: '',
+      bus_type: '',
+      from: '',
+      to: '',
+      journey_datetime: '',
+      seats_booked: 0,
+      seat_numbers: [],
+      total_fare: 0,
+      payment_status: 'Pending',
+      booking_status: 'Pending',
+      created_at: new Date().toISOString()
+    };
+    this.formSeatNumbers = '';
+    this.showEditModal = true;
+  }
+
   updateBooking(b: BusBooking) {
+    this.isEditMode = true;
     this.selectedBooking = { ...b };
     this.formSeatNumbers = b.seat_numbers.join(', ');
     this.showEditModal = true;
@@ -259,33 +298,64 @@ goUserProfile() {
 
   private applySorting(): void {
     this.filtered = [...this.filtered].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: any = '';
+      let bValue: any = '';
+
+      // Helper to safely get string value
+      const getStr = (val: any) => (val || '').toString().toLowerCase();
 
       switch (this.sortColumn) {
-        case 'passenger_id':
-          aValue = a.passenger_id.toLowerCase();
-          bValue = b.passenger_id.toLowerCase();
+        case 'booking_id':
+          aValue = getStr(a.booking_id);
+          bValue = getStr(b.booking_id);
+          break;
+        case 'trip_schedule_id':
+          aValue = getStr(a.trip_schedule_id);
+          bValue = getStr(b.trip_schedule_id);
           break;
         case 'bus_number':
-          aValue = a.bus_number.toLowerCase();
-          bValue = b.bus_number.toLowerCase();
+          aValue = getStr(a.bus_number);
+          bValue = getStr(b.bus_number);
+          break;
+        case 'passenger_name':
+          aValue = getStr(a.passenger_name);
+          bValue = getStr(b.passenger_name);
+          break;
+        case 'passenger_phone':
+          aValue = getStr(a.passenger_phone);
+          bValue = getStr(b.passenger_phone);
+          break;
+        case 'ref_num':
+          aValue = getStr(a.ref_num);
+          bValue = getStr(b.ref_num);
           break;
         case 'route':
-          aValue = `${a.from} → ${a.to}`.toLowerCase();
-          bValue = `${b.from} → ${b.to}`.toLowerCase();
+          aValue = `${getStr(a.from)} ${getStr(a.to)}`;
+          bValue = `${getStr(b.from)} ${getStr(b.to)}`;
           break;
         case 'journey_datetime':
-          aValue = new Date(a.journey_datetime);
-          bValue = new Date(b.journey_datetime);
+          aValue = new Date(a.journey_datetime).getTime();
+          bValue = new Date(b.journey_datetime).getTime();
           break;
-        case 'seats_booked':
-          aValue = a.seats_booked;
-          bValue = b.seats_booked;
+        case 'bus_type':
+          aValue = getStr(a.bus_type);
+          bValue = getStr(b.bus_type);
+          break;
+        case 'seat_numbers':
+          aValue = a.seat_numbers.join(', ');
+          bValue = b.seat_numbers.join(', ');
           break;
         case 'total_fare':
           aValue = a.total_fare;
           bValue = b.total_fare;
+          break;
+        case 'payment_status':
+          aValue = getStr(a.payment_status);
+          bValue = getStr(b.payment_status);
+          break;
+        case 'booking_status':
+          aValue = getStr(a.booking_status);
+          bValue = getStr(b.booking_status);
           break;
         default:
           return 0;
@@ -314,10 +384,16 @@ goUserProfile() {
     this.selectedBooking = null;
   }
 
-  saveEditBooking(): void {
+  saveBooking(): void {
     if (!this.selectedBooking) return;
     this.selectedBooking.seat_numbers = this.formSeatNumbers.split(',').map(s => s.trim());
-    this.svc.update(this.selectedBooking);
+    this.selectedBooking.seats_booked = this.selectedBooking.seat_numbers.length;
+    
+    if (this.isEditMode) {
+      this.svc.update(this.selectedBooking);
+    } else {
+      this.svc.add(this.selectedBooking);
+    }
     this.closeEditModal();
   }
 }

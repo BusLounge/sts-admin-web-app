@@ -75,16 +75,18 @@ export class LoungeBookingComponent implements OnInit {
       doc.text('Lounge Booking History', 14, 16);
 
       const tableHead = [[
-        'Booking ID', 'Passenger ID', 'Lounge Name', 'Date & Time', 'Duration (h)', 'Guests', 'Capacity Used', 'Total Amount', 'Payment Status', 'Booking Status'
+        'Booking ID', 'Passenger Name', 'Phone', 'Ref Num', 'Lounge Name', 'Date', 'Time/Duration', 'Guests (A/C)', 'Features', 'Total Amount', 'Payment', 'Status'
       ]];
       const tableBody = this.filtered.map(b => [
         b.booking_id,
-        b.passenger_id,
+        b.passenger_name || '',
+        b.passenger_phone || '',
+        b.ref_num || '',
         b.lounge_name,
-        `${new Date(b.start_datetime).toLocaleString()}`,
-        b.duration_hours,
-        b.guests,
-        b.capacity_used,
+        new Date(b.start_datetime).toLocaleDateString(),
+        `${new Date(b.start_datetime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} / ${b.duration_hours}h`,
+        `Adult ${b.adults || 0}, Child ${b.children || 0}`,
+        (b.additional_features || []).join(', '),
         `$${b.total_amount}`,
         b.payment_status,
         b.booking_status
@@ -94,7 +96,7 @@ export class LoungeBookingComponent implements OnInit {
         head: tableHead,
         body: tableBody,
         startY: 22,
-        styles: { fontSize: 10 },
+        styles: { fontSize: 8 },
         headStyles: { fillColor: [59, 130, 246] }
       });
 
@@ -150,14 +152,15 @@ export class LoungeBookingComponent implements OnInit {
     this.filtered = this.bookings.filter(b => {
       const matchesSearch = !q || [
         b.booking_id,
-        b.passenger_id,
+        b.passenger_name,
+        b.passenger_phone,
+        b.ref_num,
         b.lounge_name,
         b.payment_status,
         b.booking_status,
         b.start_datetime,
-        b.guests.toString(),
-        b.capacity_used.toString()
-      ].some(x => x.toLowerCase().includes(q)) ||
+        b.guests.toString()
+      ].some(x => x && x.toLowerCase().includes(q)) ||
       b.total_amount.toString().includes(q) || b.duration_hours.toString().includes(q);
 
       const matchesPay = this.paymentFilter === 'All' || b.payment_status === this.paymentFilter;
@@ -169,40 +172,83 @@ export class LoungeBookingComponent implements OnInit {
 
   clearSearch() { this.searchTerm = ''; this.applyFilters(); }
 
-  showUpdateBookingModal: boolean = false;
-  selectedBooking?: LoungeBooking;
+  // Modal state
+  showModal = false;
+  isEditMode = false;
+  formBooking: Partial<LoungeBooking> = {};
+  
+  availableFeatures = ['Premium meals', 'Express loundary', 'cargo storage', 'spa service', 'personal assist', 'Airport transfer', 'Tuk tuk'];
 
-  formDurationHours: number = 1;
-  formGuests: number = 0;
-  formCapacityUsed: number = 0;
-  startDateTime: string = '';
-
-  updateBooking(b: LoungeBooking) {
-    this.selectedBooking = { ...b };
-    this.formDurationHours = b.duration_hours;
-    this.formGuests = b.guests;
-    this.formCapacityUsed = b.capacity_used;
-    this.startDateTime = b.start_datetime;
-    this.showUpdateBookingModal = true;
-  }
-
-  closeUpdateBookingModal() {
-    this.showUpdateBookingModal = false;
-    this.selectedBooking = undefined;
-    this.startDateTime = '';
-  }
-
-  saveUpdatedBooking() {
-    if (!this.selectedBooking) return;
-    const updated: LoungeBooking = {
-      ...this.selectedBooking,
-      duration_hours: Math.max(1, this.formDurationHours),
-      guests: Math.max(0, this.formGuests),
-      capacity_used: Math.max(0, this.formCapacityUsed),
+  openAddModal() {
+    this.isEditMode = false;
+    this.formBooking = {
+      lounge_name: '',
+      start_datetime: '',
+      duration_hours: 1,
+      adults: 1,
+      children: 0,
+      additional_features: [],
+      total_amount: 0,
+      payment_status: 'Pending',
+      booking_status: 'Confirmed'
     };
-    this.svc.update(updated);
-    this.closeUpdateBookingModal();
+    this.showModal = true;
   }
+
+  openEditModal(b: LoungeBooking) {
+    this.isEditMode = true;
+    this.formBooking = { ...b };
+    
+    // Format datetime for input (YYYY-MM-DDTHH:mm)
+    if (this.formBooking.start_datetime) {
+      try {
+        this.formBooking.start_datetime = new Date(this.formBooking.start_datetime).toISOString().slice(0, 16);
+      } catch (e) {
+        console.error('Invalid date format', e);
+      }
+    }
+
+    // Ensure additional_features is an array
+    if (!this.formBooking.additional_features) {
+      this.formBooking.additional_features = [];
+    }
+    this.showModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+  }
+
+  saveBooking() {
+    if (this.isEditMode) {
+      this.svc.update(this.formBooking as LoungeBooking);
+    } else {
+      const newId = 'LBK-' + Math.floor(1000 + Math.random() * 9000);
+      const newBooking = { 
+        ...this.formBooking, 
+        booking_id: newId,
+        passenger_id: 'PAS-' + Math.floor(100 + Math.random() * 900), // Auto-gen for now
+        capacity_used: (this.formBooking.adults || 0) + (this.formBooking.children || 0),
+        created_at: new Date().toISOString()
+      } as LoungeBooking;
+      this.svc.add(newBooking);
+    }
+    this.closeModal();
+  }
+
+  toggleFeature(feature: string) {
+    const features = this.formBooking.additional_features || [];
+    if (features.includes(feature)) {
+      this.formBooking.additional_features = features.filter(f => f !== feature);
+    } else {
+      this.formBooking.additional_features = [...features, feature];
+    }
+  }
+
+  isFeatureSelected(feature: string): boolean {
+    return (this.formBooking.additional_features || []).includes(feature);
+  }
+
   deleteBooking(b: LoungeBooking) {
     const ok = confirm(`Delete booking ${b.booking_id}?`);
     if (ok) this.svc.delete(b.booking_id);
@@ -343,17 +389,53 @@ goUserProfile() {
       let bValue: any;
 
       switch (this.sortColumn) {
-        case 'passenger_id':
-          aValue = a.passenger_id.toLowerCase();
-          bValue = b.passenger_id.toLowerCase();
+        case 'booking_id':
+          aValue = a.booking_id.toLowerCase();
+          bValue = b.booking_id.toLowerCase();
+          break;
+        case 'passenger_name':
+          aValue = a.passenger_name?.toLowerCase() || '';
+          bValue = b.passenger_name?.toLowerCase() || '';
+          break;
+        case 'passenger_phone':
+          aValue = a.passenger_phone?.toLowerCase() || '';
+          bValue = b.passenger_phone?.toLowerCase() || '';
+          break;
+        case 'ref_num':
+          aValue = a.ref_num?.toLowerCase() || '';
+          bValue = b.ref_num?.toLowerCase() || '';
           break;
         case 'lounge_name':
           aValue = a.lounge_name.toLowerCase();
           bValue = b.lounge_name.toLowerCase();
           break;
+        case 'start_datetime':
+          aValue = new Date(a.start_datetime).getTime();
+          bValue = new Date(b.start_datetime).getTime();
+          break;
+        case 'duration':
+          aValue = a.duration_hours;
+          bValue = b.duration_hours;
+          break;
+        case 'guests':
+          aValue = (a.adults || 0) + (a.children || 0);
+          bValue = (b.adults || 0) + (b.children || 0);
+          break;
+        case 'additional_features':
+          aValue = (a.additional_features || []).join(', ').toLowerCase();
+          bValue = (b.additional_features || []).join(', ').toLowerCase();
+          break;
         case 'total_amount':
           aValue = a.total_amount;
           bValue = b.total_amount;
+          break;
+        case 'payment_status':
+          aValue = a.payment_status.toLowerCase();
+          bValue = b.payment_status.toLowerCase();
+          break;
+        case 'booking_status':
+          aValue = a.booking_status.toLowerCase();
+          bValue = b.booking_status.toLowerCase();
           break;
         default:
           return 0;

@@ -62,8 +62,8 @@ export class LoungesManagementComponent implements OnInit {
   selectedAmenities: string[] = [];
   selectedServices: string[] = [];
 
-  availableAmenities: string[] = ['WiFi', 'AC', 'TV', 'Charging Ports', 'Quiet Zone'];
-  availableServices: string[] = ['Food', 'Drinks', 'Shower'];
+  availableAmenities: string[] = ['WiFi', 'AC', 'Cafeteria', 'Charging Ports', 'Parking', 'Restrooms'];
+  availableServices: string[] = ['Food', 'Drinks', 'Essetials'];
 
   imagePreviews: string[] = [];
   private selectedFiles: File[] = [];

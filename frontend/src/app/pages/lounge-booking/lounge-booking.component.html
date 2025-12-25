@@ -25,6 +25,9 @@
     <div class="header-content">
       <h2>Lounge Booking Management</h2>
     </div>
+    <div class="header-actions">
+      <button class="add-btn" (click)="openAddModal()">+ Add Lounge Booking</button>
+    </div>
   </div>
 
   <div class="content">
@@ -81,103 +84,186 @@
         <table class="lb-table">
           <thead>
             <tr>
-              <th>Booking ID</th>
-              <th (click)="onSort('passenger_id')" style="cursor: pointer;" title="Click to sort">
-                Passenger ID {{ getSortIcon('passenger_id') }}
+              <th (click)="onSort('booking_id')" style="cursor: pointer;" title="Click to sort">
+                L_Booking id {{ getSortIcon('booking_id') }}
+              </th>
+              <th (click)="onSort('passenger_name')" style="cursor: pointer;" title="Click to sort">
+                Passenger Name {{ getSortIcon('passenger_name') }}
+              </th>
+              <th (click)="onSort('passenger_phone')" style="cursor: pointer;" title="Click to sort">
+                Passenger Phone {{ getSortIcon('passenger_phone') }}
+              </th>
+              <th (click)="onSort('ref_num')" style="cursor: pointer;" title="Click to sort">
+                Ref NUM {{ getSortIcon('ref_num') }}
               </th>
               <th (click)="onSort('lounge_name')" style="cursor: pointer;" title="Click to sort">
                 Lounge Name {{ getSortIcon('lounge_name') }}
               </th>
-              <th>Date & Time/Duration</th>
-              <th>No of Guests</th>
+              <th (click)="onSort('start_datetime')" style="cursor: pointer;" title="Click to sort">
+                Date {{ getSortIcon('start_datetime') }}
+              </th>
+              <th (click)="onSort('duration')" style="cursor: pointer;" title="Click to sort">
+                Time/Duration {{ getSortIcon('duration') }}
+              </th>
+              <th (click)="onSort('guests')" style="cursor: pointer;" title="Click to sort">
+                No of Guests {{ getSortIcon('guests') }}
+              </th>
+              <th>Additional features</th>
               <th (click)="onSort('total_amount')" style="cursor: pointer;" title="Click to sort">
                 Total Amount {{ getSortIcon('total_amount') }}
               </th>
-              <th>Payment Status</th>
-              <th>Booking Status</th>
+              <th (click)="onSort('payment_status')" style="cursor: pointer;" title="Click to sort">
+                Payment Status {{ getSortIcon('payment_status') }}
+              </th>
+              <th (click)="onSort('booking_status')" style="cursor: pointer;" title="Click to sort">
+                Booking Status {{ getSortIcon('booking_status') }}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let b of filtered">
               <td>{{ b.booking_id }}</td>
-              <td>{{ b.passenger_id }}</td>
+              <td>{{ b.passenger_name || '-' }}</td>
+              <td>{{ b.passenger_phone || '-' }}</td>
+              <td>{{ b.ref_num || '-' }}</td>
               <td>{{ b.lounge_name }}</td>
-              <td>{{ (b.start_datetime | date:'yyyy-MM-dd HH:mm') }} / {{ b.duration_hours }}h</td>
-              <td>{{ b.guests }} / {{ b.capacity_used }}</td>
+              <td>{{ b.start_datetime | date:'mediumDate' }}</td>
+              <td>{{ b.start_datetime | date:'shortTime' }} / {{ b.duration_hours }}h</td>
+              <td>Adult {{ b.adults || 0 }}, Child {{ b.children || 0 }}</td>
+              <td>{{ b.additional_features?.join(', ') || '-' }}</td>
               <td>${{ b.total_amount }}</td>
               <td>
-                <select [ngModel]="b.payment_status" (ngModelChange)="changePaymentStatus(b, $event)">
+                <select [ngModel]="b.payment_status" (ngModelChange)="changePaymentStatus(b, $event)" [class]="'status-dropdown ' + b.payment_status.toLowerCase()">
                   <option value="Paid">Paid</option>
                   <option value="Pending">Pending</option>
                   <option value="Failed">Failed</option>
                 </select>
               </td>
               <td>
-                <select [ngModel]="b.booking_status" (ngModelChange)="changeBookingStatus(b, $event)">
+                <select [ngModel]="b.booking_status" (ngModelChange)="changeBookingStatus(b, $event)" [class]="'status-dropdown ' + b.booking_status.toLowerCase()">
                   <option value="Confirmed">Confirmed</option>
                   <option value="Pending">Pending</option>
                   <option value="Cancelled">Cancelled</option>
                   <option value="Completed">Completed</option>
                 </select>
-                
               </td>
               <td class="actions-cell">
-                <i class="fas fa-edit action-icon edit-icon" (click)="updateBooking(b)" title="Update"></i>
+                <i class="fas fa-edit action-icon edit-icon" (click)="openEditModal(b)" title="Update"></i>
               </td>
             </tr>
           </tbody>
         </table>
       </section>
 
-      <!-- Edit Lounge Booking Modal -->
-      <div class="modal-overlay" *ngIf="showUpdateBookingModal" (click)="closeUpdateBookingModal()">
+      <!-- Add/Edit Lounge Booking Modal -->
+      <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
         <div class="edit-container" (click)="$event.stopPropagation()">
-          <h2>Edit Lounge Booking</h2>
-          <form (ngSubmit)="saveUpdatedBooking()" *ngIf="selectedBooking" class="lounge-form">
-            <div class="form-row">
-              <label>
-                Booking ID
-                <input [value]="selectedBooking.booking_id" readonly />
-              </label>
-              <label>
-                Passenger ID
-                <input [value]="selectedBooking.passenger_id" readonly />
-              </label>
+          <h2>{{ isEditMode ? 'Edit' : 'Add' }} Lounge Booking</h2>
+          <form (ngSubmit)="saveBooking()" class="lounge-form">
+            <div class="form-grid">
+              <!-- Booking ID (Read-only, Edit Mode Only) -->
+              <div class="form-row" *ngIf="isEditMode">
+                <label>Booking ID</label>
+                <input type="text" [ngModel]="formBooking.booking_id" name="booking_id" readonly />
+              </div>
+
+              <!-- Passenger Name -->
+              <div class="form-row">
+                <label>Passenger Name</label>
+                <input type="text" [(ngModel)]="formBooking.passenger_name" name="passenger_name" required />
+              </div>
+
+              <!-- Passenger Phone -->
+              <div class="form-row">
+                <label>Passenger Phone</label>
+                <input type="text" [(ngModel)]="formBooking.passenger_phone" name="passenger_phone" required />
+              </div>
+
+              <!-- Ref NUM -->
+              <div class="form-row">
+                <label>Ref NUM</label>
+                <input type="text" [(ngModel)]="formBooking.ref_num" name="ref_num" />
+              </div>
+
+              <!-- Lounge Name -->
+              <div class="form-row">
+                <label>Lounge Name</label>
+                <input type="text" [(ngModel)]="formBooking.lounge_name" name="lounge_name" required />
+              </div>
+
+              <!-- Date & Time -->
+              <div class="form-row">
+                <label>Date & Time</label>
+                <input type="datetime-local" [(ngModel)]="formBooking.start_datetime" name="start_datetime" required />
+              </div>
+
+              <!-- Duration -->
+              <div class="form-row">
+                <label>Duration (hours)</label>
+                <input type="number" [(ngModel)]="formBooking.duration_hours" name="duration_hours" min="1" required />
+              </div>
+
+              <!-- Adults -->
+              <div class="form-row">
+                <label>Adults</label>
+                <input type="number" [(ngModel)]="formBooking.adults" name="adults" min="1" required />
+              </div>
+
+              <!-- Children -->
+              <div class="form-row">
+                <label>Children</label>
+                <input type="number" [(ngModel)]="formBooking.children" name="children" min="0" />
+              </div>
+
+              <!-- Total Amount -->
+              <div class="form-row">
+                <label>Total Amount</label>
+                <input type="number" [(ngModel)]="formBooking.total_amount" name="total_amount" min="0" step="0.01" required />
+              </div>
+
+              <!-- Payment Status (Edit Mode Only) -->
+              <div class="form-row" *ngIf="isEditMode">
+                <label>Payment Status</label>
+                <select [(ngModel)]="formBooking.payment_status" name="payment_status">
+                  <option value="Paid">Paid</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Failed">Failed</option>
+                </select>
+              </div>
+
+              <!-- Booking Status (Edit Mode Only) -->
+              <div class="form-row" *ngIf="isEditMode">
+                <label>Booking Status</label>
+                <select [(ngModel)]="formBooking.booking_status" name="booking_status">
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+
+              <!-- Additional Features (Full Width) -->
+              <div class="form-row full-width">
+                <label>Additional Features</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-item" *ngFor="let feature of availableFeatures">
+                    <input type="checkbox" 
+                           [checked]="isFeatureSelected(feature)" 
+                           (change)="toggleFeature(feature)">
+                    <span>{{ feature }}</span>
+                  </label>
+                </div>
+              </div>
             </div>
-            <div class="form-row">
-              <label>
-                Lounge Name
-                <input [value]="selectedBooking.lounge_name" readonly />
-              </label>
-              <label>
-                Date & Time (locked)
-                <input [value]="startDateTime" readonly />
-              </label>
-            </div>
-            <div class="form-row">
-              <label>
-                Duration (hours)
-                <input type="number" min="1" [(ngModel)]="formDurationHours" name="duration_hours" required />
-              </label>
-              <label>
-                Guests
-                <input type="number" min="0" [(ngModel)]="formGuests" name="guests" required />
-              </label>
-            </div>
-            <div class="form-row">
-              <label>
-                Capacity Used
-                <input type="number" min="0" [(ngModel)]="formCapacityUsed" name="capacity_used" required />
-              </label>
-            </div>
-            <div class="form-actions">
-              <button type="button" (click)="closeUpdateBookingModal()">Cancel</button>
+
+            <div class="form-actions full-width">
+              <button type="button" (click)="closeModal()">Cancel</button>
               <button type="submit">Save</button>
             </div>
           </form>
-    </div>
-  </div>
+        </div>
+      </div>
   </div> <!-- End of content -->
 </div> <!-- End of lounge-booking-container -->
 

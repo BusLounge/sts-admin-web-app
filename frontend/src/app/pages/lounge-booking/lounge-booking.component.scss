@@ -96,6 +96,23 @@
         color: var(--text-primary);
       }
     }
+    .header-actions {
+      .add-btn {
+        background: var(--color-buttns-light);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: var(--color-secondary-500);
+          transform: translateY(-1px);
+        }
+      }
+    }
   }
 
   .content {
@@ -225,7 +242,7 @@
     }
 
     th {
-      background: var(--bg-primary);
+      background: var(--color-table-header);
       font-weight: 600;
       color: var(--text-secondary);
       text-align: left;
@@ -251,12 +268,38 @@
           background: var(--bg-hover);
         }
 
-        &.edit-icon { color: var(--color-warning-500, #f59e0b); }
+        &.edit-icon { color: var(--color-neutral-500); }
         &.delete-icon { color: var(--color-danger-500, #ef4444); }
       }
     }
   }
 }
+// Badges & Status Dropdowns
+.badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+.badge.paid { background: var(--color-success-100); color: var(--color-success-800); }
+.badge.pending { background: var(--color-warning-100); color: var(--color-warning-800); }
+.badge.failed { background: var(--color-error-100); color: var(--color-error-800); }
+.badge.refunded { background: var(--color-info-100); color: var(--color-info-800); }
+.badge.confirmed { background: var(--color-info-100); color: var(--color-info-800); }
+.badge.cancelled { background: var(--color-error-100); color: var(--color-error-800); }
+.badge.completed { background: var(--color-success-100); color: var(--color-success-800); }
+
+.status-dropdown {
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-light);
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+
+.status-dropdown.paid { background-color: var(--color-success-100); color: var(--color-success-800); }
+.status-dropdown.pending { background-color: var(--color-warning-100); color: var(--color-warning-800); }
+.status-dropdown.failed { background-color: var(--color-error-100); color: var(--color-error-800); }
+.status-dropdown.refunded { background-color: var(--color-info-100); color: var(--color-info-800); }
+.status-dropdown.confirmed { background-color: var(--color-info-100); color: var(--color-info-800); }
+.status-dropdown.cancelled { background-color: var(--color-error-100); color: var(--color-error-800); }
+.status-dropdown.completed { background-color: var(--color-success-100); color: var(--color-success-800); }
 
 // Modal Styles (Global or scoped if needed, but usually global overlay)
 .modal-overlay {
@@ -277,7 +320,7 @@
     padding: 2rem;
     border-radius: 16px;
     width: 90%;
-    max-width: 600px;
+    max-width: 900px;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -295,16 +338,31 @@
       flex-direction: column;
       gap: 1.5rem;
 
-      .form-row {
+      .form-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1.5rem;
         
+        @media (max-width: 1024px) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        &.full-width {
+          grid-column: 1 / -1;
+        }
+
         label {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--text-secondary);
           font-size: 0.9rem;
         }
@@ -316,10 +374,13 @@
           background: var(--bg-primary);
           color: var(--text-primary);
           font-size: 1rem;
+          width: 100%;
+          box-sizing: border-box;
 
           &:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
           }
           
           &[readonly] {
@@ -331,6 +392,35 @@
         }
       }
 
+      .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-primary);
+
+        .checkbox-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          cursor: pointer;
+          
+          input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            cursor: pointer;
+          }
+          
+          span {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+          }
+        }
+      }
+
       .form-actions {
         display: flex;
         justify-content: flex-end;
@@ -338,6 +428,7 @@
         margin-top: 1rem;
         padding-top: 1rem;
         border-top: 1px solid var(--border-color);
+        grid-column: 1 / -1;
 
         button {
           padding: 0.75rem 1.5rem;
@@ -363,7 +454,6 @@
 
             &:hover {
               background: var(--bg-hover);
-              color: var(--text-primary);
             }
           }
         }

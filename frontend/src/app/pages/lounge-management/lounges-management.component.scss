@@ -218,7 +218,7 @@
         }
 
         &.header {
-          background: var(--bg-primary);
+          background: var(--color-table-header);
           font-weight: 600;
           color: var(--text-secondary);
           font-size: 0.9rem;
@@ -251,8 +251,8 @@
                 background: var(--bg-hover);
               }
 
-              &.view-icon { color: var(--primary-color); }
-              &.edit-icon { color: var(--color-warning-500, #f59e0b); }
+              &.view-icon { color:var(--color-neutral-500), }
+              &.edit-icon { color:var(--color-neutral-500), }
             }
           }
         }
@@ -318,7 +318,7 @@
         color: var(--text-secondary);
       }
 
-      input, select {
+      input, select, textarea {
         width: 100%;
         padding: 8px;
         border: 1px solid var(--border-color);
@@ -328,7 +328,12 @@
         box-sizing: border-box;
       }
 
-      input[readonly], input[disabled], select[disabled] {
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      input[readonly], input[disabled], select[disabled], textarea[readonly] {
         background-color: var(--bg-hover);
         cursor: not-allowed;
       }
