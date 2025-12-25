@@ -1,132 +1,26 @@
-.management-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 40px;
-  background: #f8fafc;
+.add-lounge-page {
   min-height: 100vh;
-}
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
 
-.main-content {
-  width: 100%;
-  max-width: 1000px;
-}
-
-.edit-container {
-  padding: 55px;
-  background: var(--color-background-primary);
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  width: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-
-  h2 {
-    margin-bottom: 20px;
-    font-size: 22px;
-    color: #111827;
-  }
-}
-
-.lounge-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-
-  label {
-    display: flex;
-    flex-direction: column;
-    font-weight: 600;
-    gap: 6px;
-
-    input {
-      padding: 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 14px;
-      width: 100%;
-    }
-  }
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  .group-label {
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-}
-
-.checkbox-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(20px, 0.1fr));
-  gap: 1px 16px;
-}
-
-.checkbox-item {
-  display: flex;
+.back-nav {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 3;
+  display: inline-flex;
   align-items: center;
-  gap: 2px;
-  font-weight: 500;
-  
-}
+  gap: 0.4rem;
+  color: #ffffff;
+  cursor: pointer;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 
-/* Image preview grid */
-.image-preview {
-  margin-top: 8px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 10px;
-}
-.image-thumb {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background: #fff;
-}
-.image-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
+  .arrow { font-size: 1.4rem; line-height: 1; }
+  .label { font-weight: 600; }
 
-.actions {
-  margin-top: 24px;
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-
-  button {
-    padding: 10px 18px;
-    border-radius: 6px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-
-    &:hover {
-      opacity: 0.9;
-    }
-  }
-
-  button[type="submit"] {
-    background: #36c94f;
-    color: #fff;
-  }
-
-  .secondary {
-    background: #f1f5f9;
-    color: #111827;
+  &:hover { opacity: 0.9; }
   }
 }

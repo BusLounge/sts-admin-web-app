@@ -4,10 +4,25 @@
       <div class="view-container" *ngIf="lounge; else notFoundTpl">
         <h2>View Lounge</h2>
         <div class="grid">
+          <!-- Owner Details -->
           <div class="field">
-            <label>Owner</label>
+            <label>Owner Name</label>
             <span>{{ lounge.owner }}</span>
           </div>
+          <div class="field">
+            <label>NIC Number</label>
+            <span>{{ lounge.owner_nic }}</span>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <span>{{ lounge.owner_email }}</span>
+          </div>
+          <div class="field">
+            <label>Owner Contact</label>
+            <span>{{ lounge.owner_contact }}</span>
+          </div>
+
+          <!-- Lounge Details -->
           <div class="field">
             <label>Lounge Name</label>
             <span>{{ lounge.name }}</span>
@@ -27,6 +42,10 @@
           <div class="field">
             <label>Price / Hour</label>
             <span>${{ lounge.price_per_hour }}</span>
+          </div>
+          <div class="field">
+            <label>Lounge Status</label>
+            <span>{{ lounge.lounge_status === 'open' ? 'Open' : 'Closed' }}</span>
           </div>
           <div class="field">
             <label>Operating Hours</label>

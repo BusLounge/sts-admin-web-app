@@ -261,174 +261,142 @@
   }
 }
 
-// Modal Styles
+// Modal Styles (Simplified to match Driver Management)
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
 
   .edit-container {
     background: var(--bg-secondary);
-    padding: 2rem;
-    border-radius: 16px;
+    padding: 20px;
+    border-radius: 10px;
     width: 90%;
-    max-width: 800px;
+    max-width: 1000px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 
     h2 {
-      margin-bottom: 1.5rem;
+      margin-bottom: 20px;
+      text-align: center;
       color: var(--text-primary);
-      font-size: 1.5rem;
-      font-weight: 700;
     }
 
-    .lounge-form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 20px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
 
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-row {
+      margin-bottom: 15px;
+
+      &.full-width {
+        grid-column: 1 / -1;
       }
 
-      .form-group {
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: var(--text-secondary);
+      }
+
+      input, select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        color: var(--text-primary);
+        background-color: var(--bg-primary);
+        box-sizing: border-box;
+      }
+
+      input[readonly], input[disabled], select[disabled] {
+        background-color: var(--bg-hover);
+        cursor: not-allowed;
+      }
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      
+      .checkbox-item {
         display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-
-        &.half-width {
-          flex: 1;
+        align-items: center;
+        gap: 8px;
+        
+        input[type="checkbox"] {
+          width: auto;
         }
-
+        
         label {
-          font-weight: 500;
-          color: var(--text-secondary);
-          font-size: 0.9rem;
-        }
-
-        input {
-          padding: 0.75rem;
-          border: 1px solid var(--border-color);
-          border-radius: 8px;
-          background: var(--bg-primary);
+          margin-bottom: 0;
+          font-weight: normal;
           color: var(--text-primary);
-          font-size: 1rem;
-
-          &:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-          }
-
-          &[readonly] {
-            background: var(--bg-secondary);
-            border-color: transparent;
-            padding-left: 0;
-            font-weight: 600;
-          }
-        }
-
-        .group-label {
-          margin-bottom: 0.5rem;
-          display: block;
-        }
-
-        .checkbox-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-          gap: 0.75rem;
-          background: var(--bg-primary);
-          padding: 1rem;
-          border-radius: 8px;
-          border: 1px solid var(--border-color);
-
-          .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-
-            input[type="checkbox"] {
-              width: 18px;
-              height: 18px;
-              accent-color: var(--primary-color);
-            }
-
-            label {
-              cursor: pointer;
-              color: var(--text-primary);
-            }
-          }
-        }
-
-        .image-preview {
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-          margin-top: 0.5rem;
-
-          .image-thumb {
-            width: 100px;
-            height: 100px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-            }
-          }
         }
       }
+    }
 
-      .actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border-color);
+    .image-preview {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
 
-        button {
-          padding: 0.75rem 1.5rem;
-          border-radius: 8px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: 0.2s;
-          border: none;
+      .image-thumb {
+        width: 100px;
+        height: 100px;
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    }
 
-          &[type="submit"] {
-            background: var(--color-buttns-light);
-            color: white;
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
 
-            &:hover {
-              background: var(--color-secondary-500);
-            }
-          }
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
 
-          &.secondary {
-            background: var(--bg-primary);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
+        &:first-child {
+          background: var(--color-buttns-dark, #e5e7eb); 
+          color: var(--text-primary);
+        }
 
-            &:hover {
-              background: var(--bg-hover);
-              color: var(--text-primary);
-            }
-          }
+        &:last-child {
+          background: var(--color-buttns-light);
+          color: white;
         }
       }
     }
@@ -449,7 +417,7 @@
       width: 95%;
       padding: 1rem;
 
-      .lounge-form .form-row {
+      .form-grid {
         grid-template-columns: 1fr;
       }
     }

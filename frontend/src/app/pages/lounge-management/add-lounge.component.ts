@@ -16,12 +16,15 @@ export class AddLoungeComponent implements OnInit {
   lounge: Lounge = {
     lounge_id: '0',
     owner: '',
+    owner_nic: '',
+    owner_email: '',
+    owner_contact: '',
     name: '',
     address: '',
-    // phone: '', // Removed because 'phone' does not exist in Lounge model
     lounge_contact: '',
     capacity: 0,
     price_per_hour: 0,
+    lounge_status: 'open',
     operating_hours: '',
     amenities: [],
     services: [],

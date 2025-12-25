@@ -14,8 +14,10 @@ import { LoungeService } from '../../core/services/lounge.service';
 })
 export class EditLoungeComponent implements OnInit {
   lounge?: Lounge;
-  amenitiesText = '';
-  servicesText = '';
+  selectedAmenities: string[] = [];
+  selectedServices: string[] = [];
+  availableAmenities: string[] = ['WiFi', 'AC', 'TV', 'Charging Ports', 'Quiet Zone'];
+  availableServices: string[] = ['Food', 'Drinks', 'Shower'];
   imagePreviews: string[] = [];
   private selectedFiles: File[] = [];
   sidebarOpen = true;
@@ -28,16 +30,16 @@ export class EditLoungeComponent implements OnInit {
     const found = this.loungeService.getById(id);
     if (!found) { this.router.navigate(['/lounges-management']); return; }
     this.lounge = { ...found };
-    this.amenitiesText = this.lounge.amenities.join(', ');
-    this.servicesText = this.lounge.services.join(', ');
+    this.selectedAmenities = [...this.lounge.amenities];
+    this.selectedServices = [...this.lounge.services];
     // Initialize previews from existing images if any
     this.imagePreviews = [...(this.lounge.images || [])];
   }
 
   save(): void {
     if (!this.lounge) return;
-    this.lounge.amenities = this.amenitiesText.split(',').map(x => x.trim()).filter(Boolean);
-    this.lounge.services = this.servicesText.split(',').map(x => x.trim()).filter(Boolean);
+    this.lounge.amenities = this.selectedAmenities;
+    this.lounge.services = this.selectedServices;
     // Save previews as images (base64) for now
     this.lounge.images = [...this.imagePreviews];
     this.loungeService.update(this.lounge);
@@ -64,6 +66,24 @@ export class EditLoungeComponent implements OnInit {
     }
 
     input.value = '';
+  }
+
+  toggleAmenity(amenity: string) {
+    const index = this.selectedAmenities.indexOf(amenity);
+    if (index > -1) {
+      this.selectedAmenities.splice(index, 1);
+    } else {
+      this.selectedAmenities.push(amenity);
+    }
+  }
+
+  toggleService(service: string) {
+    const index = this.selectedServices.indexOf(service);
+    if (index > -1) {
+      this.selectedServices.splice(index, 1);
+    } else {
+      this.selectedServices.push(service);
+    }
   }
 
   navigateTo(page: string): void {

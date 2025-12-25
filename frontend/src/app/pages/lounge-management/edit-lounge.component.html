@@ -1,57 +1,124 @@
 <div class="management-container">
-
-
   <div class="main-content">
     <div class="edit-container" *ngIf="lounge; else notFoundTpl">
       <h2>Edit Lounge</h2>
-      <form (ngSubmit)="save()">
-        <div class="grid">
-          <label>
-            Owner
-            <input [(ngModel)]="lounge.owner" name="owner" required />
-          </label>
-          <label>
-            Lounge Name
-            <input [(ngModel)]="lounge.name" name="name" required />
-          </label>
-          <label>
-            Address
-            <input [(ngModel)]="lounge.address" name="address" required />
-          </label>
-          <label>
-            Lounge Contact
-            <input [(ngModel)]="lounge.lounge_contact" name="lounge_contact" required />
-          </label>
-          <label>
-            Capacity
-            <input type="number" [(ngModel)]="lounge.capacity" name="capacity" required />
-          </label>
-          <label>
-            Price / Hour
-            <input type="number" [(ngModel)]="lounge.price_per_hour" name="price" required />
-          </label>
-          <label>
-            Operating Hours
-            <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" />
-          </label>
-          <label>
-            Amenities 
-            <input [(ngModel)]="amenitiesText" name="amenities" />
-          </label>
-          <label>
-            Services 
-            <input [(ngModel)]="servicesText" name="services" />
-          </label>
-          <label>
-            Upload Images
-            <input type="file" name="images" (change)="onFileSelected($event)" multiple accept="image/*" />
-          </label>
-          <div class="image-preview" *ngIf="imagePreviews.length > 0">
-            <div *ngFor="let img of imagePreviews" class="image-thumb">
-              <img [src]="img" alt="Lounge Image" />
+
+      <form (ngSubmit)="save()" class="lounge-form">
+        <!-- Lounge Owner Details Section -->
+        <div class="section">
+          <h3>Lounge Owner Details</h3>
+          <div class="form-row">
+            <label>
+              Owner Name
+              <input [(ngModel)]="lounge.owner" name="owner" required />
+            </label>
+            <label>
+              NIC Number
+              <input [(ngModel)]="lounge.owner_nic" name="owner_nic" required />
+            </label>
+          </div>
+          <div class="form-row">
+            <label>
+              Email
+              <input type="email" [(ngModel)]="lounge.owner_email" name="owner_email" required />
+            </label>
+            <label>
+              Contact
+              <input [(ngModel)]="lounge.owner_contact" name="owner_contact" required />
+            </label>
+          </div>
+        </div>
+
+        <!-- Lounge Details Section -->
+        <div class="section">
+          <h3>Lounge Details</h3>
+          <div class="form-row">
+            <label>
+              Lounge Name
+              <input [(ngModel)]="lounge.name" name="name" required />
+            </label>
+            <label>
+              Lounge Contact
+              <input [(ngModel)]="lounge.lounge_contact" name="lounge_contact" required />
+            </label>
+          </div>
+          <div class="form-row">
+            <label>
+              Address
+              <input [(ngModel)]="lounge.address" name="address" required />
+            </label>
+            <label>
+              Price per Hour
+              <input type="number" [(ngModel)]="lounge.price_per_hour" name="price_per_hour" required />
+            </label>
+          </div>
+          <div class="form-row">
+            <label>
+              Capacity
+              <input type="number" [(ngModel)]="lounge.capacity" name="capacity" required />
+            </label>
+            <label>
+              Lounge Status
+              <select [(ngModel)]="lounge.lounge_status" name="lounge_status" required>
+                <option value="open">Open</option>
+                <option value="close">Close</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <!-- Operating Hours and Image Upload -->
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>
+              Operating Hours
+              <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" />
+            </label>
+          </div>
+          <div class="form-group half-width">
+            <label for="imageUpload">Upload Images</label>
+            <input type="file" id="imageUpload" name="images" (change)="onFileSelected($event)" multiple accept="image/*" />
+            <div class="image-preview" *ngIf="imagePreviews.length > 0">
+              <div *ngFor="let img of imagePreviews" class="image-thumb">
+                <img [src]="img" alt="Lounge Image" />
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Amenities -->
+        <div class="form-group">
+          <label class="group-label">Amenities</label>
+          <div class="checkbox-grid">
+            <div *ngFor="let amenity of availableAmenities" class="checkbox-item">
+              <input
+                type="checkbox"
+                [checked]="selectedAmenities.includes(amenity)"
+                (change)="toggleAmenity(amenity)"
+                id="amenity-{{amenity}}"
+              />
+              <label for="amenity-{{amenity}}">{{ amenity }}</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services -->
+        <div class="form-group">
+          <label class="group-label">Services</label>
+          <div class="checkbox-grid">
+            <div *ngFor="let service of availableServices" class="checkbox-item">
+              <input
+                type="checkbox"
+                [checked]="selectedServices.includes(service)"
+                (change)="toggleService(service)"
+                id="service-{{service}}"
+              />
+              <label for="service-{{service}}">{{ service }}</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
         <div class="actions">
           <button type="submit">Save</button>
           <button type="button" class="secondary" (click)="cancel()">Cancel</button>

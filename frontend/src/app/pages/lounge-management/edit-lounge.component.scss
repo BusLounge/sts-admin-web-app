@@ -1,95 +1,28 @@
-.management-container {
-  display: flex;
-  justify-content: center;
+.edit-lounge-page {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+.back-nav {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 3;
+  display: inline-flex;
   align-items: center;
-  height: 100vh;
-  background: #f8fafc;
-}
-
-.main-content {
-  width: 100%;
-  max-width: 1200px;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.edit-container {
-  padding: 30px;
-  background: var(--color-background-primary);
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 900px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.grid label {
-  display: flex;
-  flex-direction: column;
-  font-weight: 600;
-  gap: 8px;
-}
-
-.grid input {
-  padding: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-weight: 400;
-  width: 90%;
-  min-width: 250px;
-}
-
-
-
-.actions {
-  margin-top: 24px;
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.actions button {
-  padding: 10px 16px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  background:var(--color-buttns-light);
-  color: #fff;
+  gap: 0.4rem;
+  color: #ffffff;
   cursor: pointer;
-}
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 
-.actions .secondary {
-  background:var( --color-buttns-dark);
-  color: #fdfefe;
-}
+  .arrow { font-size: 1.4rem; line-height: 1; }
+  .label { font-weight: 600; }
 
-/* Image preview grid */
-.image-preview {
-  margin-top: 8px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 10px;
-}
-.image-thumb {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background: #fff;
-}
-.image-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  &:hover { opacity: 0.9; }
+  }
 }
 
 
