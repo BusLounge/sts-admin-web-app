@@ -208,7 +208,7 @@
 
       .row {
         display: grid;
-        grid-template-columns: 2fr 2fr 1.5fr 1fr 1fr 1.5fr 1fr;
+        grid-template-columns: 1fr 1.5fr 1.5fr 1.5fr 2fr 1fr 1fr 1fr 2fr 1fr;
         padding: 1rem;
         border-bottom: 1px solid var(--border-color);
         align-items: center;
@@ -228,6 +228,9 @@
           padding: 0 0.5rem;
           color: var(--text-primary);
           font-size: 0.9rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
 
           &.num {
             text-align: right;

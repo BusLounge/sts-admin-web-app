@@ -2,6 +2,8 @@ export interface Bus {
   bus_id: string;
   bus_number: string;
   company: string;
+  nic_number: string;
+  email: string;
   contact: string;
   permitNum: string;
   regnum: string;

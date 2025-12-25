@@ -18,14 +18,17 @@ export class AddLoungeComponent implements OnInit {
     owner: '',
     name: '',
     address: '',
-    phone: '',
+    // phone: '', // Removed because 'phone' does not exist in Lounge model
+    lounge_contact: '',
     capacity: 0,
     price_per_hour: 0,
     operating_hours: '',
     amenities: [],
     services: [],
     images: [],
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    verification: '',
+    verification_note: ''
   };
 
   selectedAmenities: string[] = [];

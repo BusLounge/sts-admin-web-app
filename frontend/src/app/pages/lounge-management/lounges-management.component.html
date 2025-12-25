@@ -56,7 +56,7 @@
 
     <section class="toolbar">
       <div class="search-group">
-        <input type="text" placeholder="Search by name, address, phone" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
+        <input type="text" placeholder="Search by name, address, lounge contact" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
         <input type="number" placeholder="Price / hr ($)" [(ngModel)]="priceFilter" (input)="onSearchChange()" style="margin-left: 0.1rem; width: 80px; color: var(--color-text-muted);" />
       </div>
       <button class="export-btn" (click)="exportLoungeHistoryPdf()">Export Lounge History</button>
@@ -65,30 +65,46 @@
     <section class="table-section">
       <div class="table">
         <div class="row header">
+          <div class="col" (click)="onSort('lounge_id')" style="cursor: pointer;" title="Click to sort">
+            LoungeID {{ getSortIcon('lounge_id') }}
+          </div>
+          <div class="col" (click)="onSort('owner')" style="cursor: pointer;" title="Click to sort">
+            Lounge Owner {{ getSortIcon('owner') }}
+          </div>
           <div class="col" (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
             Lounge Name {{ getSortIcon('name') }}
           </div>
-          <div class="col">Address</div>
-          <div class="col">Phone</div>
+          <div class="col" (click)="onSort('lounge_contact')" style="cursor: pointer;" title="Click to sort">
+            Lounge Contact {{ getSortIcon('lounge_contact') }}
+          </div>
+          <div class="col" (click)="onSort('address')" style="cursor: pointer;" title="Click to sort">
+            Address {{ getSortIcon('address') }}
+          </div>
           <div class="col num" (click)="onSort('capacity')" style="cursor: pointer;" title="Click to sort">
             Capacity {{ getSortIcon('capacity') }}
           </div>
           <div class="col num" (click)="onSort('price_per_hour')" style="cursor: pointer;" title="Click to sort">
-            Price / hr {{ getSortIcon('price_per_hour') }}
+            Price/hour {{ getSortIcon('price_per_hour') }}
           </div>
-          <div class="col" (click)="onSort('operating_hours')" style="cursor: pointer;" title="Click to sort">
-            Operating Hrs {{ getSortIcon('operating_hours') }}
+          <div class="col" (click)="onSort('verification')" style="cursor: pointer;" title="Click to sort">
+            Verification {{ getSortIcon('verification') }}
           </div>
-          <div class="col actions">Actions</div>
+          <div class="col" (click)="onSort('verification_note')" style="cursor: pointer;" title="Click to sort">
+            Verification note {{ getSortIcon('verification_note') }}
+          </div>
+          <div class="col actions">Action</div>
         </div>
 
         <div class="row" *ngFor="let l of filteredLounges">
+          <div class="col">{{ l.lounge_id }}</div>
+          <div class="col">{{ l.owner }}</div>
           <div class="col">{{ l.name }}</div>
+          <div class="col">{{ l.lounge_contact }}</div>
           <div class="col">{{ l.address }}</div>
-          <div class="col">{{ l.phone }}</div>
           <div class="col num">{{ l.capacity }}</div>
           <div class="col num">${{ l.price_per_hour }}</div>
-          <div class="col">{{ l.operating_hours }}</div>
+          <div class="col">{{ l.verification }}</div>
+          <div class="col">{{ l.verification_note }}</div>
           <div class="col actions">
             <i class="fas fa-eye action-icon view-icon" (click)="view(l)" title="View"></i>
             <i class="fas fa-edit action-icon edit-icon" (click)="update(l)" title="Edit"></i>
@@ -124,8 +140,8 @@
           <input [(ngModel)]="lounge.address" name="address" required [readonly]="modalMode === 'view'" />
         </label>
         <label>
-          Phone
-          <input [(ngModel)]="lounge.phone" name="phone" required [readonly]="modalMode === 'view'" />
+          Lounge Contact
+          <input [(ngModel)]="lounge.lounge_contact" name="lounge_contact" required [readonly]="modalMode === 'view'" />
         </label>
       </div>
 

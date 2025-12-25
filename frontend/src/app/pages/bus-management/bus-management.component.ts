@@ -34,6 +34,8 @@ export class BusManagementComponent implements OnInit {
   newBus: Omit<Bus, 'bus_id'> = {
     bus_number: '',
     company: '',
+    nic_number: '',
+    email: '',
     contact: '',
     permitNum: '',
     regnum: '',
@@ -107,6 +109,8 @@ export class BusManagementComponent implements OnInit {
     this.newBus = {
       bus_number: '',
       company: '',
+      nic_number: '',
+      email: '',
       contact: '',
       permitNum: '',
       regnum: '',
@@ -135,7 +139,7 @@ export class BusManagementComponent implements OnInit {
   }
 
   saveEditBus() {
-    if (this.selectedBus && this.selectedBus.bus_number && this.selectedBus.company && this.selectedBus.contact && this.selectedBus.permitNum && this.selectedBus.regnum && this.selectedBus.capacity > 0 && this.selectedBus.assigned_route_id && this.selectedBus.approvedFare >= 0) {
+    if (this.selectedBus && this.selectedBus.bus_number && this.selectedBus.company && this.selectedBus.nic_number && this.selectedBus.email && this.selectedBus.contact && this.selectedBus.permitNum && this.selectedBus.regnum && this.selectedBus.capacity > 0 && this.selectedBus.assigned_route_id && this.selectedBus.approvedFare >= 0) {
       this.busService.updateBus(this.selectedBus);
       this.closeEditBusModal();
     } else {

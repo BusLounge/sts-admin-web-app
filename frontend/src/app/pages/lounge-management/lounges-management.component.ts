@@ -43,14 +43,16 @@ export class LoungesManagementComponent implements OnInit {
     owner: '',
     name: '',
     address: '',
-    phone: '',
+    lounge_contact: '',
     capacity: 0,
     price_per_hour: 0,
     operating_hours: '',
     amenities: [],
     services: [],
     images: [],
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    verification: '',
+    verification_note: ''
   };
 
   selectedAmenities: string[] = [];
@@ -72,12 +74,12 @@ export class LoungesManagementComponent implements OnInit {
     doc.setFontSize(16);
     doc.text('Lounges History', 14, 16);
 
-    const tableHead = [['Lounge Name', 'Owner', 'Address', 'Phone', 'Capacity', 'Price/hr', 'Operating Hours']];
+    const tableHead = [['Lounge Name', 'Owner', 'Address', 'Lounge Contact', 'Capacity', 'Price/hr', 'Operating Hours']];
     const tableBody = this.filteredLounges?.map((l: Lounge) => [
       l.name,
       l.owner,
       l.address,
-      l.phone,
+      l.lounge_contact,
       String(l.capacity),
       `$${l.price_per_hour}`,
       l.operating_hours
@@ -155,11 +157,11 @@ export class LoungesManagementComponent implements OnInit {
   onSearchChange(): void {
     const q = this.searchTerm.toLowerCase();
     this.filteredLounges = this.lounges.filter(l => {
-      const matchesSearch = !q || 
+      const matchesSearch = !q ||
         l.owner.toLowerCase().includes(q) ||
         l.name.toLowerCase().includes(q) ||
         l.address.toLowerCase().includes(q) ||
-        l.phone.includes(q);
+        l.lounge_contact.includes(q);
       const matchesPrice = this.priceFilter === null || l.price_per_hour === this.priceFilter;
       return matchesSearch && matchesPrice;
     });
@@ -179,14 +181,16 @@ export class LoungesManagementComponent implements OnInit {
       owner: '',
       name: '',
       address: '',
-      phone: '',
+      lounge_contact: '',
       capacity: 0,
       price_per_hour: 0,
       operating_hours: '',
       amenities: [],
       services: [],
       images: [],
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      verification: '',
+      verification_note: ''
     };
     this.selectedAmenities = [];
     this.selectedServices = [];
@@ -370,9 +374,25 @@ goUserProfile() {
       let bValue: any;
 
       switch (this.sortColumn) {
+        case 'lounge_id':
+          aValue = a.lounge_id.toLowerCase();
+          bValue = b.lounge_id.toLowerCase();
+          break;
+        case 'owner':
+          aValue = a.owner.toLowerCase();
+          bValue = b.owner.toLowerCase();
+          break;
         case 'name':
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
+          break;
+        case 'lounge_contact':
+          aValue = a.lounge_contact.toLowerCase();
+          bValue = b.lounge_contact.toLowerCase();
+          break;
+        case 'address':
+          aValue = a.address.toLowerCase();
+          bValue = b.address.toLowerCase();
           break;
         case 'capacity':
           aValue = a.capacity;
@@ -381,6 +401,14 @@ goUserProfile() {
         case 'price_per_hour':
           aValue = a.price_per_hour;
           bValue = b.price_per_hour;
+          break;
+        case 'verification':
+          aValue = a.verification.toLowerCase();
+          bValue = b.verification.toLowerCase();
+          break;
+        case 'verification_note':
+          aValue = a.verification_note.toLowerCase();
+          bValue = b.verification_note.toLowerCase();
           break;
         case 'operating_hours':
           aValue = a.operating_hours.toLowerCase();
