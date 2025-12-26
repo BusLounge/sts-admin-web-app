@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
@@ -26,7 +26,8 @@ import { NotificationPanelComponent } from '../../shared/components/notification
     CheckboxModule,
     ToggleSwitchModule,
     NavbarComponent,
-    NotificationPanelComponent
+    NotificationPanelComponent,
+    RouterModule
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
@@ -470,8 +471,17 @@ export class SettingsComponent implements OnInit {
     this.showNotificationPanel = false;
   }
 
-  goToUserProfile(): void {
-    this.router.navigate(['/user-profile']); 
+showProfileMenu = false;
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
   }
 
   saveSystemPreferences() {

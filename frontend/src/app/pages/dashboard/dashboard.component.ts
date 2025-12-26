@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { BusService } from '../../core/services/bus.service';
@@ -14,7 +14,7 @@ import { PassengerService } from '../../core/services/passenger.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NotificationPanelComponent, NavbarComponent],
+  imports: [CommonModule, NotificationPanelComponent, NavbarComponent, RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -218,7 +218,16 @@ export class DashboardComponent implements OnInit {
     this.showNotificationPanel = false;
   }
 
-  goToUserProfile(): void {
-    this.router.navigate(['/user-profile']);
+  showProfileMenu = false;
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
   }
 }

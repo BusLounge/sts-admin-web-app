@@ -3,7 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { BaseChartDirective } from 'ng2-charts';
@@ -14,7 +14,7 @@ import { LoungeService } from '../../core/services/lounge.service';
 @Component({
   selector: 'app-lounges-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseChartDirective, NotificationPanelComponent, NavbarComponent],
+  imports: [CommonModule, FormsModule, BaseChartDirective, NotificationPanelComponent, NavbarComponent, RouterModule],
   templateUrl: './lounges-management.component.html',
   styleUrls: ['./lounges-management.component.scss']
 })
@@ -360,9 +360,18 @@ export class LoungesManagementComponent implements OnInit {
   }
 
   totalLounges(): number { return this.lounges.length; }
-goUserProfile() {
-  this.router.navigate(['/user-profile']);
-}
+  showProfileMenu = false;
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
+  }
   // Sorting functionality
   onSort(column: string): void {
     if (this.sortColumn === column) {
