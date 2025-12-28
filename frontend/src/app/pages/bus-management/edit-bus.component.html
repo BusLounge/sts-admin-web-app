@@ -1,4 +1,4 @@
-<!-- <div class="edit-bus-page" *ngIf="bus as b">
+<div class="edit-bus-page" *ngIf="bus as b">
   <nav class="back-nav" (click)="goBack()" aria-label="Back">
     <span class="arrow">‹</span>
     <span class="label">Back</span>
@@ -26,27 +26,27 @@
     </div>
 
     <div class="form-row">
-      <label>Capacity<span class="req">*</span></label>
+      <label>Total Seats<span class="req">*</span></label>
       <input 
         type="number" 
-        [(ngModel)]="b.capacity" 
-        name="capacity" 
+        [(ngModel)]="b.total_seats" 
+        name="total_seats" 
         placeholder="e.g., 50"
         min="1" 
         max="54" 
         required 
-        #capacityModel="ngModel"
-        (input)="onCapacityChange()"
-        [class.error-input]="validationErrors.capacity && (capacityModel.dirty || capacityModel.touched || isFormSubmitted)"
+        #totalSeatsModel="ngModel"
+        (input)="onTotalSeatsChange()"
+        [class.error-input]="validationErrors.total_seats && (totalSeatsModel.dirty || totalSeatsModel.touched || isFormSubmitted)"
       />
-      <small class="error" *ngIf="validationErrors.capacity && (capacityModel.dirty || capacityModel.touched || isFormSubmitted)">
-        {{ validationErrors.capacity }}
+      <small class="error" *ngIf="validationErrors.total_seats && (totalSeatsModel.dirty || totalSeatsModel.touched || isFormSubmitted)">
+        {{ validationErrors.total_seats }}
       </small>
     </div>
 
     <div class="form-row">
       <label>Type</label>
-      <select [(ngModel)]="b.type" name="type">
+      <select [(ngModel)]="b.bus_type" name="bus_type">
         <option value="AC">AC</option>
         <option value="Non-AC">Non-AC</option>
         <option value="Luxury">Luxury</option>
@@ -55,25 +55,25 @@
 
     <div class="form-row inline">
       <label class="checkbox">
-        <input type="checkbox" [(ngModel)]="b.is_active" name="is_active" />
+        <input type="checkbox" [ngModel]="b.status === 'Active'" (ngModelChange)="b.status = $event ? 'Active' : 'Inactive'" name="status" />
         <span>Active</span>
       </label>
     </div>
 
     <div class="form-row">
-      <label>Assigned Route ID<span class="req">*</span></label>
+      <label>Custom Route Name<span class="req">*</span></label>
       <input 
         type="text" 
-        [(ngModel)]="b.assigned_route_id" 
-        name="assigned_route_id" 
+        [(ngModel)]="b.custom_route_name" 
+        name="custom_route_name" 
         placeholder="e.g., RT001"
         required 
-        #routeIdModel="ngModel"
-        (input)="onRouteIdChange()"
-        [class.error-input]="validationErrors.assigned_route_id && (routeIdModel.dirty || routeIdModel.touched || isFormSubmitted)"
+        #routeNameModel="ngModel"
+        (input)="onCustomRouteNameChange()"
+        [class.error-input]="validationErrors.custom_route_name && (routeNameModel.dirty || routeNameModel.touched || isFormSubmitted)"
       />
-      <small class="error" *ngIf="validationErrors.assigned_route_id && (routeIdModel.dirty || routeIdModel.touched || isFormSubmitted)">
-        {{ validationErrors.assigned_route_id }}
+      <small class="error" *ngIf="validationErrors.custom_route_name && (routeNameModel.dirty || routeNameModel.touched || isFormSubmitted)">
+        {{ validationErrors.custom_route_name }}
       </small>
     </div>
 
@@ -84,4 +84,4 @@
       </button>
     </div>
   </form>
-</div> -->
+</div>

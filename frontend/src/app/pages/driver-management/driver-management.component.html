@@ -135,16 +135,16 @@
     <table class="driver-table">
       <thead>
         <tr>
-          <th (click)="onSort('driver_id')" style="cursor: pointer;" title="Click to sort">
-            Driver ID {{ getSortIcon('driver_id') }}
+          <th (click)="onSort('id')" style="cursor: pointer;" title="Click to sort">
+            Driver ID {{ getSortIcon('id') }}
           </th>
           <th (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
             Driver Name {{ getSortIcon('name') }}
           </th>
           <th>Contact Num</th>
           <th>License Number</th>
-          <th (click)="onSort('license_expiry')" style="cursor: pointer;" title="Click to sort">
-            License Expire date {{ getSortIcon('license_expiry') }}
+          <th (click)="onSort('license_expiry_date')" style="cursor: pointer;" title="Click to sort">
+            License Expire date {{ getSortIcon('license_expiry_date') }}
           </th>
           <th (click)="onSort('experience_years')" style="cursor: pointer;" title="Click to sort">
             Experience Yrs {{ getSortIcon('experience_years') }}
@@ -152,28 +152,28 @@
           <th (click)="onSort('hire_date')" style="cursor: pointer;" title="Click to sort">
             Hire Date {{ getSortIcon('hire_date') }}
           </th>
-          <th (click)="onSort('verification')" style="cursor: pointer;" title="Click to sort">
-            Verification {{ getSortIcon('verification') }}
+          <th (click)="onSort('verification_status')" style="cursor: pointer;" title="Click to sort">
+            Verification {{ getSortIcon('verification_status') }}
           </th>
           <th>Verification Note</th>
-          <th (click)="onSort('is_active')" style="cursor: pointer;" title="Click to sort">
-            Status {{ getSortIcon('is_active') }}
+          <th (click)="onSort('status')" style="cursor: pointer;" title="Click to sort">
+            Status {{ getSortIcon('status') }}
           </th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let driver of filteredDrivers">
-          <td>{{ driver.driver_id }}</td>
-          <td>{{ driver.first_name }} {{ driver.last_name }}</td>
-          <td>{{ formatPhone(driver.phone) }}</td>
+          <td>{{ driver.id }}</td>
+          <td>{{ driver.name }}</td>
+          <td>{{ formatPhone(driver.contact_number) }}</td>
           <td>{{ driver.license_number }}</td>
-          <td>{{ driver.license_expiry | date:'shortDate' }}</td>
+          <td>{{ driver.license_expiry_date | date:'shortDate' }}</td>
           <td>{{ driver.experience_years }}</td>
           <td>{{ driver.hire_date | date:'shortDate' }}</td>
-          <td>{{ driver.verification || 'Pending' }}</td>
-          <td>{{ driver.verificationNote || '-' }}</td>
-          <td>{{ driver.is_active ? 'Active' : 'Inactive' }}</td>
+          <td>{{ driver.verification_status || 'Pending' }}</td>
+          <td>{{ driver.verification_notes || '-' }}</td>
+          <td>{{ driver.status }}</td>
           <td class="actions-cell">
             <i class="fas fa-edit action-icon edit-icon" (click)="updateDriver(driver)" title="Update"></i>
             
@@ -188,13 +188,13 @@
         <div class="form-grid">
           <div class="form-row">
             <label>Driver Name</label>
-            <input type="text" [(ngModel)]="driverName" name="driverName" required />
+            <input type="text" [(ngModel)]="newDriver.name" name="driverName" required />
           </div>
           
           
           <div class="form-row">
             <label>Contact Num</label>
-            <input type="text" [(ngModel)]="newDriver.phone" name="phone" required />
+            <input type="text" [(ngModel)]="newDriver.contact_number" name="phone" required />
           </div>
           <div class="form-row">
             <label>License Number</label>
@@ -206,7 +206,7 @@
           </div>
           <div class="form-row">
             <label>License Expiry</label>
-            <input type="date" [(ngModel)]="newDriver.license_expiry" name="license_expiry" />
+            <input type="date" [(ngModel)]="newDriver.license_expiry_date" name="license_expiry_date" />
           </div>
           
           <div class="form-row">
@@ -216,11 +216,13 @@
           
           <div class="form-row">
             <label>Verification Note</label>
-            <textarea [(ngModel)]="newDriver.verificationNote" name="verificationNote" rows="3" placeholder="Enter verification notes..."></textarea>
+            <textarea [(ngModel)]="newDriver.verification_notes" name="verification_notes" rows="3" placeholder="Enter verification notes..."></textarea>
           </div>
           <div class="form-row">
             <label>Status</label>
-            <input type="checkbox" [(ngModel)]="newDriver.is_active" name="is_active" /> Active
+            <div style="display: flex; align-items: center; height: 38px;">
+              <input type="checkbox" [ngModel]="newDriver.status === 'Active'" (ngModelChange)="newDriver.status = $event ? 'Active' : 'Inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
+            </div>
           </div>
         </div>
         <div class="form-actions">

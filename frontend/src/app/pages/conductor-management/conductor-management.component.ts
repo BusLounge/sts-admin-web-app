@@ -29,18 +29,16 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   showAddConductorModal = false;
   showEditConductorModal = false;
 
-  newConductor: Omit<Conductor, 'conductor_id'> = {
-    full_name: '',
-    nic: '',
-    phone_number: '',
+  newConductor: Omit<Conductor, 'id'> = {
+    name: '',
+    contact_number: '',
     experience_years: 0,
     license_number: '',
     license_expiry_date: new Date().toISOString().split('T')[0],
     verification_status: 'Pending',
-    verification_note: '',
+    verification_notes: '',
     status: 'Active',
-    assigned_bus_id: '',
-    hired_date: new Date().toISOString().split('T')[0]
+    hire_date: new Date().toISOString().split('T')[0]
   };
 
   selectedConductor: Conductor | null = null;
@@ -81,36 +79,37 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   closeAddConductorModal() {
     this.showAddConductorModal = false;
     this.newConductor = {
-      full_name: '',
-      nic: '',
-      phone_number: '',
+      name: '',
+      contact_number: '',
       experience_years: 0,
       license_number: '',
       license_expiry_date: new Date().toISOString().split('T')[0],
       verification_status: 'Pending',
-      verification_note: '',
+      verification_notes: '',
       status: 'Active',
-      assigned_bus_id: '',
-      hired_date: new Date().toISOString().split('T')[0]
+      hire_date: new Date().toISOString().split('T')[0]
     };
   }
 
   saveConductor() {
-    if (this.newConductor.full_name && this.newConductor.phone_number) {
+    if (this.newConductor.name && this.newConductor.contact_number) {
       this.conductorService.addConductor({
-        full_name: this.newConductor.full_name,
-        nic: this.newConductor.nic || '',
-        phone_number: this.newConductor.phone_number,
+        name: this.newConductor.name,
+        contact_number: this.newConductor.contact_number,
         experience_years: this.newConductor.experience_years,
         license_number: this.newConductor.license_number,
         license_expiry_date: this.newConductor.license_expiry_date,
         verification_status: this.newConductor.verification_status,
-        verification_note: this.newConductor.verification_note,
+        verification_notes: this.newConductor.verification_notes,
         status: this.newConductor.status,
-        assigned_bus_id: this.newConductor.assigned_bus_id || '',
-        hired_date: this.newConductor.hired_date
+        hire_date: this.newConductor.hire_date,
+        id: '' // Backend will generate
+      }).subscribe({
+        next: () => {
+          this.closeAddConductorModal();
+        },
+        error: (err) => console.error('Failed to add conductor', err)
       });
-      this.closeAddConductorModal();
     } else {
       alert('Please fill all required fields');
     }
@@ -128,23 +127,29 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
 
   saveEditConductor() {
     if (this.selectedConductor) {
-      this.conductorService.updateConductor(this.selectedConductor);
-      this.closeEditConductorModal();
+      this.conductorService.updateConductor(this.selectedConductor).subscribe({
+        next: () => {
+          this.closeEditConductorModal();
+        },
+        error: (err) => console.error('Failed to update conductor', err)
+      });
     }
   }
 
   toggleStatus(conductor: Conductor) {
-    const statusOptions: Array<'Active' | 'On Leave' | 'Resigned'> = ['Active', 'On Leave', 'Resigned'];
+    const statusOptions: Array<string> = ['Active', 'On Leave', 'Resigned'];
     const currentIndex = statusOptions.indexOf(conductor.status);
     conductor.status = statusOptions[(currentIndex + 1) % statusOptions.length];
-    console.log(`${conductor.full_name} status changed to ${conductor.status}`);
+    console.log(`${conductor.name} status changed to ${conductor.status}`);
   }
 
   deleteConductor(conductor: Conductor) {
-    const confirmed = confirm(`Are you sure you want to delete ${conductor.full_name}?`);
+    const confirmed = confirm(`Are you sure you want to delete ${conductor.name}?`);
     if (confirmed) {
-      this.conductorService.deleteConductor(conductor.conductor_id);
-      console.log(`${conductor.full_name} deleted`);
+      this.conductorService.deleteConductor(conductor.id).subscribe({
+        next: () => console.log(`${conductor.name} deleted`),
+        error: (err) => console.error('Failed to delete conductor', err)
+      });
     }
   }
 
@@ -155,14 +160,14 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
 
     const tableHead = [['Conductor ID', 'Conductor Name', 'Contact', 'License Number', 'License Expire Date', 'Experience Yrs', 'Verification', 'Verification Note', 'Status']];
     const tableBody = this.filteredConductors.map(c => [
-      c.conductor_id,
-      c.full_name,
-      c.phone_number,
+      c.id,
+      c.name,
+      c.contact_number,
       `${c.experience_years}yrs`,
       c.license_number,
       new Date(c.license_expiry_date).toLocaleDateString(),
       c.verification_status,
-      c.verification_note || '-',
+      c.verification_notes || '-',
       c.status,
     ]);
 
@@ -222,11 +227,9 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
     // Apply search filter
     if (this.searchTerm.trim()) {
       filtered = filtered.filter(conductor =>
-        conductor.full_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        conductor.nic.includes(this.searchTerm) ||
-        conductor.phone_number.includes(this.searchTerm) ||
-        conductor.conductor_id.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        conductor.assigned_bus_id.toLowerCase().includes(this.searchTerm.toLowerCase())
+        conductor.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        conductor.contact_number.includes(this.searchTerm) ||
+        conductor.id.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
 
@@ -285,15 +288,14 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
       let bValue: any;
 
       switch (this.sortColumn) {
-        case 'conductor_id':
-          aValue = a.conductor_id.toLowerCase();
-          bValue = b.conductor_id.toLowerCase();
+        case 'id':
+          aValue = a.id.toLowerCase();
+          bValue = b.id.toLowerCase();
           break;
-        case 'full_name':
-          aValue = a.full_name.toLowerCase();
-          bValue = b.full_name.toLowerCase();
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
           break;
-        case 'experience':
         case 'experience_years':
           aValue = a.experience_years;
           bValue = b.experience_years;
@@ -303,8 +305,8 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
           bValue = new Date(b.license_expiry_date).getTime();
           break;
         case 'hire_date':
-          aValue = new Date(a.hired_date);
-          bValue = new Date(b.hired_date);
+          aValue = new Date(a.hire_date).getTime();
+          bValue = new Date(b.hire_date).getTime();
           break;
         case 'verification_status':
           aValue = (a.verification_status || '').toLowerCase();

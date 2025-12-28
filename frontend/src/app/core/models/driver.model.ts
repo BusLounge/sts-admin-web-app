@@ -1,17 +1,14 @@
 export interface Driver {
-    driver_id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
+    id: string;
+    name: string;
+    contact_number: string;
     license_number: string;
-    license_expiry: string;
+    license_expiry_date: string;
     experience_years: number;
-    is_active: boolean;
-    assigned_bus_id: string;
+    verification_status: string;
+    verification_notes: string;
+    status: string;
     hire_date: string;
-    verification: string;
-    verificationNote: string;
   }
 
 

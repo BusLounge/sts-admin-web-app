@@ -31,19 +31,16 @@ export class DriverManagementComponent implements OnInit {
   editingDriver: Driver | null = null;
   driverName: string = '';
 
-  newDriver: Omit<Driver, 'driver_id'> = {
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
+  newDriver: Omit<Driver, 'id'> = {
+    name: '',
+    contact_number: '',
     license_number: '',
     experience_years: 0,
-    is_active: true,
-    license_expiry: '',
-    assigned_bus_id: '',
-    hire_date: '',
-    verification: 'Pending',
-    verificationNote: ''
+    status: 'Active',
+    license_expiry_date: '',
+    verification_status: 'Pending',
+    verification_notes: '',
+    hire_date: ''
   };
 
   // Sorting properties
@@ -89,39 +86,44 @@ export class DriverManagementComponent implements OnInit {
     this.editingDriver = null;
     this.driverName = '';
     this.newDriver = {
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone: '',
+      name: '',
+      contact_number: '',
       license_number: '',
       experience_years: 0,
-      is_active: true,
-      license_expiry: '',
-      assigned_bus_id: '',
-      hire_date: '',
-      verification: 'Pending',
-      verificationNote: ''
+      status: 'Active',
+      license_expiry_date: '',
+      verification_status: 'Pending',
+      verification_notes: '',
+      hire_date: ''
     };
   }
 
   saveDriver() {
-    // Split driverName into first and last name
-    const nameParts = this.driverName.trim().split(' ');
-    this.newDriver.first_name = nameParts[0] || '';
-    this.newDriver.last_name = nameParts.slice(1).join(' ') || '';
+    // Split driverName into first and last name (if needed, but backend takes full name now)
+    this.newDriver.name = this.driverName.trim();
 
     // Relaxed validation: removed email check as it is not in the form
-    if (this.newDriver.first_name && this.newDriver.phone && this.newDriver.license_number && this.newDriver.experience_years >= 0) {
+    if (this.newDriver.name && this.newDriver.contact_number && this.newDriver.license_number && this.newDriver.experience_years >= 0) {
       if (this.isEditing && this.editingDriver) {
         const updatedDriver = { ...this.editingDriver, ...this.newDriver };
-        this.driverService.updateDriver(updatedDriver);
+        this.driverService.updateDriver(updatedDriver).subscribe({
+          next: () => {
+            this.closeAddDriverModal();
+          },
+          error: (err) => console.error('Failed to update driver', err)
+        });
       } else {
-        // Generate a new driver ID
-        const newDriverId = this.generateDriverId();
-        const driverToAdd: Driver = { ...this.newDriver, driver_id: newDriverId };
-        this.driverService.addDriver(driverToAdd);
+        // Generate a new driver ID (backend handles this usually, but keeping for now if needed)
+        // const newDriverId = this.generateDriverId(); 
+        // For now, let backend generate ID or use placeholder if service requires it
+        const driverToAdd: Driver = { ...this.newDriver, id: '' }; 
+        this.driverService.addDriver(driverToAdd).subscribe({
+          next: () => {
+            this.closeAddDriverModal();
+          },
+          error: (err) => console.error('Failed to add driver', err)
+        });
       }
-      this.closeAddDriverModal();
     } else {
       alert('Please fill all required fields');
     }
@@ -142,34 +144,33 @@ export class DriverManagementComponent implements OnInit {
   updateDriver(driver: Driver) {
     this.isEditing = true;
     this.editingDriver = driver;
-    this.driverName = `${driver.first_name} ${driver.last_name}`;
+    this.driverName = driver.name;
     this.newDriver = {
-      first_name: driver.first_name,
-      last_name: driver.last_name,
-      email: driver.email,
-      phone: driver.phone,
+      name: driver.name,
+      contact_number: driver.contact_number,
       license_number: driver.license_number,
       experience_years: driver.experience_years,
-      is_active: driver.is_active,
-      license_expiry: driver.license_expiry,
-      assigned_bus_id: driver.assigned_bus_id,
+      status: driver.status,
+      license_expiry_date: driver.license_expiry_date,
       hire_date: driver.hire_date,
-      verification: driver.verification,
-      verificationNote: driver.verificationNote
+      verification_status: driver.verification_status,
+      verification_notes: driver.verification_notes
     };
     this.showAddDriverModal = true;
   }
 
   toggleActive(driver: Driver) {
-    driver.is_active = !driver.is_active;
-    console.log(`${driver.first_name} ${driver.last_name} is now ${driver.is_active ? 'Active' : 'Inactive'}`);
+    driver.status = driver.status === 'Active' ? 'Inactive' : 'Active';
+    console.log(`${driver.name} is now ${driver.status}`);
   }
 
   deleteDriver(driver: Driver) {
-    const confirmed = confirm(`Are you sure you want to delete ${driver.first_name} ${driver.last_name}?`);
+    const confirmed = confirm(`Are you sure you want to delete ${driver.name}?`);
     if (confirmed) {
-      this.driverService.deleteDriver(driver.driver_id);
-      console.log(`${driver.first_name} ${driver.last_name} deleted`);
+      this.driverService.deleteDriver(driver.id).subscribe({
+        next: () => console.log(`${driver.name} deleted`),
+        error: (err) => console.error('Failed to delete driver', err)
+      });
     }
   }
 
@@ -178,16 +179,14 @@ export class DriverManagementComponent implements OnInit {
     doc.setFontSize(16);
     doc.text('Drivers History', 14, 16);
 
-    const tableHead = [['Driver ID', 'Name', 'Email', 'Phone', 'License No.', 'Experience', 'Status', 'Assigned Bus']];
+    const tableHead = [['Driver ID', 'Name', 'Contact', 'License No.', 'Experience', 'Status']];
     const tableBody = this.drivers.map(d => [
-      d.driver_id,
-      `${d.first_name} ${d.last_name}`,
-      d.email,
-      this.formatPhone(d.phone),
+      d.id,
+      d.name,
+      this.formatPhone(d.contact_number),
       d.license_number,
       `${d.experience_years}yrs`,
-      d.is_active ? 'Active' : 'Inactive',
-      d.assigned_bus_id || 'Unassigned'
+      d.status
     ]);
 
     autoTable(doc, {
@@ -207,11 +206,11 @@ export class DriverManagementComponent implements OnInit {
   }
 
   getActiveCount(): number {
-    return this.drivers.filter(driver => driver.is_active).length;
+    return this.drivers.filter(driver => driver.status === 'Active').length;
   }
 
   getInactiveCount(): number {
-    return this.drivers.filter(driver => !driver.is_active).length;
+    return this.drivers.filter(driver => driver.status !== 'Active').length;
   }
 
   getAverageExperience(): number {
@@ -256,21 +255,17 @@ export class DriverManagementComponent implements OnInit {
 
     // Apply status filter
     if (this.statusFilter !== 'All') {
-      const isActive = this.statusFilter === 'Active';
-      filtered = filtered.filter(driver => driver.is_active === isActive);
+      filtered = filtered.filter(driver => driver.status === this.statusFilter);
     }
 
     // Apply search term
     if (this.searchTerm.trim()) {
       filtered = filtered.filter(driver =>
-        driver.first_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        driver.last_name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        driver.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        driver.phone.includes(this.searchTerm) ||
+        driver.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        driver.contact_number.includes(this.searchTerm) ||
         driver.license_number.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        driver.driver_id.toString().includes(this.searchTerm) ||
-        driver.experience_years.toString().includes(this.searchTerm) ||
-        driver.assigned_bus_id?.toString().includes(this.searchTerm)
+        driver.id.toString().includes(this.searchTerm) ||
+        driver.experience_years.toString().includes(this.searchTerm)
       );
     }
 
@@ -336,17 +331,17 @@ export class DriverManagementComponent implements OnInit {
       let bValue: any;
 
       switch (this.sortColumn) {
-        case 'driver_id':
-          aValue = a.driver_id.toLowerCase();
-          bValue = b.driver_id.toLowerCase();
+        case 'id':
+          aValue = a.id.toLowerCase();
+          bValue = b.id.toLowerCase();
           break;
         case 'name':
-          aValue = `${a.first_name} ${a.last_name}`.toLowerCase();
-          bValue = `${b.first_name} ${b.last_name}`.toLowerCase();
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
           break;
-        case 'license_expiry':
-          aValue = new Date(a.license_expiry || '1970-01-01').getTime();
-          bValue = new Date(b.license_expiry || '1970-01-01').getTime();
+        case 'license_expiry_date':
+          aValue = new Date(a.license_expiry_date || '1970-01-01').getTime();
+          bValue = new Date(b.license_expiry_date || '1970-01-01').getTime();
           break;
         case 'experience_years':
           aValue = a.experience_years;
@@ -356,13 +351,13 @@ export class DriverManagementComponent implements OnInit {
           aValue = new Date(a.hire_date || '1970-01-01').getTime();
           bValue = new Date(b.hire_date || '1970-01-01').getTime();
           break;
-        case 'verification':
-          aValue = a.verification || '';
-          bValue = b.verification || '';
+        case 'verification_status':
+          aValue = a.verification_status || '';
+          bValue = b.verification_status || '';
           break;
-        case 'is_active':
-          aValue = a.is_active;
-          bValue = b.is_active;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
           break;
         default:
           return 0;
@@ -390,7 +385,7 @@ export class DriverManagementComponent implements OnInit {
   }
 
   private generateDriverId(): string {
-    const existingIds = this.drivers.map(d => d.driver_id);
+    const existingIds = this.drivers.map(d => d.id);
     let counter = 1;
     let newId = `DRV${counter.toString().padStart(3, '0')}`;
     while (existingIds.includes(newId)) {

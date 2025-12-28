@@ -1,17 +1,17 @@
 export interface Bus {
-  bus_id: string;
+  id: string;
   bus_number: string;
-  company: string;
-  nic_number: string;
-  email: string;
-  contact: string;
-  permitNum: string;
-  regnum: string;
-  capacity: number;
-  type: string;
-  assigned_route_id: string;
-  approvedFare: number;
-  is_active: boolean;
-  verificationStatus: 'Verified' | 'Pending' | 'Rejected';
-  documents?: string[]; // Array of document URLs or file names
+  company_name: string;
+  identify_or_incorporation_no: string;
+  business_email: string;
+  business_phone: string;
+  permit_number: string;
+  license_plate: string;
+  total_seats: number;
+  bus_type: string;
+  custom_route_name: string;
+  fare_per_seat: number;
+  status: string;
+  verification_status: 'Verified' | 'Pending' | 'Rejected';
+  verification_documents?: string[]; // Array of document URLs or file names
 }

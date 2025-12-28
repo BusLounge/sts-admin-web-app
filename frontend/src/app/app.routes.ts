@@ -11,9 +11,9 @@ import { PassengerManagementComponent } from './pages/passenger-management/passe
 import { AddPassengerComponent } from './pages/passenger-management/add-passenger.component';
 import { EditPassengerComponent } from './pages/passenger-management/edit-passenger.component';
 import { LoungesManagementComponent } from './pages/lounge-management/lounges-management.component';
-import { AddLoungeComponent } from './pages/lounge-management/add-lounge.component';
-import { EditLoungeComponent } from './pages/lounge-management/edit-lounge.component';
-import { ViewLoungeComponent } from './pages/lounge-management/view-lounge.component';
+// import { AddLoungeComponent } from './pages/lounge-management/add-lounge.component';
+// import { EditLoungeComponent } from './pages/lounge-management/edit-lounge.component';
+// import { ViewLoungeComponent } from './pages/lounge-management/view-lounge.component';
 import { LoungeBookingComponent } from './pages/lounge-booking/lounge-booking.component';
 import { EditLoungeBookingComponent } from './pages/lounge-booking/edit-lounge-booking.component';
 import { BusBookingComponent } from './pages/bus-booking/bus-booking.component';
@@ -21,7 +21,6 @@ import { ConductorManagementComponent } from './pages/conductor-management/condu
 import { AddConductorComponent } from './pages/conductor-management/add-conductor.component';
 import { EditConductorComponent } from './pages/conductor-management/edit-conductor.component';
 import { NotificationDetailsComponent } from './pages/notification-details/notification-details.component';
-import { UserProfileComponent } from './pages/user-profile/user-profile.component';
 import { SeatLayoutsComponent } from './pages/seat-layouts/seat-layouts.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { ComplaintManagementComponent } from './pages/complaint-management/complaint-management.component';
@@ -47,15 +46,14 @@ export const routes: Routes = [
   { path: 'passenger-management/add', component: AddPassengerComponent },
   { path: 'passenger-management/edit/:id', component: EditPassengerComponent },
   { path: 'lounges-management', component: LoungesManagementComponent },
-  { path: 'lounges-management/view/:id', component: ViewLoungeComponent },
-  { path: 'add-lounge', component: AddLoungeComponent },
-  { path: 'lounges-management/edit/:id', component: EditLoungeComponent },
-  { path: 'lounges-management/view/:id', component: ViewLoungeComponent },
+  // { path: 'lounges-management/view/:id', component: ViewLoungeComponent },
+  // { path: 'add-lounge', component: AddLoungeComponent },
+  // { path: 'lounges-management/edit/:id', component: EditLoungeComponent },
+  // { path: 'lounges-management/view/:id', component: ViewLoungeComponent },
   { path: 'lounge-booking', component: LoungeBookingComponent },
   { path: 'lounge-booking/edit/:id', component: EditLoungeBookingComponent },
   { path: 'bus-booking', component: BusBookingComponent },
   { path: 'seat-layouts', component: SeatLayoutsComponent },
   { path: 'notification-details', component: NotificationDetailsComponent },
-  { path: 'user-profile', component: UserProfileComponent },
   { path: '**', redirectTo: '' }
 ];

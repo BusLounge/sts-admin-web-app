@@ -134,11 +134,11 @@
       <table class="conductor-table">
         <thead>
           <tr>
-            <th (click)="onSort('conductor_id')" style="cursor: pointer;" title="Click to sort">
-              Conductor ID {{ getSortIcon('conductor_id') }}
+            <th (click)="onSort('id')" style="cursor: pointer;" title="Click to sort">
+              Conductor ID {{ getSortIcon('id') }}
             </th>
-            <th (click)="onSort('full_name')" style="cursor: pointer;" title="Click to sort">
-              Conductor Name {{ getSortIcon('full_name') }}
+            <th (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
+              Conductor Name {{ getSortIcon('name') }}
             </th>
             <th>Contact</th>
             <th>License Number</th>
@@ -160,14 +160,14 @@
         </thead>
         <tbody>
           <tr *ngFor="let conductor of filteredConductors">
-            <td>{{ conductor.conductor_id }}</td>
-            <td>{{ conductor.full_name }}</td>
-            <td>{{ conductor.phone_number }}</td>
+            <td>{{ conductor.id }}</td>
+            <td>{{ conductor.name }}</td>
+            <td>{{ conductor.contact_number }}</td>
             <td>{{ conductor.license_number }}</td>
             <td>{{ conductor.license_expiry_date | date:'shortDate' }}</td>
             <td>{{ conductor.experience_years }}yrs</td>
             <td>{{ conductor.verification_status }}</td>
-            <td>{{ conductor.verification_note || '-' }}</td>
+            <td>{{ conductor.verification_notes || '-' }}</td>
             <td>
               <span class="status-badge" [ngClass]="conductor.status.toLowerCase().replace(' ', '-')">
                 {{ conductor.status }}
@@ -193,11 +193,11 @@
           <!-- Left column -->
           <div class="form-row">
             <label>Conductor Name</label>
-            <input type="text" [(ngModel)]="newConductor.full_name" name="full_name" required />
+            <input type="text" [(ngModel)]="newConductor.name" name="name" required />
           </div>
           <div class="form-row">
             <label>Contact Num</label>
-            <input type="text" [(ngModel)]="newConductor.phone_number" name="phone_number" required />
+            <input type="text" [(ngModel)]="newConductor.contact_number" name="contact_number" required />
           </div>
           <div class="form-row">
             <label>License Number</label>
@@ -215,23 +215,17 @@
           </div>
           <div class="form-row">
             <label>Hire Date</label>
-            <input type="date" [(ngModel)]="newConductor.hired_date" name="hired_date" required />
+            <input type="date" [(ngModel)]="newConductor.hire_date" name="hire_date" required />
           </div>
           <div class="form-row">
             <label>Verification Note</label>
-            <textarea [(ngModel)]="newConductor.verification_note" name="verification_note" rows="2" placeholder="Enter verification notes..."></textarea>
+            <textarea [(ngModel)]="newConductor.verification_notes" name="verification_notes" rows="2" placeholder="Enter verification notes..."></textarea>
           </div>
-          <div class="form-row inline">
+          <div class="form-row">
             <label>Status</label>
-            <label class="checkbox">
-              <input
-                type="checkbox"
-                [ngModel]="newConductor.status === 'Active'"
-                (ngModelChange)="newConductor.status = $event ? 'Active' : 'On Leave'"
-                name="status_active"
-              />
-              <span>Active</span>
-            </label>
+            <div style="display: flex; align-items: center; height: 38px;">
+              <input type="checkbox" [ngModel]="newConductor.status === 'Active'" (ngModelChange)="newConductor.status = $event ? 'Active' : 'Inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
+            </div>
           </div>
         </div>
         <div class="form-actions">
@@ -251,11 +245,11 @@
           <!-- Left column -->
           <div class="form-row">
             <label>Conductor Name</label>
-            <input type="text" [(ngModel)]="selectedConductor.full_name" name="edit_full_name" required />
+            <input type="text" [(ngModel)]="selectedConductor.name" name="edit_name" required />
           </div>
           <div class="form-row">
             <label>Contact Num</label>
-            <input type="text" [(ngModel)]="selectedConductor.phone_number" name="edit_phone_number" required />
+            <input type="text" [(ngModel)]="selectedConductor.contact_number" name="edit_contact_number" required />
           </div>
           <div class="form-row">
             <label>License Number</label>
@@ -273,23 +267,17 @@
           </div>
           <div class="form-row">
             <label>Hire Date</label>
-            <input type="date" [(ngModel)]="selectedConductor.hired_date" name="edit_hired_date" required />
+            <input type="date" [(ngModel)]="selectedConductor.hire_date" name="edit_hire_date" required />
           </div>
           <div class="form-row">
             <label>Verification Note</label>
-            <textarea [(ngModel)]="selectedConductor.verification_note" name="edit_verification_note" rows="2" placeholder="Enter verification notes..."></textarea>
+            <textarea [(ngModel)]="selectedConductor.verification_notes" name="edit_verification_notes" rows="2" placeholder="Enter verification notes..."></textarea>
           </div>
-          <div class="form-row inline">
+          <div class="form-row">
             <label>Status</label>
-            <label class="checkbox">
-              <input
-                type="checkbox"
-                [ngModel]="selectedConductor.status === 'Active'"
-                (ngModelChange)="selectedConductor.status = $event ? 'Active' : 'On Leave'"
-                name="edit_status_active"
-              />
-              <span>Active</span>
-            </label>
+            <div style="display: flex; align-items: center; height: 38px;">
+              <input type="checkbox" [ngModel]="selectedConductor.status === 'Active'" (ngModelChange)="selectedConductor.status = $event ? 'Active' : 'Inactive'" name="edit_status" style="width: auto; margin-right: 8px;" /> Active
+            </div>
           </div>
         </div>
         <div class="form-actions">

@@ -78,11 +78,11 @@
           <div class="col" (click)="onSort('lounge_id')" style="cursor: pointer;" title="Click to sort">
             LoungeID {{ getSortIcon('lounge_id') }}
           </div>
-          <div class="col" (click)="onSort('owner')" style="cursor: pointer;" title="Click to sort">
-            Lounge Owner {{ getSortIcon('owner') }}
+          <div class="col" (click)="onSort('lounge_owner')" style="cursor: pointer;" title="Click to sort">
+            Lounge Owner {{ getSortIcon('lounge_owner') }}
           </div>
-          <div class="col" (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
-            Lounge Name {{ getSortIcon('name') }}
+          <div class="col" (click)="onSort('lounge_name')" style="cursor: pointer;" title="Click to sort">
+            Lounge Name {{ getSortIcon('lounge_name') }}
           </div>
           <div class="col" (click)="onSort('lounge_contact')" style="cursor: pointer;" title="Click to sort">
             Lounge Contact {{ getSortIcon('lounge_contact') }}
@@ -96,8 +96,8 @@
           <div class="col num" (click)="onSort('price_per_hour')" style="cursor: pointer;" title="Click to sort">
             Price/hour {{ getSortIcon('price_per_hour') }}
           </div>
-          <div class="col" (click)="onSort('lounge_status')" style="cursor: pointer;" title="Click to sort">
-            Lounge Status {{ getSortIcon('lounge_status') }}
+          <div class="col" (click)="onSort('operational')" style="cursor: pointer;" title="Click to sort">
+            Operational {{ getSortIcon('operational') }}
           </div>
           <div class="col" (click)="onSort('verification')" style="cursor: pointer;" title="Click to sort">
             Verification {{ getSortIcon('verification') }}
@@ -110,13 +110,13 @@
 
         <div class="row" *ngFor="let l of filteredLounges">
           <div class="col">{{ l.lounge_id }}</div>
-          <div class="col">{{ l.owner }}</div>
-          <div class="col">{{ l.name }}</div>
+          <div class="col">{{ l.lounge_owner }}</div>
+          <div class="col">{{ l.lounge_name }}</div>
           <div class="col">{{ l.lounge_contact }}</div>
           <div class="col">{{ l.address }}</div>
           <div class="col num">{{ l.capacity }}</div>
-          <div class="col num">${{ l.price_per_hour }}</div>
-          <div class="col">{{ l.lounge_status }}</div>
+          <div class="col num">{{ l.price_per_hour }}</div>
+          <div class="col">{{ l.operational ? 'Open' : 'Closed' }}</div>
           <div class="col">{{ l.verification }}</div>
           <div class="col">{{ l.verification_note }}</div>
           <div class="col actions">
@@ -140,7 +140,7 @@
       <div class="form-grid">
         <div class="form-row">
           <label>Owner Name</label>
-          <input [(ngModel)]="lounge.owner" name="owner" required [readonly]="modalMode === 'view'" />
+          <input [(ngModel)]="lounge.lounge_owner" name="lounge_owner" required [readonly]="modalMode === 'view'" />
         </div>
         <div class="form-row">
           <label>NIC Number</label>
@@ -160,7 +160,7 @@
       <div class="form-grid">
         <div class="form-row">
           <label>Lounge Name</label>
-          <input [(ngModel)]="lounge.name" name="name" required [readonly]="modalMode === 'view'" />
+          <input [(ngModel)]="lounge.lounge_name" name="lounge_name" required [readonly]="modalMode === 'view'" />
         </div>
         <div class="form-row">
           <label>Lounge Contact</label>
@@ -179,15 +179,11 @@
           <input type="number" [(ngModel)]="lounge.capacity" name="capacity" required [readonly]="modalMode === 'view'" />
         </div>
         <div class="form-row">
-          <label>Lounge Status</label>
-          <select [(ngModel)]="lounge.lounge_status" name="lounge_status" required [disabled]="modalMode === 'view'">
-            <option value="open">Open</option>
-            <option value="close">Close</option>
+          <label>Operational Status</label>
+          <select [(ngModel)]="lounge.operational" name="operational" required [disabled]="modalMode === 'view'">
+            <option [ngValue]="true">Open</option>
+            <option [ngValue]="false">Closed</option>
           </select>
-        </div>
-        <div class="form-row">
-          <label>Operating Hours</label>
-          <input [(ngModel)]="lounge.operating_hours" name="operating_hours" placeholder="08:00-22:00" [readonly]="modalMode === 'view'" />
         </div>
         <div class="form-row full-width">
           <label>Verification Note</label>
@@ -214,36 +210,36 @@
         </div>
       </div>
 
+
+
       <!-- Amenities -->
-      <div class="form-row full-width">
+      <div class="form-row full-width" *ngIf="modalMode === 'add'">
         <label>Amenities</label>
         <div class="checkbox-grid">
           <div *ngFor="let amenity of availableAmenities" class="checkbox-item">
             <input
               type="checkbox"
               [checked]="selectedAmenities.includes(amenity)"
-              (change)="modalMode === 'add' || modalMode === 'edit' ? toggleAmenity(amenity) : null"
-              [disabled]="modalMode === 'view'"
+              (change)="toggleAmenity(amenity)"
               id="amenity-{{amenity}}"
             />
-            <label for="amenity-{{amenity}}">{{ amenity }}</label>
+            <label for="amenity-{{amenity}}">{{ formatAmenity(amenity) }}</label>
           </div>
         </div>
       </div>
 
-      <!-- Services -->
-      <div class="form-row full-width">
-        <label>MarketPlace</label>
+      <!-- Marketplace Category -->
+      <div class="form-row full-width" *ngIf="modalMode === 'add'">
+        <label>Marketplace Category</label>
         <div class="checkbox-grid">
-          <div *ngFor="let service of availableServices" class="checkbox-item">
+          <div *ngFor="let cat of availableServices" class="checkbox-item">
             <input
               type="checkbox"
-              [checked]="selectedServices.includes(service)"
-              (change)="modalMode === 'add' || modalMode === 'edit' ? toggleService(service) : null"
-              [disabled]="modalMode === 'view'"
-              id="service-{{service}}"
+              [checked]="selectedMarketplaceItems.includes(cat)"
+              (change)="toggleMarketplaceItem(cat)"
+              id="cat-{{cat}}"
             />
-            <label for="service-{{service}}">{{ service }}</label>
+            <label for="cat-{{cat}}">{{ cat }}</label>
           </div>
         </div>
       </div>

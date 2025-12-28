@@ -1,0 +1,481 @@
+package database
+
+import (
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"strings"
+	"sts-backend/internal/models"
+)
+
+type BusRepository struct {
+	db *sql.DB
+}
+
+func NewBusRepository(db *sql.DB) *BusRepository {
+	return &BusRepository{db: db}
+}
+
+// GetAllBuses retrieves all buses with their related details
+func (r *BusRepository) GetAllBuses() ([]models.Bus, error) {
+	query := `
+		SELECT 
+			b.id::text,
+			COALESCE(b.bus_owner_id::text, ''),
+			COALESCE(b.permit_id::text, ''),
+			COALESCE(b.seat_layout_id::text, ''),
+			COALESCE(b.bus_number, ''),
+			COALESCE(bo.company_name, ''),
+			COALESCE(bo.identity_or_incorporation_no, ''),
+			COALESCE(bo.business_email, ''),
+			COALESCE(bo.business_phone, ''),
+			COALESCE(rp.permit_number, ''),
+			COALESCE(b.license_plate, ''),
+			COALESCE(bslt.total_seats, rp.approved_seating_capacity, 0) as total_seats,
+			COALESCE(b.bus_type, 'Standard'),
+			COALESCE(mr.route_name, 'Unknown Route') as route_name,
+			COALESCE(rp.approved_fare::float8, 0.0),
+			COALESCE(b.status, 'Inactive'),
+			COALESCE(rp.status::text, 'Pending') as verification_status,
+			COALESCE(rp.verification_documents::text, '{}')
+		FROM buses b
+		LEFT JOIN bus_owners bo ON b.bus_owner_id = bo.id
+		LEFT JOIN route_permits rp ON b.permit_id = rp.id
+		LEFT JOIN master_routes mr ON rp.master_route_id = mr.id
+		LEFT JOIN bus_seat_layout_templates bslt ON b.seat_layout_id = bslt.id
+	`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying buses: %v", err)
+	}
+	defer rows.Close()
+
+	buses := []models.Bus{}
+	for rows.Next() {
+		var bus models.Bus
+		var verificationDocsStr sql.NullString
+		var seatLayoutID sql.NullString
+
+		err := rows.Scan(
+			&bus.ID,
+			&bus.BusOwnerID,
+			&bus.PermitID,
+			&seatLayoutID,
+			&bus.BusNumber,
+			&bus.CompanyName,
+			&bus.IdentifyOrIncorporationNo,
+			&bus.BusinessEmail,
+			&bus.BusinessPhone,
+			&bus.PermitNumber,
+			&bus.LicensePlate,
+			&bus.TotalSeats,
+			&bus.BusType,
+			&bus.CustomRouteName,
+			&bus.FarePerSeat,
+			&bus.Status,
+			&bus.VerificationStatus,
+			&verificationDocsStr,
+		)
+		if err != nil {
+			fmt.Printf("Error scanning bus: %v\n", err)
+			return nil, fmt.Errorf("error scanning bus row: %v", err)
+		}
+
+		bus.SeatLayoutID = seatLayoutID
+
+		if verificationDocsStr.Valid && verificationDocsStr.String != "" {
+			if err := json.Unmarshal([]byte(verificationDocsStr.String), &bus.VerificationDocuments); err != nil {
+				bus.VerificationDocuments = []string{}
+			}
+		}
+
+		buses = append(buses, bus)
+	}
+
+	return buses, nil
+}
+
+// GetBusByID retrieves a single bus by ID
+func (r *BusRepository) GetBusByID(id string) (*models.Bus, error) {
+	query := `
+		SELECT 
+			b.id::text,
+			COALESCE(b.bus_owner_id::text, ''),
+			COALESCE(b.permit_id::text, ''),
+			COALESCE(b.seat_layout_id::text, ''),
+			COALESCE(b.bus_number, ''),
+			COALESCE(bo.company_name, ''),
+			COALESCE(bo.identity_or_incorporation_no, ''),
+			COALESCE(bo.business_email, ''),
+			COALESCE(bo.business_phone, ''),
+			COALESCE(rp.permit_number, ''),
+			COALESCE(b.license_plate, ''),
+			COALESCE(bslt.total_seats, rp.approved_seating_capacity, 0) as total_seats,
+			COALESCE(b.bus_type, 'Standard'),
+			COALESCE(mr.route_name, 'Unknown Route') as route_name,
+			COALESCE(rp.approved_fare::float8, 0.0),
+			COALESCE(b.status, 'Inactive'),
+			COALESCE(rp.status::text, 'Pending') as verification_status,
+			COALESCE(rp.verification_documents::text, '{}')
+		FROM buses b
+		LEFT JOIN bus_owners bo ON b.bus_owner_id = bo.id
+		LEFT JOIN route_permits rp ON b.permit_id = rp.id
+		LEFT JOIN master_routes mr ON rp.master_route_id = mr.id
+		LEFT JOIN bus_seat_layout_templates bslt ON b.seat_layout_id = bslt.id
+		WHERE b.id = $1
+	`
+
+	var bus models.Bus
+	var verificationDocsStr sql.NullString
+	var seatLayoutID sql.NullString
+
+	err := r.db.QueryRow(query, id).Scan(
+		&bus.ID,
+		&bus.BusOwnerID,
+		&bus.PermitID,
+		&seatLayoutID,
+		&bus.BusNumber,
+		&bus.CompanyName,
+		&bus.IdentifyOrIncorporationNo,
+		&bus.BusinessEmail,
+		&bus.BusinessPhone,
+		&bus.PermitNumber,
+		&bus.LicensePlate,
+		&bus.TotalSeats,
+		&bus.BusType,
+		&bus.CustomRouteName,
+		&bus.FarePerSeat,
+		&bus.Status,
+		&bus.VerificationStatus,
+		&verificationDocsStr,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Or custom error
+		}
+		return nil, fmt.Errorf("error getting bus by id: %v", err)
+	}
+
+	bus.SeatLayoutID = seatLayoutID
+
+	if verificationDocsStr.Valid && verificationDocsStr.String != "" {
+		if err := json.Unmarshal([]byte(verificationDocsStr.String), &bus.VerificationDocuments); err != nil {
+			bus.VerificationDocuments = []string{}
+		}
+	}
+
+	return &bus, nil
+}
+
+// CreateBus creates a new bus record along with owner and permit details
+func (r *BusRepository) CreateBus(bus *models.Bus) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	// 1. Insert/Get Bus Owner
+	var busOwnerID string
+	// Check if owner exists
+	err = tx.QueryRow(`SELECT id FROM bus_owners WHERE identity_or_incorporation_no = $1`, bus.IdentifyOrIncorporationNo).Scan(&busOwnerID)
+	if err == sql.ErrNoRows {
+		// Create new owner
+		// Use an existing user ID for the owner (required by FK constraint)
+		var userID string
+		err = tx.QueryRow("SELECT id FROM users LIMIT 1").Scan(&userID)
+		if err != nil {
+			return fmt.Errorf("error finding a valid user for bus owner: %v", err)
+		}
+
+		err = tx.QueryRow(`
+			INSERT INTO bus_owners (user_id, company_name, identity_or_incorporation_no, business_email, business_phone)
+			VALUES ($1, $2, $3, $4, $5)
+			RETURNING id
+		`, userID, bus.CompanyName, bus.IdentifyOrIncorporationNo, bus.BusinessEmail, bus.BusinessPhone).Scan(&busOwnerID)
+		if err != nil {
+			return fmt.Errorf("error creating bus owner: %v", err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("error checking bus owner: %v", err)
+	}
+
+	// 2. Insert/Get Master Route
+	var masterRouteID string
+	// Check if route exists
+	err = tx.QueryRow(`SELECT id FROM master_routes WHERE route_name = $1`, bus.CustomRouteName).Scan(&masterRouteID)
+	if err == sql.ErrNoRows {
+		// Create new route
+		// We insert id because it has a not-null constraint and likely no default value.
+		// 'route_id' column does not exist in this schema.
+		err = tx.QueryRow(`
+			INSERT INTO master_routes (id, route_name, route_number, origin_city, destination_city)
+			VALUES (uuid_generate_v4(), $1, 'TEMP-' || substring(md5(random()::text) from 1 for 6), 'Unknown', 'Unknown')
+			RETURNING id
+		`, bus.CustomRouteName).Scan(&masterRouteID)
+		if err != nil {
+			return fmt.Errorf("error creating master route: %v", err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("error checking master route: %v", err)
+	}
+
+	// 3. Insert Route Permit
+	var permitID string
+	// Convert verification documents to JSON string
+	docsJSON, _ := json.Marshal(bus.VerificationDocuments)
+
+	err = tx.QueryRow(`
+		INSERT INTO route_permits (
+			permit_number, 
+			approved_seating_capacity, 
+			approved_fare, 
+			status, 
+			verification_documents,
+			master_route_id,
+			bus_owner_id,
+			bus_registration_number,
+			issue_date,
+			expiry_date
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW() + interval '1 year')
+		RETURNING id
+	`, bus.PermitNumber, bus.TotalSeats, bus.FarePerSeat, strings.ToLower(bus.VerificationStatus), docsJSON, masterRouteID, busOwnerID, bus.LicensePlate).Scan(&permitID)
+	if err != nil {
+		return fmt.Errorf("error creating route permit: %v", err)
+	}
+
+	// 4. Insert Bus
+	query := `
+		INSERT INTO buses (
+			bus_owner_id,
+			permit_id,
+			bus_number,
+			license_plate,
+			bus_type,
+			seat_layout_id,
+			status,
+			has_wifi,
+			has_ac,
+			has_charging_ports,
+			has_entertainment,
+			has_refreshments
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		RETURNING id
+	`
+
+	err = tx.QueryRow(query,
+		busOwnerID,
+		permitID,
+		bus.BusNumber,
+		bus.LicensePlate,
+		bus.BusType,
+		bus.SeatLayoutID,
+		bus.Status,
+		// bus.BusinessPhone, // Removed contact as it doesn't exist in buses table
+		false, // has_wifi
+		false, // has_ac
+		false, // has_charging_ports
+		false, // has_entertainment
+		false, // has_refreshments
+	).Scan(&bus.ID)
+
+	if err != nil {
+		return fmt.Errorf("error creating bus: %v", err)
+	}
+
+	return tx.Commit()
+}
+
+// UpdateBus updates an existing bus record and its related entities
+func (r *BusRepository) UpdateBus(bus *models.Bus) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	// 1. Get existing foreign keys
+	var busOwnerID, permitID string
+	err = tx.QueryRow(`SELECT bus_owner_id, permit_id FROM buses WHERE id = $1`, bus.ID).Scan(&busOwnerID, &permitID)
+	if err != nil {
+		return fmt.Errorf("error finding bus: %v", err)
+	}
+
+	// 2. Update Bus Owner
+	_, err = tx.Exec(`
+		UPDATE bus_owners 
+		SET company_name = $1, 
+			identity_or_incorporation_no = $2, 
+			business_email = $3, 
+			business_phone = $4
+		WHERE id = $5
+	`, bus.CompanyName, bus.IdentifyOrIncorporationNo, bus.BusinessEmail, bus.BusinessPhone, busOwnerID)
+	if err != nil {
+		return fmt.Errorf("error updating bus owner: %v", err)
+	}
+
+	// 3. Handle Master Route (Find existing or Create new)
+	var masterRouteID string
+	err = tx.QueryRow(`SELECT id FROM master_routes WHERE route_name = $1`, bus.CustomRouteName).Scan(&masterRouteID)
+	if err == sql.ErrNoRows {
+		// Create new route
+		err = tx.QueryRow(`
+			INSERT INTO master_routes (id, route_name, route_number, origin_city, destination_city)
+			VALUES (uuid_generate_v4(), $1, 'TEMP-' || substring(md5(random()::text) from 1 for 6), 'Unknown', 'Unknown')
+			RETURNING id
+		`, bus.CustomRouteName).Scan(&masterRouteID)
+		if err != nil {
+			return fmt.Errorf("error creating master route: %v", err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("error checking master route: %v", err)
+	}
+
+	// 4. Update Route Permit
+	docsJSON, _ := json.Marshal(bus.VerificationDocuments)
+	_, err = tx.Exec(`
+		UPDATE route_permits 
+		SET permit_number = $1, 
+			approved_seating_capacity = $2, 
+			approved_fare = $3, 
+			master_route_id = $4,
+			verification_documents = $5,
+			status = $6
+		WHERE id = $7
+	`, bus.PermitNumber, bus.TotalSeats, bus.FarePerSeat, masterRouteID, docsJSON, strings.ToLower(bus.VerificationStatus), permitID)
+	if err != nil {
+		return fmt.Errorf("error updating route permit: %v", err)
+	}
+
+	// 5. Update Bus
+	query := `
+		UPDATE buses SET
+			bus_number = $1,
+			license_plate = $2,
+			bus_type = $3,
+			seat_layout_id = $4,
+			status = $5,
+			updated_at = NOW()
+		WHERE id = $6
+	`
+
+	_, err = tx.Exec(query,
+		bus.BusNumber,
+		bus.LicensePlate,
+		bus.BusType,
+		bus.SeatLayoutID,
+		bus.Status,
+		bus.ID,
+	)
+
+	if err != nil {
+		return fmt.Errorf("error updating bus: %v", err)
+	}
+
+	return tx.Commit()
+}
+
+// DeleteBus deletes a bus record
+func (r *BusRepository) DeleteBus(id string) error {
+	query := `DELETE FROM buses WHERE id = $1`
+	_, err := r.db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("error deleting bus: %v", err)
+	}
+	return nil
+}
+
+// GetPendingBuses retrieves all buses with pending verification status
+func (r *BusRepository) GetPendingBuses() ([]models.Bus, error) {
+	query := `
+		SELECT 
+			b.id::text,
+			COALESCE(b.bus_owner_id::text, ''),
+			COALESCE(b.permit_id::text, ''),
+			COALESCE(b.seat_layout_id::text, ''),
+			COALESCE(b.bus_number, ''),
+			COALESCE(bo.company_name, ''),
+			COALESCE(bo.identity_or_incorporation_no, ''),
+			COALESCE(bo.business_email, ''),
+			COALESCE(bo.business_phone, ''),
+			COALESCE(rp.permit_number, ''),
+			COALESCE(b.license_plate, ''),
+			COALESCE(bslt.total_seats, rp.approved_seating_capacity, 0) as total_seats,
+			COALESCE(b.bus_type, 'Standard'),
+			COALESCE(mr.route_name, 'Unknown Route') as route_name,
+			COALESCE(rp.approved_fare::float8, 0.0),
+			COALESCE(b.status, 'Inactive'),
+			COALESCE(rp.status::text, 'Pending') as verification_status,
+			COALESCE(rp.verification_documents::text, '{}')
+		FROM buses b
+		LEFT JOIN bus_owners bo ON b.bus_owner_id = bo.id
+		LEFT JOIN route_permits rp ON b.permit_id = rp.id
+		LEFT JOIN master_routes mr ON rp.master_route_id = mr.id
+		LEFT JOIN bus_seat_layout_templates bslt ON b.seat_layout_id = bslt.id
+		WHERE rp.status = 'pending'
+	`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying pending buses: %v", err)
+	}
+	defer rows.Close()
+
+	buses := []models.Bus{}
+	for rows.Next() {
+		var bus models.Bus
+		var verificationDocsStr sql.NullString
+		var seatLayoutID sql.NullString
+
+		err := rows.Scan(
+			&bus.ID,
+			&bus.BusOwnerID,
+			&bus.PermitID,
+			&seatLayoutID,
+			&bus.BusNumber,
+			&bus.CompanyName,
+			&bus.IdentifyOrIncorporationNo,
+			&bus.BusinessEmail,
+			&bus.BusinessPhone,
+			&bus.PermitNumber,
+			&bus.LicensePlate,
+			&bus.TotalSeats,
+			&bus.BusType,
+			&bus.CustomRouteName,
+			&bus.FarePerSeat,
+			&bus.Status,
+			&bus.VerificationStatus,
+			&verificationDocsStr,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning bus row: %v", err)
+		}
+
+		bus.SeatLayoutID = seatLayoutID
+
+		if verificationDocsStr.Valid && verificationDocsStr.String != "" {
+			if err := json.Unmarshal([]byte(verificationDocsStr.String), &bus.VerificationDocuments); err != nil {
+				bus.VerificationDocuments = []string{}
+			}
+		}
+
+		buses = append(buses, bus)
+	}
+
+	return buses, nil
+}
+
+// UpdateBusVerification updates the verification status of a bus
+func (r *BusRepository) UpdateBusVerification(id string, status string) error {
+	// Note: Verification status is on the route_permit, not the bus itself directly in the new schema
+	// We need to find the permit associated with the bus and update it.
+	query := `UPDATE route_permits SET status = $1 WHERE id = (SELECT permit_id FROM buses WHERE id = $2)`
+	_, err := r.db.Exec(query, status, id)
+	if err != nil {
+		return fmt.Errorf("error updating bus verification status: %v", err)
+	}
+	return nil
+}

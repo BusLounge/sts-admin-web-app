@@ -31,21 +31,21 @@ export class BusManagementComponent implements OnInit {
   showAddBusModal = false;
   showEditBusModal = false;
 
-  newBus: Omit<Bus, 'bus_id'> = {
+  newBus: Omit<Bus, 'id'> = {
     bus_number: '',
-    company: '',
-    nic_number: '',
-    email: '',
-    contact: '',
-    permitNum: '',
-    regnum: '',
-    capacity: 0,
-    type: 'AC',
-    assigned_route_id: '',
-    approvedFare: 0,
-    is_active: true,
-    verificationStatus: 'Pending',
-    documents: []
+    company_name: '',
+    identify_or_incorporation_no: '',
+    business_email: '',
+    business_phone: '',
+    permit_number: '',
+    license_plate: '',
+    total_seats: 0,
+    bus_type: 'AC',
+    custom_route_name: '',
+    fare_per_seat: 0,
+    status: 'Active',
+    verification_status: 'Pending',
+    verification_documents: []
   };
 
   selectedBus: Bus | null = null;
@@ -74,6 +74,7 @@ export class BusManagementComponent implements OnInit {
       Chart.register(...registerables);
     }
     this.busService.buses$.subscribe(buses => {
+      console.log('Buses loaded in component:', buses);
       this.buses = buses;
       this.applyFilters();
       if (this.isBrowser) {
@@ -108,28 +109,36 @@ export class BusManagementComponent implements OnInit {
     this.showAddBusModal = false;
     this.newBus = {
       bus_number: '',
-      company: '',
-      nic_number: '',
-      email: '',
-      contact: '',
-      permitNum: '',
-      regnum: '',
-      capacity: 0,
-      type: 'AC',
-      assigned_route_id: '',
-      approvedFare: 0,
-      is_active: true,
-      verificationStatus: 'Pending',
-      documents: []
+      company_name: '',
+      identify_or_incorporation_no: '',
+      business_email: '',
+      business_phone: '',
+      permit_number: '',
+      license_plate: '',
+      total_seats: 0,
+      bus_type: 'AC',
+      custom_route_name: '',
+      fare_per_seat: 0,
+      status: 'Active',
+      verification_status: 'Pending',
+      verification_documents: []
     };
   }
 
   saveBus() {
-    if (this.newBus.bus_number && this.newBus.company && this.newBus.nic_number && this.newBus.email && this.newBus.contact && this.newBus.permitNum && this.newBus.regnum && this.newBus.capacity > 0 && this.newBus.assigned_route_id && this.newBus.approvedFare >= 0) {
-      this.busService.addBus(this.newBus);
-      this.closeAddBusModal();
+    if (this.newBus.bus_number && this.newBus.company_name && this.newBus.identify_or_incorporation_no && this.newBus.business_email && this.newBus.business_phone && this.newBus.permit_number && this.newBus.license_plate && this.newBus.total_seats > 0 && this.newBus.custom_route_name && this.newBus.fare_per_seat >= 0) {
+      this.busService.addBus(this.newBus).subscribe({
+        next: () => {
+          alert('Successfully added');
+          this.closeAddBusModal();
+        },
+        error: (err) => {
+          console.error('Error adding bus', err);
+          alert('Failed to add bus');
+        }
+      });
     } else {
-      if (this.newBus.capacity <= 0) {
+      if (this.newBus.total_seats <= 0) {
         alert('Seats must be greater than 0');
       } else {
         alert('Please fill all required fields');
@@ -143,9 +152,14 @@ export class BusManagementComponent implements OnInit {
   }
 
   saveEditBus() {
-    if (this.selectedBus && this.selectedBus.bus_number && this.selectedBus.company && this.selectedBus.nic_number && this.selectedBus.email && this.selectedBus.contact && this.selectedBus.permitNum && this.selectedBus.regnum && this.selectedBus.capacity > 0 && this.selectedBus.assigned_route_id && this.selectedBus.approvedFare >= 0) {
-      this.busService.updateBus(this.selectedBus);
-      this.closeEditBusModal();
+    if (this.selectedBus && this.selectedBus.bus_number && this.selectedBus.company_name && this.selectedBus.identify_or_incorporation_no && this.selectedBus.business_email && this.selectedBus.business_phone && this.selectedBus.permit_number && this.selectedBus.license_plate && this.selectedBus.total_seats > 0 && this.selectedBus.custom_route_name && this.selectedBus.fare_per_seat >= 0) {
+      this.busService.updateBus(this.selectedBus).subscribe({
+        next: () => {
+          alert('Successfully updated');
+          this.closeEditBusModal();
+        },
+        error: (err) => console.error('Error updating bus', err)
+      });
     } else {
       alert('Please fill all required fields');
     }
@@ -157,16 +171,25 @@ export class BusManagementComponent implements OnInit {
   }
 
   toggleActive(bus: Bus) {
-    bus.is_active = !bus.is_active;
-    console.log(`${bus.bus_number} is now ${bus.is_active ? 'Active' : 'Inactive'}`);
-    // Call backend API to update is_active status
+    bus.status = bus.status === 'Active' ? 'Inactive' : 'Active';
+    console.log(`${bus.bus_number} is now ${bus.status}`);
+    // Call backend API to update status
+    this.busService.updateBus(bus).subscribe({
+      error: (err) => {
+        console.error('Error updating status', err);
+        // Revert status on error
+        bus.status = bus.status === 'Active' ? 'Inactive' : 'Active';
+      }
+    });
   }
 
   deleteBus(bus: Bus) {
     const confirmed = confirm(`Are you sure you want to delete ${bus.bus_number}?`);
     if (confirmed) {
-      this.busService.deleteBus(bus.bus_id);
-      console.log(`${bus.bus_number} deleted`);
+      this.busService.deleteBus(bus.id).subscribe({
+        next: () => console.log(`${bus.bus_number} deleted`),
+        error: (err) => console.error('Error deleting bus', err)
+      });
     }
   }
 
@@ -177,17 +200,17 @@ export class BusManagementComponent implements OnInit {
 
     const tableHead = [['Bus ID', 'Company', 'Contact', 'Permit Num', 'Reg Num', 'Bus Type', 'Seats', 'Route', 'Approved Fare', 'Status', 'Verification Status']];
     const tableBody = this.buses.map(b => [
-      b.bus_id,
-      b.company,
-      b.contact,
-      b.permitNum,
-      b.regnum,
-      b.type,
-      String(b.capacity),
-      b.assigned_route_id,
-      String(b.approvedFare),
-      b.is_active ? 'Active' : 'Inactive',
-      b.verificationStatus
+      b.id,
+      b.company_name,
+      b.business_phone,
+      b.permit_number,
+      b.license_plate,
+      b.bus_type,
+      String(b.total_seats),
+      b.custom_route_name,
+      String(b.fare_per_seat),
+      b.status,
+      b.verification_status
     ]);
 
     autoTable(doc, {
@@ -207,25 +230,25 @@ export class BusManagementComponent implements OnInit {
   }
 
   getActiveCount(): number {
-    return this.buses.filter(bus => bus.is_active).length;
+    return this.buses.filter(bus => bus.status === 'Active').length;
   }
 
   getInactiveCount(): number {
-    return this.buses.filter(bus => !bus.is_active).length;
+    return this.buses.filter(bus => bus.status !== 'Active').length;
   }
 
   getAverageCapacity(): number {
     if (this.buses.length === 0) return 0;
-    const total = this.buses.reduce((sum, bus) => sum + bus.capacity, 0);
+    const total = this.buses.reduce((sum, bus) => sum + bus.total_seats, 0);
     return Math.round(total / this.buses.length);
   }
 
   getTotalCapacity(): number {
-    return this.buses.reduce((sum, bus) => sum + bus.capacity, 0);
+    return this.buses.reduce((sum, bus) => sum + bus.total_seats, 0);
   }
 
   getBusCountByType(type: string): number {
-    return this.buses.filter(bus => bus.type === type).length;
+    return this.buses.filter(bus => bus.bus_type === type).length;
   }
 
   getBusCountByTypePercentage(type: string): number {
@@ -302,16 +325,17 @@ export class BusManagementComponent implements OnInit {
     if (this.searchTerm.trim()) {
       filtered = filtered.filter(bus =>
         bus.bus_number.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        bus.bus_id.toString().includes(this.searchTerm) ||
-        bus.type.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        bus.assigned_route_id?.toString().includes(this.searchTerm) ||
-        bus.capacity.toString().includes(this.searchTerm)
+        bus.id.toString().includes(this.searchTerm) ||
+        bus.bus_type.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        bus.custom_route_name?.toString().includes(this.searchTerm) ||
+        bus.total_seats.toString().includes(this.searchTerm)
       );
     }
 
     // Apply status filter
     if (this.statusFilter !== 'all') {
-      filtered = filtered.filter(bus => bus.is_active === (this.statusFilter === 'active'));
+      const targetStatus = this.statusFilter === 'active' ? 'Active' : 'Inactive';
+      filtered = filtered.filter(bus => bus.status === targetStatus);
     }
 
     this.filteredBuses = filtered;
@@ -360,49 +384,49 @@ export class BusManagementComponent implements OnInit {
       let bValue: any;
 
       switch (this.sortColumn) {
-        case 'bus_id':
-          aValue = a.bus_id;
-          bValue = b.bus_id;
+        case 'id':
+          aValue = a.id;
+          bValue = b.id;
           break;
-        case 'company':
-          aValue = a.company.toLowerCase();
-          bValue = b.company.toLowerCase();
+        case 'company_name':
+          aValue = a.company_name.toLowerCase();
+          bValue = b.company_name.toLowerCase();
           break;
-        case 'contact':
-          aValue = a.contact.toLowerCase();
-          bValue = b.contact.toLowerCase();
+        case 'business_phone':
+          aValue = a.business_phone.toLowerCase();
+          bValue = b.business_phone.toLowerCase();
           break;
-        case 'permitNum':
-          aValue = a.permitNum.toLowerCase();
-          bValue = b.permitNum.toLowerCase();
+        case 'permit_number':
+          aValue = a.permit_number.toLowerCase();
+          bValue = b.permit_number.toLowerCase();
           break;
-        case 'regnum':
-          aValue = a.regnum.toLowerCase();
-          bValue = b.regnum.toLowerCase();
+        case 'license_plate':
+          aValue = a.license_plate.toLowerCase();
+          bValue = b.license_plate.toLowerCase();
           break;
-        case 'type':
-          aValue = a.type.toLowerCase();
-          bValue = b.type.toLowerCase();
+        case 'bus_type':
+          aValue = a.bus_type.toLowerCase();
+          bValue = b.bus_type.toLowerCase();
           break;
-        case 'capacity':
-          aValue = a.capacity;
-          bValue = b.capacity;
+        case 'total_seats':
+          aValue = a.total_seats;
+          bValue = b.total_seats;
           break;
-        case 'route_id':
-          aValue = a.assigned_route_id || '';
-          bValue = b.assigned_route_id || '';
+        case 'custom_route_name':
+          aValue = a.custom_route_name || '';
+          bValue = b.custom_route_name || '';
           break;
-        case 'approvedFare':
-          aValue = a.approvedFare;
-          bValue = b.approvedFare;
+        case 'fare_per_seat':
+          aValue = a.fare_per_seat;
+          bValue = b.fare_per_seat;
           break;
-        case 'is_active':
-          aValue = a.is_active ? 1 : 0;
-          bValue = b.is_active ? 1 : 0;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
           break;
-        case 'verificationStatus':
-          aValue = a.verificationStatus.toLowerCase();
-          bValue = b.verificationStatus.toLowerCase();
+        case 'verification_status':
+          aValue = a.verification_status.toLowerCase();
+          bValue = b.verification_status.toLowerCase();
           break;
         default:
           return 0;
@@ -427,20 +451,20 @@ export class BusManagementComponent implements OnInit {
 
   // Getters and setters for documents field to handle string/array conversion
   get newBusDocuments(): string {
-    return this.newBus.documents ? this.newBus.documents.join(', ') : '';
+    return this.newBus.verification_documents ? this.newBus.verification_documents.join(', ') : '';
   }
 
   set newBusDocuments(value: string) {
-    this.newBus.documents = value ? value.split(',').map(s => s.trim()).filter(s => s) : [];
+    this.newBus.verification_documents = value ? value.split(',').map(s => s.trim()).filter(s => s) : [];
   }
 
   get selectedBusDocuments(): string {
-    return this.selectedBus?.documents ? this.selectedBus.documents.join(', ') : '';
+    return this.selectedBus?.verification_documents ? this.selectedBus.verification_documents.join(', ') : '';
   }
 
   set selectedBusDocuments(value: string) {
     if (this.selectedBus) {
-      this.selectedBus.documents = value ? value.split(',').map(s => s.trim()).filter(s => s) : [];
+      this.selectedBus.verification_documents = value ? value.split(',').map(s => s.trim()).filter(s => s) : [];
     }
   }
 

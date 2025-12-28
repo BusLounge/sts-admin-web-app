@@ -130,38 +130,38 @@
   <table class="bus-table">
     <thead>
       <tr>
-        <th (click)="onSort('bus_id')" style="cursor: pointer;" title="Click to sort">
-          BusID {{ getSortIcon('bus_id') }}
+        <th (click)="onSort('id')" style="cursor: pointer;" title="Click to sort">
+          BusID {{ getSortIcon('id') }}
         </th>
-        <th (click)="onSort('company')" style="cursor: pointer;" title="Click to sort">
-          Company {{ getSortIcon('company') }}
+        <th (click)="onSort('company_name')" style="cursor: pointer;" title="Click to sort">
+          Company {{ getSortIcon('company_name') }}
         </th>
-        <th (click)="onSort('contact')" style="cursor: pointer;" title="Click to sort">
-          Contact Num {{ getSortIcon('contact') }}
+        <th (click)="onSort('business_phone')" style="cursor: pointer;" title="Click to sort">
+          Contact Num {{ getSortIcon('business_phone') }}
         </th>
-        <th (click)="onSort('permitNum')" style="cursor: pointer;" title="Click to sort">
-          permitNum {{ getSortIcon('permitNum') }}
+        <th (click)="onSort('permit_number')" style="cursor: pointer;" title="Click to sort">
+          permitNum {{ getSortIcon('permit_number') }}
         </th>
-        <th (click)="onSort('regnum')" style="cursor: pointer;" title="Click to sort">
-          Regnum {{ getSortIcon('regnum') }}
+        <th (click)="onSort('license_plate')" style="cursor: pointer;" title="Click to sort">
+          Regnum {{ getSortIcon('license_plate') }}
         </th>
-        <th (click)="onSort('type')" style="cursor: pointer;" title="Click to sort">
-          Type {{ getSortIcon('type') }}
+        <th (click)="onSort('bus_type')" style="cursor: pointer;" title="Click to sort">
+          Type {{ getSortIcon('bus_type') }}
         </th>
-        <th (click)="onSort('capacity')" style="cursor: pointer;" title="Click to sort">
-          Seats {{ getSortIcon('capacity') }}
+        <th (click)="onSort('total_seats')" style="cursor: pointer;" title="Click to sort">
+          Seats {{ getSortIcon('total_seats') }}
         </th>
-        <th (click)="onSort('route_id')" style="cursor: pointer;" title="Click to sort">
-          Route {{ getSortIcon('route_id') }}
+        <th (click)="onSort('custom_route_name')" style="cursor: pointer;" title="Click to sort">
+          Route {{ getSortIcon('custom_route_name') }}
         </th>
-        <th (click)="onSort('approvedFare')" style="cursor: pointer;" title="Click to sort">
-          Approved fare  {{ getSortIcon('approvedFare') }}
+        <th (click)="onSort('fare_per_seat')" style="cursor: pointer;" title="Click to sort">
+          Approved fare  {{ getSortIcon('fare_per_seat') }}
         </th>
-        <th (click)="onSort('is_active')" style="cursor: pointer;" title="Click to sort">
-          status {{ getSortIcon('is_active') }}
+        <th (click)="onSort('status')" style="cursor: pointer;" title="Click to sort">
+          status {{ getSortIcon('status') }}
         </th>
-        <th (click)="onSort('verificationStatus')" style="cursor: pointer;" title="Click to sort">
-          Verification  {{ getSortIcon('verificationStatus') }}
+        <th (click)="onSort('verification_status')" style="cursor: pointer;" title="Click to sort">
+          Verification  {{ getSortIcon('verification_status') }}
         </th>
         <th>Documents</th>
         <th>Action</th>
@@ -169,20 +169,20 @@
     </thead>
     <tbody>
       <tr *ngFor="let bus of filteredBuses">
-        <td>{{ bus.bus_id }}</td>
-        <td>{{ bus.company }}</td>
-        <td>{{ bus.contact }}</td>
-        <td>{{ bus.permitNum }}</td>
-        <td>{{ bus.regnum }}</td>
-        <td>{{ bus.type }}</td>
-        <td>{{ bus.capacity }}</td>
-        <td>{{ bus.assigned_route_id }}</td>
-        <td>{{ bus.approvedFare }}</td>
-        <td>{{ bus.is_active ? 'Active' : 'Inactive' }}</td>
-        <td>{{ bus.verificationStatus }}</td>
+        <td>{{ bus.id }}</td>
+        <td>{{ bus.company_name }}</td>
+        <td>{{ bus.business_phone }}</td>
+        <td>{{ bus.permit_number }}</td>
+        <td>{{ bus.license_plate }}</td>
+        <td>{{ bus.bus_type }}</td>
+        <td>{{ bus.total_seats }}</td>
+        <td>{{ bus.custom_route_name }}</td>
+        <td>{{ bus.fare_per_seat }}</td>
+        <td>{{ bus.status }}</td>
+        <td>{{ bus.verification_status }}</td>
         <td>
-          <div *ngIf="bus.documents && bus.documents.length > 0; else noDocuments">
-            <div *ngFor="let doc of bus.documents; let i = index">
+          <div *ngIf="bus.verification_documents && bus.verification_documents.length > 0; else noDocuments">
+            <div *ngFor="let doc of bus.verification_documents; let i = index">
               <a [href]="doc" target="_blank" class="document-link" title="Open document">
                 <i class="fas fa-external-link-alt"></i> Document {{ i + 1 }}
               </a>
@@ -207,67 +207,71 @@
       <form (ngSubmit)="saveBus()">
         <div class="form-section">
           <h3>Bus Owner Details</h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
             <div class="form-row">
               <label>Company</label>
-              <input type="text" [(ngModel)]="newBus.company" name="company" required />
+              <input type="text" [(ngModel)]="newBus.company_name" name="company_name" required />
             </div>
             <div class="form-row">
               <label>NIC Number</label>
-              <input type="text" [(ngModel)]="newBus.nic_number" name="nic_number" required />
+              <input type="text" [(ngModel)]="newBus.identify_or_incorporation_no" name="identify_or_incorporation_no" required />
             </div>
             <div class="form-row">
               <label>Email</label>
-              <input type="email" [(ngModel)]="newBus.email" name="email" required />
+              <input type="email" [(ngModel)]="newBus.business_email" name="business_email" required />
             </div>
             <div class="form-row">
               <label>Contact Num</label>
-              <input type="text" [(ngModel)]="newBus.contact" name="contact" required />
+              <input type="text" [(ngModel)]="newBus.business_phone" name="business_phone" required />
             </div>
           </div>
         </div>
 
         <div class="form-section">
           <h3>Bus Details</h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
             <div class="form-row">
               <label>Bus Number</label>
               <input type="text" [(ngModel)]="newBus.bus_number" name="bus_number" required />
             </div>
             <div class="form-row">
-              <label>Permit Number</label>
-              <input type="text" [(ngModel)]="newBus.permitNum" name="permitNum" required />
+              <label>PermitNum</label>
+              <input type="text" [(ngModel)]="newBus.permit_number" name="permit_number" required />
             </div>
             <div class="form-row">
-              <label>Registration Number</label>
-              <input type="text" [(ngModel)]="newBus.regnum" name="regnum" required />
+              <label>RegNum</label>
+              <input type="text" [(ngModel)]="newBus.license_plate" name="license_plate" required />
             </div>
             <div class="form-row">
               <label>Seats</label>
-              <input type="number" [(ngModel)]="newBus.capacity" name="capacity" required min="1" />
+              <input type="number" [(ngModel)]="newBus.total_seats" name="total_seats" required min="1" />
             </div>
             <div class="form-row">
               <label>Type</label>
-              <select [(ngModel)]="newBus.type" name="type">
-                <option value="AC">Normal</option>
-                <option value="Non-AC">Semi-Luxury</option>
+              <select [(ngModel)]="newBus.bus_type" name="bus_type">
+                <option value="Standard">Standard</option>
+                <option value="Normal">Normal</option>
+                <option value="Semi-Luxury">Semi-Luxury</option>
                 <option value="Luxury">Luxury</option>
+               
               </select>
             </div>
             <div class="form-row">
               <label>Route </label>
-              <input type="text" [(ngModel)]="newBus.assigned_route_id" name="assigned_route_id" required />
+              <input type="text" [(ngModel)]="newBus.custom_route_name" name="custom_route_name" required />
             </div>
             <div class="form-row">
               <label>Approved Fare</label>
-              <input type="number" [(ngModel)]="newBus.approvedFare" name="approvedFare" required min="0" />
+              <input type="number" [(ngModel)]="newBus.fare_per_seat" name="fare_per_seat" required min="0" />
             </div>
             <div class="form-row">
               <label>Status</label>
-              <input type="checkbox" [(ngModel)]="newBus.is_active" name="is_active" /> Active
+              <div style="display: flex; align-items: center; height: 38px;">
+                <input type="checkbox" [ngModel]="newBus.status === 'Active'" (ngModelChange)="newBus.status = $event ? 'Active' : 'Inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
+              </div>
             </div>
-            <div class="form-row">
-              <label>Document Links (Google Drive)</label>
+            <div class="form-row" style="grid-column: span 3;">
+              <label>Documents</label>
               <input type="text" [(ngModel)]="newBusDocuments" name="documents" placeholder="Enter Google Drive links separated by commas" />
             </div>
           </div>
@@ -287,67 +291,70 @@
       <form (ngSubmit)="saveEditBus()">
         <div class="form-section">
           <h3>Bus Owner Details</h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
             <div class="form-row">
               <label>Company</label>
-              <input type="text" [(ngModel)]="selectedBus.company" name="company" required />
+              <input type="text" [(ngModel)]="selectedBus.company_name" name="company_name" required />
             </div>
             <div class="form-row">
               <label>NIC Number</label>
-              <input type="text" [(ngModel)]="selectedBus.nic_number" name="nic_number" required />
+              <input type="text" [(ngModel)]="selectedBus.identify_or_incorporation_no" name="identify_or_incorporation_no" required />
             </div>
             <div class="form-row">
               <label>Email</label>
-              <input type="email" [(ngModel)]="selectedBus.email" name="email" required />
+              <input type="email" [(ngModel)]="selectedBus.business_email" name="business_email" required />
             </div>
             <div class="form-row">
               <label>Contact Num</label>
-              <input type="text" [(ngModel)]="selectedBus.contact" name="contact" required />
+              <input type="text" [(ngModel)]="selectedBus.business_phone" name="business_phone" required />
             </div>
           </div>
         </div>
 
         <div class="form-section">
           <h3>Bus Details</h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
             <div class="form-row">
               <label>Bus Number</label>
               <input type="text" [(ngModel)]="selectedBus.bus_number" name="bus_number" required />
             </div>
             <div class="form-row">
-              <label>Permit Number</label>
-              <input type="text" [(ngModel)]="selectedBus.permitNum" name="permitNum" required />
+              <label>PermitNum</label>
+              <input type="text" [(ngModel)]="selectedBus.permit_number" name="permit_number" required />
             </div>
             <div class="form-row">
-              <label>Registration Number</label>
-              <input type="text" [(ngModel)]="selectedBus.regnum" name="regnum" required />
+              <label>RegNum</label>
+              <input type="text" [(ngModel)]="selectedBus.license_plate" name="license_plate" required />
             </div>
             <div class="form-row">
               <label>Seats</label>
-              <input type="number" [(ngModel)]="selectedBus.capacity" name="capacity" required min="1" />
+              <input type="number" [(ngModel)]="selectedBus.total_seats" name="total_seats" required min="1" />
             </div>
             <div class="form-row">
               <label>Type</label>
-              <select [(ngModel)]="selectedBus.type" name="type">
-                <option value="AC">Normal</option>
-                <option value="Non-AC">Semi-Luxury</option>
+              <select [(ngModel)]="selectedBus.bus_type" name="bus_type">
+                <option value="Standard">Standard</option>
+                <option value="Normal">Normal</option>
+                <option value="Semi-Luxury">Semi-Luxury</option>
                 <option value="Luxury">Luxury</option>
               </select>
             </div>
             <div class="form-row">
-              <label>Route ID</label>
-              <input type="text" [(ngModel)]="selectedBus.assigned_route_id" name="assigned_route_id" required />
+              <label>Route</label>
+              <input type="text" [(ngModel)]="selectedBus.custom_route_name" name="custom_route_name" required />
             </div>
             <div class="form-row">
               <label>Approved Fare</label>
-              <input type="number" [(ngModel)]="selectedBus.approvedFare" name="approvedFare" required min="0" />
+              <input type="number" [(ngModel)]="selectedBus.fare_per_seat" name="fare_per_seat" required min="0" />
             </div>
             <div class="form-row">
               <label>Status</label>
-              <input type="checkbox" [(ngModel)]="selectedBus.is_active" name="is_active" /> Active
+              <div style="display: flex; align-items: center; height: 38px;">
+                <input type="checkbox" [ngModel]="selectedBus.status === 'Active'" (ngModelChange)="selectedBus.status = $event ? 'Active' : 'Inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
+              </div>
             </div>
-            <div class="form-row">
-              <label>Document Links (Google Drive)</label>
+            <div class="form-row" style="grid-column: span 3;">
+              <label>Documents</label>
               <input type="text" [(ngModel)]="selectedBusDocuments" name="documents" placeholder="Enter Google Drive links separated by commas" />
             </div>
           </div>
