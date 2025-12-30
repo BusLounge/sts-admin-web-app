@@ -10,6 +10,7 @@ import { ConductorService } from '../../core/services/conductor.service';
 import { Conductor } from '../../core/models/conductor.model';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-conductor-management',
@@ -25,6 +26,7 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   statusFilter: string = 'All';
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
   showNotificationPanel = false;
+  showProfileMenu = false;
 
   showAddConductorModal = false;
   showEditConductorModal = false;
@@ -35,9 +37,9 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
     experience_years: 0,
     license_number: '',
     license_expiry_date: new Date().toISOString().split('T')[0],
-    verification_status: 'Pending',
+    verification_status: 'pending',
     verification_notes: '',
-    status: 'Active',
+    status: 'active',
     hire_date: new Date().toISOString().split('T')[0]
   };
 
@@ -54,7 +56,7 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   @ViewChild('barChartCanvas', { static: false }) barChartCanvas!: ElementRef<HTMLCanvasElement>;
   chart: Chart | null = null;
 
-  constructor(private router: Router, private conductorService: ConductorService, @Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private router: Router, private conductorService: ConductorService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -84,9 +86,9 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
       experience_years: 0,
       license_number: '',
       license_expiry_date: new Date().toISOString().split('T')[0],
-      verification_status: 'Pending',
+      verification_status: 'pending',
       verification_notes: '',
-      status: 'Active',
+      status: 'active',
       hire_date: new Date().toISOString().split('T')[0]
     };
   }
@@ -106,9 +108,15 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
         id: '' // Backend will generate
       }).subscribe({
         next: () => {
+          console.log('✓ Conductor added successfully');
+          alert('Conductor added successfully');
+          this.conductorService.loadConductors(); // Reload conductors to refresh the list
           this.closeAddConductorModal();
         },
-        error: (err) => console.error('Failed to add conductor', err)
+        error: (err) => {
+          console.error('✗ Failed to add conductor:', err);
+          alert(`Failed to add conductor: ${err.error?.error || err.message || 'Unknown error'}`);
+        }
       });
     } else {
       alert('Please fill all required fields');
@@ -129,6 +137,7 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
     if (this.selectedConductor) {
       this.conductorService.updateConductor(this.selectedConductor).subscribe({
         next: () => {
+          this.conductorService.loadConductors(); // Reload conductors to refresh the list
           this.closeEditConductorModal();
         },
         error: (err) => console.error('Failed to update conductor', err)
@@ -139,15 +148,33 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   toggleStatus(conductor: Conductor) {
     const statusOptions: Array<string> = ['Active', 'On Leave', 'Resigned'];
     const currentIndex = statusOptions.indexOf(conductor.status);
-    conductor.status = statusOptions[(currentIndex + 1) % statusOptions.length];
-    console.log(`${conductor.name} status changed to ${conductor.status}`);
+    const newStatus = statusOptions[(currentIndex + 1) % statusOptions.length];
+    
+    // Update the conductor object with new status
+    const updatedConductor = { ...conductor, status: newStatus };
+    
+    // Save to backend
+    this.conductorService.updateConductor(updatedConductor).subscribe({
+      next: (updated) => {
+        console.log(`${conductor.name} status updated to ${newStatus}`);
+        this.conductorService.loadConductors(); // Reload to reflect changes
+      },
+      error: (err) => {
+        console.error('Failed to update conductor:', err);
+        alert(`Failed to update conductor: ${err.error?.error || err.message}`);
+        this.conductorService.loadConductors(); // Reload to revert UI changes
+      }
+    });
   }
 
   deleteConductor(conductor: Conductor) {
     const confirmed = confirm(`Are you sure you want to delete ${conductor.name}?`);
     if (confirmed) {
       this.conductorService.deleteConductor(conductor.id).subscribe({
-        next: () => console.log(`${conductor.name} deleted`),
+        next: () => {
+          console.log(`${conductor.name} deleted`);
+          this.conductorService.loadConductors(); // Reload conductors to refresh the list
+        },
         error: (err) => console.error('Failed to delete conductor', err)
       });
     }
@@ -184,9 +211,9 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
 
   // Stats helpers
   getTotalConductors(): number { return this.conductors.length; }
-  getActiveCount(): number { return this.conductors.filter(c => c.status === 'Active').length; }
-  getOnLeaveCount(): number { return this.conductors.filter(c => c.status === 'On Leave').length; }
-  getResignedCount(): number { return this.conductors.filter(c => c.status === 'Resigned').length; }
+  getActiveCount(): number { return this.conductors.filter(c => c.status.toLowerCase() === 'active').length; }
+  getOnLeaveCount(): number { return this.conductors.filter(c => c.status.toLowerCase() === 'on leave').length; }
+  getResignedCount(): number { return this.conductors.filter(c => c.status.toLowerCase() === 'resigned').length; }
   getAverageExperience(): number {
     if (this.conductors.length === 0) return 0;
     const total = this.conductors.reduce((sum, c) => sum + c.experience_years, 0);
@@ -203,9 +230,9 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   
   // Filtered stats helpers for pie chart
   getFilteredTotalConductors(): number { return this.filteredConductors.length; }
-  getFilteredActiveCount(): number { return this.filteredConductors.filter(c => c.status === 'Active').length; }
+  getFilteredActiveCount(): number { return this.filteredConductors.filter(c => c.status.toLowerCase() === 'active').length; }
   // Treat any non-active status as Inactive for charts
-  getFilteredInactiveCount(): number { return this.filteredConductors.filter(c => c.status !== 'Active').length; }
+  getFilteredInactiveCount(): number { return this.filteredConductors.filter(c => c.status.toLowerCase() !== 'active').length; }
 
   // Search and filter functionality
   onSearchChange(): void {
@@ -221,15 +248,23 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
 
     // Apply status filter
     if (this.statusFilter !== 'All') {
-      filtered = filtered.filter(c => c.status === this.statusFilter);
+      filtered = filtered.filter(c => c.status.toLowerCase() === this.statusFilter.toLowerCase());
     }
 
-    // Apply search filter
+    // Apply search filter - search across all columns
     if (this.searchTerm.trim()) {
+      const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(conductor =>
-        conductor.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        conductor.contact_number.includes(this.searchTerm) ||
-        conductor.id.toLowerCase().includes(this.searchTerm.toLowerCase())
+        conductor.name.toLowerCase().includes(searchLower) ||
+        conductor.contact_number.toLowerCase().includes(searchLower) ||
+        conductor.id.toLowerCase().includes(searchLower) ||
+        conductor.experience_years.toString().includes(this.searchTerm) ||
+        conductor.license_number.toLowerCase().includes(searchLower) ||
+        conductor.license_expiry_date.toLowerCase().includes(searchLower) ||
+        (conductor.verification_status?.toLowerCase() || '').includes(searchLower) ||
+        (conductor.verification_notes?.toLowerCase() || '').includes(searchLower) ||
+        conductor.status.toLowerCase().includes(searchLower) ||
+        conductor.hire_date.toLowerCase().includes(searchLower)
       );
     }
 
@@ -399,9 +434,18 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
       }
     }
   }
-  goUserProfile() {
-  this.router.navigate(['/user-profile']);
-}
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
+  }
+
   updateBarChart(): void {
     if (this.chart) {
       this.chart.data.datasets[0].data = [

@@ -171,6 +171,12 @@ func (r *BusRepository) GetBusByID(id string) (*models.Bus, error) {
 
 // CreateBus creates a new bus record along with owner and permit details
 func (r *BusRepository) CreateBus(bus *models.Bus) error {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Panic in CreateBus: %v\n", r)
+		}
+	}()
+
 	tx, err := r.db.Begin()
 	if err != nil {
 		return fmt.Errorf("error starting transaction: %v", err)
@@ -179,24 +185,43 @@ func (r *BusRepository) CreateBus(bus *models.Bus) error {
 
 	// 1. Insert/Get Bus Owner
 	var busOwnerID string
-	// Check if owner exists
+	// Check if owner exists by identity_or_incorporation_no
 	err = tx.QueryRow(`SELECT id FROM bus_owners WHERE identity_or_incorporation_no = $1`, bus.IdentifyOrIncorporationNo).Scan(&busOwnerID)
+	
 	if err == sql.ErrNoRows {
-		// Create new owner
-		// Use an existing user ID for the owner (required by FK constraint)
+		// Owner doesn't exist, try to find a user that doesn't already have a bus_owner
 		var userID string
-		err = tx.QueryRow("SELECT id FROM users LIMIT 1").Scan(&userID)
-		if err != nil {
-			return fmt.Errorf("error finding a valid user for bus owner: %v", err)
-		}
-
 		err = tx.QueryRow(`
-			INSERT INTO bus_owners (user_id, company_name, identity_or_incorporation_no, business_email, business_phone)
-			VALUES ($1, $2, $3, $4, $5)
-			RETURNING id
-		`, userID, bus.CompanyName, bus.IdentifyOrIncorporationNo, bus.BusinessEmail, bus.BusinessPhone).Scan(&busOwnerID)
-		if err != nil {
-			return fmt.Errorf("error creating bus owner: %v", err)
+			SELECT u.id FROM users u
+			LEFT JOIN bus_owners bo ON u.id = bo.user_id
+			WHERE bo.id IS NULL
+			LIMIT 1
+		`).Scan(&userID)
+		
+		if err == sql.ErrNoRows {
+			// All users have bus_owners, create without user_id (set to NULL if allowed)
+			// Or we could create a new default user here
+			// For now, let's skip the user_id requirement
+			err = tx.QueryRow(`
+				INSERT INTO bus_owners (company_name, identity_or_incorporation_no, business_email, business_phone)
+				VALUES ($1, $2, $3, $4)
+				RETURNING id
+			`, bus.CompanyName, bus.IdentifyOrIncorporationNo, bus.BusinessEmail, bus.BusinessPhone).Scan(&busOwnerID)
+			if err != nil {
+				return fmt.Errorf("error creating bus owner: %v", err)
+			}
+		} else if err != nil {
+			return fmt.Errorf("error finding available user: %v", err)
+		} else {
+			// Found an available user, create bus_owner with user_id
+			err = tx.QueryRow(`
+				INSERT INTO bus_owners (user_id, company_name, identity_or_incorporation_no, business_email, business_phone)
+				VALUES ($1, $2, $3, $4, $5)
+				RETURNING id
+			`, userID, bus.CompanyName, bus.IdentifyOrIncorporationNo, bus.BusinessEmail, bus.BusinessPhone).Scan(&busOwnerID)
+			if err != nil {
+				return fmt.Errorf("error creating bus owner: %v", err)
+			}
 		}
 	} else if err != nil {
 		return fmt.Errorf("error checking bus owner: %v", err)
@@ -248,6 +273,14 @@ func (r *BusRepository) CreateBus(bus *models.Bus) error {
 	}
 
 	// 4. Insert Bus
+	// Handle seat_layout_id - if not provided, set to NULL
+	var seatLayoutIDValue interface{}
+	if bus.SeatLayoutID.Valid {
+		seatLayoutIDValue = bus.SeatLayoutID.String
+	} else {
+		seatLayoutIDValue = nil
+	}
+
 	query := `
 		INSERT INTO buses (
 			bus_owner_id,
@@ -272,7 +305,7 @@ func (r *BusRepository) CreateBus(bus *models.Bus) error {
 		bus.BusNumber,
 		bus.LicensePlate,
 		bus.BusType,
-		bus.SeatLayoutID,
+		seatLayoutIDValue,
 		bus.Status,
 		// bus.BusinessPhone, // Removed contact as it doesn't exist in buses table
 		false, // has_wifi
@@ -348,6 +381,16 @@ func (r *BusRepository) UpdateBus(bus *models.Bus) error {
 	`, bus.PermitNumber, bus.TotalSeats, bus.FarePerSeat, masterRouteID, docsJSON, strings.ToLower(bus.VerificationStatus), permitID)
 	if err != nil {
 		return fmt.Errorf("error updating route permit: %v", err)
+	}
+
+	// 4b. Update bus_owners verification_status to match route_permits status
+	_, err = tx.Exec(`
+		UPDATE bus_owners 
+		SET verification_status = $1
+		WHERE id = $2
+	`, strings.ToLower(bus.VerificationStatus), busOwnerID)
+	if err != nil {
+		return fmt.Errorf("error updating bus owner verification status: %v", err)
 	}
 
 	// 5. Update Bus
@@ -470,12 +513,45 @@ func (r *BusRepository) GetPendingBuses() ([]models.Bus, error) {
 
 // UpdateBusVerification updates the verification status of a bus
 func (r *BusRepository) UpdateBusVerification(id string, status string) error {
-	// Note: Verification status is on the route_permit, not the bus itself directly in the new schema
-	// We need to find the permit associated with the bus and update it.
-	query := `UPDATE route_permits SET status = $1 WHERE id = (SELECT permit_id FROM buses WHERE id = $2)`
-	_, err := r.db.Exec(query, status, id)
+	// Use transaction to update both route_permits and bus_owners
+	tx, err := r.db.Begin()
 	if err != nil {
-		return fmt.Errorf("error updating bus verification status: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
 	}
+	defer tx.Rollback()
+
+	// Convert status to lowercase to match database enum (pending, verified, rejected)
+	status = strings.ToLower(status)
+	fmt.Printf("UpdateBusVerification: bus_id=%s, status=%s\n", id, status)
+
+	// Get permit_id and bus_owner_id first to debug
+	var permitID, busOwnerID string
+	err = tx.QueryRow(`SELECT permit_id, bus_owner_id FROM buses WHERE id = $1`, id).Scan(&permitID, &busOwnerID)
+	if err != nil {
+		return fmt.Errorf("error getting bus foreign keys: %v", err)
+	}
+	fmt.Printf("Found: permit_id=%s, bus_owner_id=%s\n", permitID, busOwnerID)
+
+	// 1. Update route_permits status
+	result, err := tx.Exec(`UPDATE route_permits SET status = $1 WHERE id = $2`, status, permitID)
+	if err != nil {
+		return fmt.Errorf("error updating route permit verification status: %v", err)
+	}
+	rowsAffected, _ := result.RowsAffected()
+	fmt.Printf("Updated route_permits: %d rows\n", rowsAffected)
+
+	// 2. Update bus_owners verification_status
+	result, err = tx.Exec(`UPDATE bus_owners SET verification_status = $1 WHERE id = $2`, status, busOwnerID)
+	if err != nil {
+		return fmt.Errorf("error updating bus owner verification status: %v", err)
+	}
+	rowsAffected, _ = result.RowsAffected()
+	fmt.Printf("Updated bus_owners: %d rows\n", rowsAffected)
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	fmt.Printf("✓ Successfully committed both updates\n")
 	return nil
 }

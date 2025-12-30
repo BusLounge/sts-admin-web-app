@@ -64,6 +64,112 @@ func (r *StaffRepository) GetDrivers() ([]models.Driver, error) {
 	return drivers, nil
 }
 
+// GetPendingDrivers retrieves drivers with pending verification
+func (r *StaffRepository) GetPendingDrivers() ([]models.Driver, error) {
+	query := `
+		SELECT 
+			bs.id::text,
+			COALESCE(bs.emergency_contact_name, ''),
+			COALESCE(bs.emergency_contact, ''),
+			COALESCE(bs.license_number, ''),
+			COALESCE(bs.license_expiry_date::text, ''),
+			COALESCE(bs.experience_years, 0),
+			COALESCE(bs.verification_status::text, 'Pending'),
+			COALESCE(bs.verification_notes, ''),
+			COALESCE(bse.employment_status::text, 'Active'),
+			COALESCE(bse.hire_date::text, '')
+		FROM bus_staff bs
+		LEFT JOIN bus_staff_employment bse ON bs.id = bse.staff_id
+		WHERE bs.staff_type = 'driver' AND LOWER(bs.verification_status::text) = 'pending'
+	`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying pending drivers: %v", err)
+	}
+	defer rows.Close()
+
+	drivers := []models.Driver{}
+	for rows.Next() {
+		var d models.Driver
+		err := rows.Scan(
+			&d.ID,
+			&d.Name,
+			&d.ContactNumber,
+			&d.LicenseNumber,
+			&d.LicenseExpiryDate,
+			&d.ExperienceYears,
+			&d.VerificationStatus,
+			&d.VerificationNotes,
+			&d.Status,
+			&d.HireDate,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning pending driver: %v", err)
+		}
+		drivers = append(drivers, d)
+	}
+
+	return drivers, nil
+}
+
+// GetDriverByID retrieves a single driver by ID
+func (r *StaffRepository) GetDriverByID(id string) (*models.Driver, error) {
+	query := `
+		SELECT 
+			bs.id::text,
+			COALESCE(bs.emergency_contact_name, ''),
+			COALESCE(bs.emergency_contact, ''),
+			COALESCE(bs.license_number, ''),
+			COALESCE(bs.license_expiry_date::text, ''),
+			COALESCE(bs.experience_years, 0),
+			COALESCE(bs.verification_status::text, 'Pending'),
+			COALESCE(bs.verification_notes, ''),
+			COALESCE(bse.employment_status::text, 'Active'),
+			COALESCE(bse.hire_date::text, '')
+		FROM bus_staff bs
+		LEFT JOIN bus_staff_employment bse ON bs.id = bse.staff_id
+		WHERE bs.id = $1 AND bs.staff_type = 'driver'
+	`
+
+	var d models.Driver
+	err := r.db.QueryRow(query, id).Scan(
+		&d.ID,
+		&d.Name,
+		&d.ContactNumber,
+		&d.LicenseNumber,
+		&d.LicenseExpiryDate,
+		&d.ExperienceYears,
+		&d.VerificationStatus,
+		&d.VerificationNotes,
+		&d.Status,
+		&d.HireDate,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("error querying driver by ID: %v", err)
+	}
+	return &d, nil
+}
+
+// UpdateDriverVerification updates the verification status of a driver
+func (r *StaffRepository) UpdateDriverVerification(id string, status string) error {
+	// Map 'verified' to 'approved' to match database enum values
+	if strings.ToLower(status) == "verified" {
+		status = "approved"
+	} else {
+		status = strings.ToLower(status)
+	}
+	_, err := r.db.Exec(`
+		UPDATE bus_staff 
+		SET verification_status = $1 
+		WHERE id = $2 AND staff_type = 'driver'
+	`, status, id)
+	return err
+}
+
 // CreateDriver creates a new driver
 func (r *StaffRepository) CreateDriver(d *models.Driver) error {
 	tx, err := r.db.Begin()
@@ -72,10 +178,27 @@ func (r *StaffRepository) CreateDriver(d *models.Driver) error {
 	}
 	defer tx.Rollback()
 
+	// Find an available user_id (user without existing bus_staff record)
+	var userID string
+	err = tx.QueryRow(`
+		SELECT u.id FROM users u
+		LEFT JOIN bus_staff bs ON u.id = bs.user_id
+		WHERE bs.id IS NULL
+		LIMIT 1
+	`).Scan(&userID)
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("no available users found. Please create a user account first")
+		}
+		return fmt.Errorf("error finding available user: %v", err)
+	}
+
 	// Insert into bus_staff
 	var staffID string
 	err = tx.QueryRow(`
 		INSERT INTO bus_staff (
+			user_id,
 			staff_type,
 			emergency_contact_name,
 			emergency_contact,
@@ -84,9 +207,9 @@ func (r *StaffRepository) CreateDriver(d *models.Driver) error {
 			experience_years,
 			verification_status,
 			verification_notes
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		RETURNING id
-	`, "driver", d.Name, d.ContactNumber, d.LicenseNumber, d.LicenseExpiryDate, d.ExperienceYears, d.VerificationStatus, d.VerificationNotes).Scan(&staffID)
+	`, userID, "driver", d.Name, d.ContactNumber, d.LicenseNumber, d.LicenseExpiryDate, d.ExperienceYears, d.VerificationStatus, d.VerificationNotes).Scan(&staffID)
 
 	if err != nil {
 		return fmt.Errorf("error inserting driver into bus_staff: %v", err)
@@ -94,14 +217,30 @@ func (r *StaffRepository) CreateDriver(d *models.Driver) error {
 
 	d.ID = staffID
 
+	// Find an available bus_owner_id
+	var busOwnerID string
+	err = tx.QueryRow(`
+		SELECT id FROM bus_owners
+		ORDER BY id
+		LIMIT 1
+	`).Scan(&busOwnerID)
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("no bus owners found. Please create a bus first")
+		}
+		return fmt.Errorf("error finding bus owner: %v", err)
+	}
+
 	// Insert into bus_staff_employment
 	_, err = tx.Exec(`
 		INSERT INTO bus_staff_employment (
 			staff_id,
+			bus_owner_id,
 			employment_status,
 			hire_date
-		) VALUES ($1, $2, $3)
-	`, staffID, d.Status, d.HireDate)
+		) VALUES ($1, $2, $3, $4)
+	`, staffID, busOwnerID, strings.ToLower(d.Status), d.HireDate)
 
 	if err != nil {
 		return fmt.Errorf("error inserting driver employment: %v", err)
@@ -213,6 +352,112 @@ func (r *StaffRepository) GetConductors() ([]models.Conductor, error) {
 	return conductors, nil
 }
 
+// GetPendingConductors retrieves conductors with pending verification
+func (r *StaffRepository) GetPendingConductors() ([]models.Conductor, error) {
+	query := `
+		SELECT 
+			bs.id::text,
+			COALESCE(bs.emergency_contact_name, ''),
+			COALESCE(bs.emergency_contact, ''),
+			COALESCE(bs.license_number, ''),
+			COALESCE(bs.license_expiry_date::text, ''),
+			COALESCE(bs.experience_years, 0),
+			COALESCE(bs.verification_status::text, 'Pending'),
+			COALESCE(bs.verification_notes, ''),
+			COALESCE(bse.employment_status::text, 'Active'),
+			COALESCE(bse.hire_date::text, '')
+		FROM bus_staff bs
+		LEFT JOIN bus_staff_employment bse ON bs.id = bse.staff_id
+		WHERE bs.staff_type = 'conductor' AND LOWER(bs.verification_status::text) = 'pending'
+	`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying pending conductors: %v", err)
+	}
+	defer rows.Close()
+
+	conductors := []models.Conductor{}
+	for rows.Next() {
+		var c models.Conductor
+		err := rows.Scan(
+			&c.ID,
+			&c.Name,
+			&c.ContactNumber,
+			&c.LicenseNumber,
+			&c.LicenseExpiryDate,
+			&c.ExperienceYears,
+			&c.VerificationStatus,
+			&c.VerificationNotes,
+			&c.Status,
+			&c.HireDate,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning pending conductor: %v", err)
+		}
+		conductors = append(conductors, c)
+	}
+
+	return conductors, nil
+}
+
+// GetConductorByID retrieves a single conductor by ID
+func (r *StaffRepository) GetConductorByID(id string) (*models.Conductor, error) {
+	query := `
+		SELECT 
+			bs.id::text,
+			COALESCE(bs.emergency_contact_name, ''),
+			COALESCE(bs.emergency_contact, ''),
+			COALESCE(bs.license_number, ''),
+			COALESCE(bs.license_expiry_date::text, ''),
+			COALESCE(bs.experience_years, 0),
+			COALESCE(bs.verification_status::text, 'Pending'),
+			COALESCE(bs.verification_notes, ''),
+			COALESCE(bse.employment_status::text, 'Active'),
+			COALESCE(bse.hire_date::text, '')
+		FROM bus_staff bs
+		LEFT JOIN bus_staff_employment bse ON bs.id = bse.staff_id
+		WHERE bs.id = $1 AND bs.staff_type = 'conductor'
+	`
+
+	var c models.Conductor
+	err := r.db.QueryRow(query, id).Scan(
+		&c.ID,
+		&c.Name,
+		&c.ContactNumber,
+		&c.LicenseNumber,
+		&c.LicenseExpiryDate,
+		&c.ExperienceYears,
+		&c.VerificationStatus,
+		&c.VerificationNotes,
+		&c.Status,
+		&c.HireDate,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("error querying conductor by ID: %v", err)
+	}
+	return &c, nil
+}
+
+// UpdateConductorVerification updates the verification status of a conductor
+func (r *StaffRepository) UpdateConductorVerification(id string, status string) error {
+	// Map 'verified' to 'approved' to match database enum values
+	if strings.ToLower(status) == "verified" {
+		status = "approved"
+	} else {
+		status = strings.ToLower(status)
+	}
+	_, err := r.db.Exec(`
+		UPDATE bus_staff 
+		SET verification_status = $1 
+		WHERE id = $2 AND staff_type = 'conductor'
+	`, status, id)
+	return err
+}
+
 // CreateConductor creates a new conductor
 func (r *StaffRepository) CreateConductor(c *models.Conductor) error {
 	tx, err := r.db.Begin()
@@ -221,10 +466,27 @@ func (r *StaffRepository) CreateConductor(c *models.Conductor) error {
 	}
 	defer tx.Rollback()
 
+	// Find an available user_id (user without existing bus_staff record)
+	var userID string
+	err = tx.QueryRow(`
+		SELECT u.id FROM users u
+		LEFT JOIN bus_staff bs ON u.id = bs.user_id
+		WHERE bs.id IS NULL
+		LIMIT 1
+	`).Scan(&userID)
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("no available users found. Please create a user account first")
+		}
+		return fmt.Errorf("error finding available user: %v", err)
+	}
+
 	// Insert into bus_staff
 	var staffID string
 	err = tx.QueryRow(`
 		INSERT INTO bus_staff (
+			user_id,
 			staff_type,
 			emergency_contact_name,
 			emergency_contact,
@@ -233,9 +495,9 @@ func (r *StaffRepository) CreateConductor(c *models.Conductor) error {
 			experience_years,
 			verification_status,
 			verification_notes
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		RETURNING id
-	`, "conductor", c.Name, c.ContactNumber, c.LicenseNumber, c.LicenseExpiryDate, c.ExperienceYears, c.VerificationStatus, c.VerificationNotes).Scan(&staffID)
+	`, userID, "conductor", c.Name, c.ContactNumber, c.LicenseNumber, c.LicenseExpiryDate, c.ExperienceYears, c.VerificationStatus, c.VerificationNotes).Scan(&staffID)
 
 	if err != nil {
 		return fmt.Errorf("error inserting conductor into bus_staff: %v", err)
@@ -243,14 +505,30 @@ func (r *StaffRepository) CreateConductor(c *models.Conductor) error {
 
 	c.ID = staffID
 
+	// Find an available bus_owner_id
+	var busOwnerID string
+	err = tx.QueryRow(`
+		SELECT id FROM bus_owners
+		ORDER BY id
+		LIMIT 1
+	`).Scan(&busOwnerID)
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("no bus owners found. Please create a bus first")
+		}
+		return fmt.Errorf("error finding bus owner: %v", err)
+	}
+
 	// Insert into bus_staff_employment
 	_, err = tx.Exec(`
 		INSERT INTO bus_staff_employment (
 			staff_id,
+			bus_owner_id,
 			employment_status,
 			hire_date
-		) VALUES ($1, $2, $3)
-	`, staffID, c.Status, c.HireDate)
+		) VALUES ($1, $2, $3, $4)
+	`, staffID, busOwnerID, strings.ToLower(c.Status), c.HireDate)
 
 	if err != nil {
 		return fmt.Errorf("error inserting conductor employment: %v", err)

@@ -9,6 +9,7 @@ import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BusService } from '../../core/services/bus.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 
 import { Bus } from '../../core/models/bus.model';
@@ -27,6 +28,7 @@ export class BusManagementComponent implements OnInit {
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   currentPage: string = 'bus-management';
   showNotificationPanel = false;
+  showProfileMenu = false;
 
   showAddBusModal = false;
   showEditBusModal = false;
@@ -40,10 +42,10 @@ export class BusManagementComponent implements OnInit {
     permit_number: '',
     license_plate: '',
     total_seats: 0,
-    bus_type: 'AC',
+    bus_type: 'Standard',
     custom_route_name: '',
     fare_per_seat: 0,
-    status: 'Active',
+    status: 'active',
     verification_status: 'Pending',
     verification_documents: []
   };
@@ -65,7 +67,7 @@ export class BusManagementComponent implements OnInit {
   barChartOptions: any;
   isBrowser: boolean;
 
-  constructor(private router: Router, private busService: BusService, @Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private router: Router, private busService: BusService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -89,8 +91,8 @@ export class BusManagementComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
-  goUserProfile() {
-    this.router.navigate(['/user-profile']);
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
   }
 
   toggleNotificationPanel() {
@@ -116,34 +118,100 @@ export class BusManagementComponent implements OnInit {
       permit_number: '',
       license_plate: '',
       total_seats: 0,
-      bus_type: 'AC',
+      bus_type: 'Standard',
       custom_route_name: '',
       fare_per_seat: 0,
-      status: 'Active',
+      status: 'active',
       verification_status: 'Pending',
       verification_documents: []
     };
   }
 
   saveBus() {
-    if (this.newBus.bus_number && this.newBus.company_name && this.newBus.identify_or_incorporation_no && this.newBus.business_email && this.newBus.business_phone && this.newBus.permit_number && this.newBus.license_plate && this.newBus.total_seats > 0 && this.newBus.custom_route_name && this.newBus.fare_per_seat >= 0) {
-      this.busService.addBus(this.newBus).subscribe({
-        next: () => {
-          alert('Successfully added');
-          this.closeAddBusModal();
-        },
-        error: (err) => {
-          console.error('Error adding bus', err);
-          alert('Failed to add bus');
-        }
-      });
-    } else {
-      if (this.newBus.total_seats <= 0) {
-        alert('Seats must be greater than 0');
-      } else {
-        alert('Please fill all required fields');
-      }
+    // Check each required field
+    const requiredFields = [
+      { name: 'bus_number', value: this.newBus.bus_number },
+      { name: 'company_name', value: this.newBus.company_name },
+      { name: 'identify_or_incorporation_no', value: this.newBus.identify_or_incorporation_no },
+      { name: 'business_email', value: this.newBus.business_email },
+      { name: 'business_phone', value: this.newBus.business_phone },
+      { name: 'permit_number', value: this.newBus.permit_number },
+      { name: 'license_plate', value: this.newBus.license_plate },
+      { name: 'custom_route_name', value: this.newBus.custom_route_name }
+    ];
+    
+    const missingFields = requiredFields.filter(f => !f.value);
+    if (missingFields.length > 0) {
+      alert(`Please fill all required fields: ${missingFields.map(f => f.name).join(', ')}`);
+      return;
     }
+    
+    if (this.newBus.total_seats <= 0) {
+      alert('Seats must be greater than 0');
+      return;
+    }
+    
+    if (this.newBus.fare_per_seat < 0) {
+      alert('Fare must be 0 or greater');
+      return;
+    }
+    
+    // Ensure verification_documents is an array
+    if (!this.newBus.verification_documents) {
+      this.newBus.verification_documents = [];
+    }
+    
+    // Create a clean copy of the bus object
+    const busData = {
+      bus_number: this.newBus.bus_number,
+      company_name: this.newBus.company_name,
+      identify_or_incorporation_no: this.newBus.identify_or_incorporation_no,
+      business_email: this.newBus.business_email,
+      business_phone: this.newBus.business_phone,
+      permit_number: this.newBus.permit_number,
+      license_plate: this.newBus.license_plate,
+      total_seats: this.newBus.total_seats,
+      bus_type: this.newBus.bus_type,
+      custom_route_name: this.newBus.custom_route_name,
+      fare_per_seat: this.newBus.fare_per_seat,
+      status: this.newBus.status,
+      verification_status: this.newBus.verification_status,
+      verification_documents: this.newBus.verification_documents || []
+    };
+    
+    console.log('Sending bus data to API:', busData);
+    this.busService.addBus(busData).subscribe({
+      next: (response) => {
+        console.log('✓ Bus added successfully:', response);
+        alert('Successfully added');
+        this.busService.loadBuses(); // Reload buses to refresh the list
+        this.closeAddBusModal();
+      },
+      error: (err) => {
+        console.error('✗ Failed to add bus:', err);
+        
+        // Parse the error message for user-friendly display
+        let errorMessage = 'Unknown error';
+        if (err.error?.error) {
+          const errorText = err.error.error;
+          if (errorText.includes('buses_license_plate_key')) {
+            errorMessage = `License plate "${busData.license_plate}" already exists. Please use a different registration number.`;
+          } else if (errorText.includes('buses_bus_number_key')) {
+            errorMessage = `Bus number "${busData.bus_number}" already exists. Please use a different bus number.`;
+          } else if (errorText.includes('buses_permit_number_key')) {
+            errorMessage = `Permit number "${busData.permit_number}" already exists. Please use a different permit number.`;
+          } else if (errorText.includes('duplicate key')) {
+            errorMessage = 'This bus details already exist in the system. Please check your input.';
+          } else {
+            errorMessage = errorText;
+          }
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        alert(`Failed to add bus: ${errorMessage}`);
+      }
+    });
   }
 
   closeEditBusModal() {
@@ -152,17 +220,93 @@ export class BusManagementComponent implements OnInit {
   }
 
   saveEditBus() {
-    if (this.selectedBus && this.selectedBus.bus_number && this.selectedBus.company_name && this.selectedBus.identify_or_incorporation_no && this.selectedBus.business_email && this.selectedBus.business_phone && this.selectedBus.permit_number && this.selectedBus.license_plate && this.selectedBus.total_seats > 0 && this.selectedBus.custom_route_name && this.selectedBus.fare_per_seat >= 0) {
-      this.busService.updateBus(this.selectedBus).subscribe({
-        next: () => {
-          alert('Successfully updated');
-          this.closeEditBusModal();
-        },
-        error: (err) => console.error('Error updating bus', err)
-      });
-    } else {
-      alert('Please fill all required fields');
+    if (!this.selectedBus) {
+      alert('No bus selected');
+      return;
     }
+
+    // Validate required fields
+    const requiredFields = [
+      { name: 'bus_number', value: this.selectedBus.bus_number },
+      { name: 'company_name', value: this.selectedBus.company_name },
+      { name: 'identify_or_incorporation_no', value: this.selectedBus.identify_or_incorporation_no },
+      { name: 'business_email', value: this.selectedBus.business_email },
+      { name: 'business_phone', value: this.selectedBus.business_phone },
+      { name: 'permit_number', value: this.selectedBus.permit_number },
+      { name: 'license_plate', value: this.selectedBus.license_plate },
+      { name: 'custom_route_name', value: this.selectedBus.custom_route_name }
+    ];
+    
+    const missingFields = requiredFields.filter(f => !f.value);
+    if (missingFields.length > 0) {
+      alert(`Please fill all required fields: ${missingFields.map(f => f.name).join(', ')}`);
+      return;
+    }
+    
+    if (this.selectedBus.total_seats <= 0) {
+      alert('Seats must be greater than 0');
+      return;
+    }
+    
+    if (this.selectedBus.fare_per_seat < 0) {
+      alert('Fare must be 0 or greater');
+      return;
+    }
+
+    // Ensure verification_documents is an array
+    if (!this.selectedBus.verification_documents) {
+      this.selectedBus.verification_documents = [];
+    }
+
+    // Create a clean update payload (exclude complex fields)
+    const updateData = {
+      id: this.selectedBus.id,
+      bus_number: this.selectedBus.bus_number,
+      company_name: this.selectedBus.company_name,
+      identify_or_incorporation_no: this.selectedBus.identify_or_incorporation_no,
+      business_email: this.selectedBus.business_email,
+      business_phone: this.selectedBus.business_phone,
+      permit_number: this.selectedBus.permit_number,
+      license_plate: this.selectedBus.license_plate,
+      total_seats: this.selectedBus.total_seats,
+      bus_type: this.selectedBus.bus_type,
+      custom_route_name: this.selectedBus.custom_route_name,
+      fare_per_seat: this.selectedBus.fare_per_seat,
+      status: this.selectedBus.status,
+      verification_status: this.selectedBus.verification_status,
+      verification_documents: this.selectedBus.verification_documents || []
+    };
+
+    console.log('Updating bus:', updateData);
+    this.busService.updateBus(updateData as Bus).subscribe({
+      next: (response) => {
+        console.log('✓ Bus updated successfully:', response);
+        alert('Successfully updated');
+        this.busService.loadBuses(); // Reload buses to refresh the list
+        this.closeEditBusModal();
+      },
+      error: (err) => {
+        console.error('✗ Failed to update bus:', err);
+        let errorMessage = 'Unknown error';
+        if (err.error?.error) {
+          const errorText = err.error.error;
+          if (errorText.includes('buses_license_plate_key')) {
+            errorMessage = `License plate "${this.selectedBus?.license_plate}" already exists. Please use a different registration number.`;
+          } else if (errorText.includes('buses_bus_number_key')) {
+            errorMessage = `Bus number "${this.selectedBus?.bus_number}" already exists. Please use a different bus number.`;
+          } else if (errorText.includes('buses_permit_number_key')) {
+            errorMessage = `Permit number "${this.selectedBus?.permit_number}" already exists. Please use a different permit number.`;
+          } else if (errorText.includes('duplicate key')) {
+            errorMessage = 'This bus details already exist in the system. Please check your input.';
+          } else {
+            errorMessage = errorText;
+          }
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        alert(`Failed to update bus: ${errorMessage}`);
+      }
+    });
   }
 
   updateBus(bus: Bus) {
@@ -171,14 +315,19 @@ export class BusManagementComponent implements OnInit {
   }
 
   toggleActive(bus: Bus) {
-    bus.status = bus.status === 'Active' ? 'Inactive' : 'Active';
+    const currentStatus = bus.status.toLowerCase();
+    bus.status = currentStatus === 'active' ? 'inactive' : 'active';
     console.log(`${bus.bus_number} is now ${bus.status}`);
     // Call backend API to update status
     this.busService.updateBus(bus).subscribe({
+      next: () => {
+        this.busService.loadBuses(); // Reload buses to refresh the list
+      },
       error: (err) => {
         console.error('Error updating status', err);
         // Revert status on error
-        bus.status = bus.status === 'Active' ? 'Inactive' : 'Active';
+        const revertStatus = bus.status.toLowerCase();
+        bus.status = revertStatus === 'active' ? 'inactive' : 'active';
       }
     });
   }
@@ -187,7 +336,10 @@ export class BusManagementComponent implements OnInit {
     const confirmed = confirm(`Are you sure you want to delete ${bus.bus_number}?`);
     if (confirmed) {
       this.busService.deleteBus(bus.id).subscribe({
-        next: () => console.log(`${bus.bus_number} deleted`),
+        next: () => {
+          console.log(`${bus.bus_number} deleted`);
+          this.busService.loadBuses(); // Reload buses to refresh the list
+        },
         error: (err) => console.error('Error deleting bus', err)
       });
     }
@@ -230,11 +382,11 @@ export class BusManagementComponent implements OnInit {
   }
 
   getActiveCount(): number {
-    return this.buses.filter(bus => bus.status === 'Active').length;
+    return this.buses.filter(bus => bus.status.toLowerCase() === 'active').length;
   }
 
   getInactiveCount(): number {
-    return this.buses.filter(bus => bus.status !== 'Active').length;
+    return this.buses.filter(bus => bus.status.toLowerCase() === 'inactive').length;
   }
 
   getAverageCapacity(): number {
@@ -273,11 +425,11 @@ export class BusManagementComponent implements OnInit {
 
   updateBarChart(): void {
     this.barChartData = {
-      labels: ['AC', 'Non-AC', 'Luxury'],
+      labels: ['Normal', 'Semi-Luxury', 'Luxury'],
       datasets: [{
         data: [
-          this.getBusCountByType('AC'),
-          this.getBusCountByType('Non-AC'),
+          this.getBusCountByType('Normal'),
+          this.getBusCountByType('Semi-Luxury'),
           this.getBusCountByType('Luxury')
         ],
         backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533'],
@@ -321,21 +473,30 @@ export class BusManagementComponent implements OnInit {
   private applyFilters(): void {
     let filtered = this.buses;
 
-    // Apply search filter
+    // Apply search filter - search across all columns
     if (this.searchTerm.trim()) {
+      const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(bus =>
-        bus.bus_number.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        bus.id.toString().includes(this.searchTerm) ||
-        bus.bus_type.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        bus.custom_route_name?.toString().includes(this.searchTerm) ||
-        bus.total_seats.toString().includes(this.searchTerm)
+        bus.bus_number.toLowerCase().includes(searchLower) ||
+        bus.id.toString().toLowerCase().includes(searchLower) ||
+        bus.company_name.toLowerCase().includes(searchLower) ||
+        bus.identify_or_incorporation_no.toLowerCase().includes(searchLower) ||
+        bus.business_email.toLowerCase().includes(searchLower) ||
+        bus.business_phone.toLowerCase().includes(searchLower) ||
+        bus.permit_number.toLowerCase().includes(searchLower) ||
+        bus.license_plate.toLowerCase().includes(searchLower) ||
+        bus.bus_type.toLowerCase().includes(searchLower) ||
+        (bus.custom_route_name?.toLowerCase() || '').includes(searchLower) ||
+        bus.total_seats.toString().includes(searchLower) ||
+        bus.fare_per_seat.toString().includes(searchLower) ||
+        bus.status.toLowerCase().includes(searchLower) ||
+        bus.verification_status.toLowerCase().includes(searchLower)
       );
     }
 
     // Apply status filter
     if (this.statusFilter !== 'all') {
-      const targetStatus = this.statusFilter === 'active' ? 'Active' : 'Inactive';
-      filtered = filtered.filter(bus => bus.status === targetStatus);
+      filtered = filtered.filter(bus => bus.status.toLowerCase() === this.statusFilter.toLowerCase());
     }
 
     this.filteredBuses = filtered;
@@ -363,7 +524,13 @@ export class BusManagementComponent implements OnInit {
   }
 
   onNavigate(page: string): void { this.router.navigate([`/${page}`]); }
-  onLogout(): void { this.router.navigate(['/']); }
+  
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
+  }
 
   // Sorting functionality
   onSort(column: string): void {

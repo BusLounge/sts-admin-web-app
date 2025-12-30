@@ -55,11 +55,11 @@ export class ConductorService {
 
   // Helper methods for status filtering
   getActiveConductors(): Conductor[] {
-    return this.conductors.filter(c => c.status === 'Active');
+    return this.conductors.filter(c => c.status.toLowerCase() === 'active');
   }
 
   getOnLeaveConductors(): Conductor[] {
-    return this.conductors.filter(c => c.status === 'On Leave');
+    return this.conductors.filter(c => c.status.toLowerCase() === 'on leave');
   }
 
   getResignedConductors(): Conductor[] {

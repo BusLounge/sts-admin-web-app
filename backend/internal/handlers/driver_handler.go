@@ -17,6 +17,29 @@ func GetDrivers(c *gin.Context) {
 	c.JSON(http.StatusOK, drivers)
 }
 
+func GetPendingDrivers(c *gin.Context) {
+	drivers, err := services.GetPendingDrivers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, drivers)
+}
+
+func GetDriverById(c *gin.Context) {
+	id := c.Param("id")
+	driver, err := services.GetDriverByID(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if driver == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Driver not found"})
+		return
+	}
+	c.JSON(http.StatusOK, driver)
+}
+
 func CreateDriver(c *gin.Context) {
 	var driver models.Driver
 	if err := c.ShouldBindJSON(&driver); err != nil {
@@ -49,4 +72,25 @@ func UpdateDriver(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, driver)
+}
+
+type DriverVerificationRequest struct {
+	Status string `json:"status"`
+}
+
+func VerifyDriver(c *gin.Context) {
+	id := c.Param("id")
+	var req DriverVerificationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := services.UpdateDriverVerification(id, req.Status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Driver verification updated"})
 }

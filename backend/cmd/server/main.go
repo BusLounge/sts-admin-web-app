@@ -50,28 +50,47 @@ func main() {
 	{
 		// Lounge routes
 		api.GET("/lounges", handlers.GetLounges)
+		api.GET("/lounges/pending", handlers.GetPendingLounges)
+		api.GET("/lounges/:id", handlers.GetLoungeById)
 		api.POST("/lounges", handlers.CreateLounge)
 		api.PUT("/lounges/:id", handlers.UpdateLounge)
+		api.PUT("/lounges/:id/verify", handlers.VerifyLounge)
 		api.DELETE("/lounges/:id", handlers.DeleteLounge)
-		// api.GET("/lounges/pending", handlers.GetPendingLounges)
-		// api.PUT("/lounges/:id/verify", handlers.VerifyLounge)
 
 		// Bus routes
 		api.GET("/buses", handlers.GetBuses)
+		api.GET("/buses/pending", handlers.GetPendingBuses)
+		api.GET("/buses/:id", handlers.GetBusById)
 		api.POST("/buses", handlers.CreateBus)
 		api.PUT("/buses/:id", handlers.UpdateBus)
-		api.GET("/buses/pending", handlers.GetPendingBuses)
 		api.PUT("/buses/:id/verify", handlers.VerifyBus)
 
 		// Driver routes
 		api.GET("/drivers", handlers.GetDrivers)
+		api.GET("/drivers/pending", handlers.GetPendingDrivers)
+		api.GET("/drivers/:id", handlers.GetDriverById)
 		api.POST("/drivers", handlers.CreateDriver)
 		api.PUT("/drivers/:id", handlers.UpdateDriver)
+		api.PUT("/drivers/:id/verify", handlers.VerifyDriver)
 
 		// Conductor routes
 		api.GET("/conductors", handlers.GetConductors)
+		api.GET("/conductors/pending", handlers.GetPendingConductors)
+		api.GET("/conductors/:id", handlers.GetConductorById)
 		api.POST("/conductors", handlers.CreateConductor)
 		api.PUT("/conductors/:id", handlers.UpdateConductor)
+		api.PUT("/conductors/:id/verify", handlers.VerifyConductor)
+
+		// Booking routes
+		api.GET("/bookings", handlers.GetBookings)
+		api.GET("/bookings/status", handlers.GetBookingsByStatus)
+		api.GET("/bookings/search", handlers.SearchBookings)
+		api.POST("/bookings", handlers.CreateBooking)
+		api.GET("/bookings/:id", handlers.GetBookingByID)
+		api.PUT("/bookings/:id", handlers.UpdateBooking)
+		api.PUT("/bookings/:id/status", handlers.UpdateBookingStatus)
+		api.PUT("/bookings/:id/payment", handlers.UpdatePaymentStatus)
+		api.DELETE("/bookings/:id", handlers.CancelBooking)
 	}
 
 	log.Printf("Server starting on port %s", cfg.Port)

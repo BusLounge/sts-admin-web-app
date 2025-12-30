@@ -6,6 +6,54 @@
   overflow-x: hidden;
 }
 
+// Profile Dropdown Styles
+.profile-dropdown-container {
+  position: relative;
+  
+  .dropdown-menu {
+    position: absolute;
+    top: 120%;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    padding: 0.5rem;
+    min-width: 180px;
+    z-index: 1000;
+    border: 1px solid var(--border-color);
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+
+      i {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        width: 20px;
+        text-align: center;
+      }
+
+      &:hover {
+        background: var(--bg-secondary);
+        color: var(--primary-color);
+        
+        i {
+          color: var(--primary-color);
+        }
+      }
+    }
+  }
+}
+
 // New Navbar Styles
 .top-navigation-row {
   display: flex;
@@ -65,6 +113,7 @@
       border-radius: 8px;
       transition: background-color 0.2s;
       color: var(--color-text-secondary);
+      position: relative;
 
       &:hover {
         background-color: rgba(0, 70, 255, 0.1);
@@ -74,6 +123,24 @@
         width: 24px;
         height: 24px;
         color: var(--color-text-secondary);
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background-color: #e91e63;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: bold;
+        min-width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
     }
   }

@@ -11,6 +11,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NotificationService } from '../../core/services/notification.service';
 
 interface Feedback {
   id: string;
@@ -48,6 +49,7 @@ export class FeedbackManagementComponent {
   selectedFeedback: Feedback | null = null;
   replyMessage: string = '';
   showNotificationPanel = false;
+  showProfileMenu = false;
   
   stats = [
     { title: 'Total Feedback', count: 5, icon: 'pi pi-users', color: 'blue' },
@@ -67,7 +69,7 @@ export class FeedbackManagementComponent {
     { label: 'Reviewed', value: 'Reviewed' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, public notificationService: NotificationService) {}
 
   setActiveTab(tab: string) {
     this.activeTab = tab;
@@ -108,6 +110,15 @@ export class FeedbackManagementComponent {
 
   closeNotificationPanel() {
     this.showNotificationPanel = false;
+  }
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('token');
+    this.router.navigate(['/login']);
   }
 
   goUserProfile() {

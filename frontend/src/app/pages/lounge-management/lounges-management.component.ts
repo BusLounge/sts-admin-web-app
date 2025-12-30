@@ -10,6 +10,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
 import { Lounge } from '../../core/models/lounge.model';
 import { LoungeService } from '../../core/services/lounge.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-lounges-management',
@@ -48,7 +49,7 @@ export class LoungesManagementComponent implements OnInit {
     price_per_hour: 0,
     facilities: [],
     marketplace: '',
-    verification: 'Pending',
+    verification: 'pending',
     verification_note: '',
     operational: true
   };
@@ -95,7 +96,7 @@ export class LoungesManagementComponent implements OnInit {
     doc.save('lounges-history.pdf');
   }
 
-  constructor(private router: Router, private loungeService: LoungeService, @Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private router: Router, private loungeService: LoungeService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -175,7 +176,15 @@ export class LoungesManagementComponent implements OnInit {
         l.lounge_owner.toLowerCase().includes(q) ||
         l.lounge_name.toLowerCase().includes(q) ||
         l.address.toLowerCase().includes(q) ||
-        l.lounge_contact.includes(q);
+        l.lounge_contact.toLowerCase().includes(q) ||
+        l.lounge_id.toLowerCase().includes(q) ||
+        l.capacity.toString().includes(q) ||
+        l.price_per_hour.toString().includes(q) ||
+        (l.facilities || []).join(' ').toLowerCase().includes(q) ||
+        l.marketplace.toLowerCase().includes(q) ||
+        l.verification.toLowerCase().includes(q) ||
+        (l.verification_note?.toLowerCase() || '').includes(q) ||
+        (l.operational ? 'open' : 'closed').includes(q);
       const matchesPrice = this.priceFilter === null || l.price_per_hour === this.priceFilter;
       return matchesSearch && matchesPrice;
     });
@@ -200,7 +209,7 @@ export class LoungesManagementComponent implements OnInit {
       price_per_hour: 0,
       facilities: [],
       marketplace: '',
-      verification: 'Pending',
+      verification: 'pending',
       verification_note: '',
       operational: true
     };
@@ -214,15 +223,34 @@ export class LoungesManagementComponent implements OnInit {
     if (this.modalMode === 'add') {
       this.lounge.facilities = this.selectedAmenities;
       this.lounge.marketplace = this.selectedMarketplaceItems.join(', ');
-      // this.lounge.images = this.imagePreviews;
-      this.loungeService.add(this.lounge);
+      this.loungeService.add(this.lounge).subscribe({
+        next: () => {
+          console.log('✓ Lounge added successfully');
+          alert('Lounge added successfully');
+          this.loungeService.loadLounges(); // Reload lounges to refresh the list
+          this.showModal = false;
+        },
+        error: (err) => {
+          console.error('✗ Failed to add lounge:', err);
+          alert(`Failed to add lounge: ${err.error?.error || err.message || 'Unknown error'}`);
+        }
+      });
     } else if (this.modalMode === 'edit') {
       this.lounge.facilities = this.selectedAmenities;
-      // this.lounge.services = this.selectedServices;
-      // this.lounge.images = this.imagePreviews;
-      this.loungeService.update(this.lounge);
+      this.lounge.marketplace = this.selectedMarketplaceItems.join(', ');
+      this.loungeService.update(this.lounge).subscribe({
+        next: () => {
+          console.log('✓ Lounge updated successfully');
+          alert('Lounge updated successfully');
+          this.loungeService.loadLounges(); // Reload lounges to refresh the list
+          this.showModal = false;
+        },
+        error: (err) => {
+          console.error('✗ Failed to update lounge:', err);
+          alert(`Failed to update lounge: ${err.error?.error || err.message || 'Unknown error'}`);
+        }
+      });
     }
-    this.showModal = false;
   }
 
   cancelAddLounge(): void {
@@ -307,7 +335,15 @@ export class LoungesManagementComponent implements OnInit {
 
   delete(l: Lounge): void {
     const ok = confirm(`Delete ${l.lounge_name}?`);
-    if (ok) this.loungeService.delete(l.lounge_id);
+    if (ok) {
+      this.loungeService.delete(l.lounge_id).subscribe({
+        next: () => {
+          console.log(`${l.lounge_name} deleted`);
+          this.loungeService.loadLounges(); // Reload lounges to refresh the list
+        },
+        error: (err) => console.error('Failed to delete lounge', err)
+      });
+    }
   }
 
   refreshCharts(): void {

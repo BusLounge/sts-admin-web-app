@@ -8,6 +8,7 @@ import { PassengerService } from '../../core/services/passenger.service';
 import { Passenger } from '../../core/models/passenger.model';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-passenger-management',
@@ -22,6 +23,7 @@ export class PassengerManagementComponent implements OnInit {
   searchTerm = '';
   currentPage: string = 'passenger-management';  // default page
   showNotificationPanel = false;
+  showProfileMenu = false;
   // Sorting properties
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -30,7 +32,7 @@ export class PassengerManagementComponent implements OnInit {
   monthlyCounts: number[] = [];
   months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  constructor(private router: Router, private passengerService: PassengerService) {}
+  constructor(private router: Router, private passengerService: PassengerService, public notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.passengerService.passengers$.subscribe(ps => {
@@ -151,10 +153,18 @@ export class PassengerManagementComponent implements OnInit {
       .join(' ');
   }
 
-  onLogout() {
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
     // Example logout logic
     localStorage.removeItem('token');
-    this.router.navigate(['/']);
+    this.router.navigate(['/login']);
+  }
+
+  onLogout() {
+    this.logout();
   }
 
   // Sorting functionality

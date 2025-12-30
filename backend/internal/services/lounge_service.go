@@ -10,6 +10,16 @@ func GetAllLounges() ([]models.Lounge, error) {
 	return repo.GetLounges()
 }
 
+func GetPendingLounges() ([]models.Lounge, error) {
+	repo := database.NewLoungeRepository(database.DB)
+	return repo.GetPendingLounges()
+}
+
+func GetLoungeByID(id string) (*models.Lounge, error) {
+	repo := database.NewLoungeRepository(database.DB)
+	return repo.GetLoungeByID(id)
+}
+
 func CreateLounge(l models.Lounge) error {
 	repo := database.NewLoungeRepository(database.DB)
 	return repo.CreateLounge(l)
@@ -23,4 +33,9 @@ func UpdateLounge(l models.Lounge) error {
 func DeleteLounge(id string) error {
 	repo := database.NewLoungeRepository(database.DB)
 	return repo.DeleteLounge(id)
+}
+
+func UpdateLoungeVerification(id string, status string) error {
+	repo := database.NewLoungeRepository(database.DB)
+	return repo.UpdateLoungeVerification(id, status)
 }

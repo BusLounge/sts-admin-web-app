@@ -1,85 +1,92 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap, switchMap, map } from 'rxjs/operators';
 import { BusBooking } from '../models/bus-booking.model';
 
 @Injectable({ providedIn: 'root' })
 export class BusBookingService {
-  private readonly _bookings$ = new BehaviorSubject<BusBooking[]>([
-    {
-      booking_id: 'BBK-1001',
-      passenger_id: 'PAS-001',
-      passenger_name: 'John Doe',
-      bus_number: 'BUS-101',
-      bus_name: 'Blue Line',
-      from: 'Kathmandu',
-      to: 'Pokhara',
-      journey_datetime: '2025-09-18T08:00:00Z',
-      seats_booked: 2,
-      seat_numbers: ['A1', 'A2'],
-      total_fare: 2000,
-      payment_status: 'Paid',
-      booking_status: 'Confirmed',
-      created_at: '2025-09-10T09:00:00Z'
-    },
-    {
-      booking_id: 'BBK-1002',
-      passenger_id: 'PAS-014',
-      passenger_name: 'Jane Smith',
-      bus_number: 'BUS-202',
-      bus_name: 'Red Express',
-      from: 'Pokhara',
-      to: 'Chitwan',
-      journey_datetime: '2025-09-20T10:30:00Z',
-      seats_booked: 3,
-      seat_numbers: ['B1', 'B2', 'B3'],
-      total_fare: 3000,
-      payment_status: 'Pending',
-      booking_status: 'Pending',
-      created_at: '2025-09-12T10:30:00Z'
-    },
-    {
-      booking_id: 'BBK-1003',
-      passenger_id: 'PAS-222',
-      passenger_name: 'Bob Lee',
-      bus_number: 'BUS-303',
-      bus_name: 'Green Shuttle',
-      from: 'Chitwan',
-      to: 'Kathmandu',
-      journey_datetime: '2025-08-28T09:30:00Z',
-      seats_booked: 1,
-      seat_numbers: ['C4'],
-      total_fare: 1000,
-      payment_status: 'Failed',
-      booking_status: 'Cancelled',
-      created_at: '2025-08-27T14:00:00Z'
-    }
-  ]);
+  private readonly apiUrl = 'http://localhost:8083/api/bookings';
+  private readonly _bookings$ = new BehaviorSubject<BusBooking[]>([]);
 
   readonly bookings$ = this._bookings$.asObservable();
 
+  constructor(private http: HttpClient) {
+    this.loadBookings().subscribe({
+      error: (err) => console.error('Error loading initial bookings:', err)
+    });
+  }
+
   get bookings(): BusBooking[] { return this._bookings$.getValue(); }
 
-  add(b: BusBooking) { this._bookings$.next([...this.bookings, b]); }
-  update(b: BusBooking) { this._bookings$.next(this.bookings.map(x => x.booking_id === b.booking_id ? b : x)); }
+  loadBookings(): Observable<BusBooking[]> {
+    return this.http.get<BusBooking[]>(this.apiUrl).pipe(
+      tap(bookings => {
+        console.log('Loaded bookings:', bookings.length);
+        this._bookings$.next(bookings);
+      })
+    );
+  }
+
+  add(b: BusBooking): Observable<BusBooking> {
+    return this.http.post<BusBooking>(this.apiUrl, b).pipe(
+      tap(() => console.log('Booking created successfully')),
+      switchMap((result) => {
+        // Wait for reload to complete before returning
+        return this.loadBookings().pipe(
+          map(() => {
+            console.log('Bookings reloaded after add');
+            return result;
+          })
+        );
+      })
+    );
+  }
+
+  update(b: BusBooking): Observable<BusBooking> {
+    return this.http.put<BusBooking>(`${this.apiUrl}/${b.booking_id}`, b).pipe(
+      tap((updatedBooking) => console.log('Booking updated successfully', updatedBooking)),
+      switchMap((result) => {
+        // Wait for reload to complete before returning
+        return this.loadBookings().pipe(
+          map(() => {
+            console.log('Bookings reloaded after update');
+            return result;
+          })
+        );
+      })
+    );
+  }
+
   delete(id: string) { this._bookings$.next(this.bookings.filter(x => x.booking_id !== id)); }
 
   // Aggregations for charts
   countByPaymentStatus() {
-    const map: Record<string, number> = { Paid: 0, Pending: 0, Failed: 0, Refunded: 0 };
-    this.bookings.forEach(b => map[b.payment_status] = (map[b.payment_status] || 0) + 1);
+    const map: Record<string, number> = { paid: 0, pending: 0, failed: 0, refunded: 0, collect_on_bus: 0 };
+    this.bookings.forEach(b => {
+      const status = b.payment_status;
+      if (status) {
+        map[status] = (map[status] || 0) + 1;
+      }
+    });
     return map;
   }
 
   countByBookingStatus() {
-    const map: Record<string, number> = { Confirmed: 0, Pending: 0, Cancelled: 0, Completed: 0 };
-    this.bookings.forEach(b => map[b.booking_status] = (map[b.booking_status] || 0) + 1);
+    const map: Record<string, number> = { confirmed: 0, pending: 0, cancelled: 0, completed: 0 };
+    this.bookings.forEach(b => {
+      const status = b.booking_status;
+      if (status) {
+        map[status] = (map[status] || 0) + 1;
+      }
+    });
     return map;
   }
 
   monthlyRevenue(year: number) {
     const arr = Array(12).fill(0);
     this.bookings
-      .filter(b => new Date(b.created_at).getFullYear() === year && b.payment_status === 'Paid')
+      .filter(b => new Date(b.created_at).getFullYear() === year && b.payment_status === 'paid')
       .forEach(b => {
         const m = new Date(b.created_at).getMonth();
         arr[m] += b.total_fare;

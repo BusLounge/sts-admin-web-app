@@ -11,6 +11,7 @@ import { BusBooking } from '../../core/models/bus-booking.model';
 import { ChartData, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-bus-booking',
@@ -30,15 +31,15 @@ export class BusBookingComponent implements OnInit {
     ]];
     const tableBody = this.filtered.map(b => [
       b.booking_id,
-      b.trip_schedule_id || '-',
-      b.bus_number,
+      b.scheduled_trip_id || '-',
+      b.bus_number || '-',
       b.passenger_name,
       b.passenger_phone || '-',
-      b.ref_num || '-',
-      `${b.from} → ${b.to}`,
-      new Date(b.journey_datetime).toLocaleString(),
+      b.booking_reference || '-',
+      b.route,
+      new Date(b.departure_datetime).toLocaleString(),
       b.bus_type || '-',
-      b.seat_numbers.join(', '),
+      b.seat_number || '-',
       `$${b.total_fare}`,
       b.payment_status,
       b.booking_status
@@ -58,6 +59,7 @@ export class BusBookingComponent implements OnInit {
   currentPage = 'bus-booking';
   isBrowser!: boolean;
   showNotificationPanel = false;
+  showProfileMenu = false;
 
   bookings: BusBooking[] = [];
   filtered: BusBooking[] = [];
@@ -104,7 +106,7 @@ export class BusBookingComponent implements OnInit {
   // Expose Math to template
   Math = Math;
 
-  constructor(private router: Router, private svc: BusBookingService, @Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private router: Router, private svc: BusBookingService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       Chart.register(...registerables);
@@ -112,17 +114,14 @@ export class BusBookingComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Subscribe to bookings observable for reactive updates
     this.svc.bookings$.subscribe(bs => {
+      console.log('Bookings updated in component:', bs.length);
       this.bookings = bs;
       this.applyFilters();
       this.refreshCharts();
       this.updateChartData();
     });
-  }
-
-  onLogout() {
-    localStorage.removeItem('token');
-    this.router.navigate(['/']);
   }
 
   goDashboard() {
@@ -143,22 +142,25 @@ export class BusBookingComponent implements OnInit {
     this.filtered = this.bookings.filter(b => {
       const matchesSearch = !q || [
         b.booking_id,
-        b.trip_schedule_id || '',
-        b.passenger_id,
+        b.scheduled_trip_id || '',
+        b.bus_id || '',
         b.passenger_name,
         b.passenger_phone || '',
-        b.ref_num || '',
+        b.booking_reference || '',
         b.bus_number,
-        b.bus_name || '',
+        b.license_plate || '',
         b.bus_type || '',
-        b.from,
-        b.to,
-        b.seat_numbers.join(' ')
+        b.route,
+        b.seat_number || '',
+        b.departure_datetime || '',
+        b.payment_status || '',
+        b.booking_status || '',
+        b.created_at || ''
       ].some(x => x.toLowerCase().includes(q)) ||
-      b.total_fare.toString().includes(q) || b.seats_booked.toString().includes(q);
+      b.total_fare.toString().includes(q) || b.number_of_seats.toString().includes(q);
 
-      const matchesPay = this.paymentFilter === 'All' || b.payment_status === this.paymentFilter;
-      const matchesStatus = this.statusFilter === 'All' || b.booking_status === this.statusFilter;
+      const matchesPay = this.paymentFilter === 'All' || b.payment_status?.toLowerCase() === this.paymentFilter.toLowerCase();
+      const matchesStatus = this.statusFilter === 'All' || b.booking_status?.toLowerCase() === this.statusFilter.toLowerCase();
       return matchesSearch && matchesPay && matchesStatus;
     });
     
@@ -175,21 +177,23 @@ export class BusBookingComponent implements OnInit {
   openAddModal() {
     this.isEditMode = false;
     this.selectedBooking = {
-      booking_id: `BBK-${Math.floor(Math.random() * 10000)}`, // Temp ID generation
-      passenger_id: `PAS-${Math.floor(Math.random() * 1000)}`,
+      booking_id: `BBK-${Math.floor(Math.random() * 10000)}`,
+      scheduled_trip_id: '',
+      bus_id: '',
       passenger_name: '',
       passenger_phone: '',
-      bus_number: '',
+      booking_reference: '',
+      route: '',
+      departure_datetime: '',
       bus_type: '',
-      from: '',
-      to: '',
-      journey_datetime: '',
-      seats_booked: 0,
-      seat_numbers: [],
+      seat_number: '',
       total_fare: 0,
-      payment_status: 'Pending',
-      booking_status: 'Pending',
-      created_at: new Date().toISOString()
+      payment_status: 'pending',
+      booking_status: 'pending',
+      created_at: new Date().toISOString(),
+      bus_number: '',
+      license_plate: '',
+      number_of_seats: 0
     };
     this.formSeatNumbers = '';
     this.showEditModal = true;
@@ -198,7 +202,7 @@ export class BusBookingComponent implements OnInit {
   updateBooking(b: BusBooking) {
     this.isEditMode = true;
     this.selectedBooking = { ...b };
-    this.formSeatNumbers = b.seat_numbers.join(', ');
+    this.formSeatNumbers = b.seat_number || '';
     this.showEditModal = true;
   }
   deleteBooking(b: BusBooking) {
@@ -211,9 +215,17 @@ export class BusBookingComponent implements OnInit {
     this.bookStatusCounts = this.svc.countByBookingStatus();
     this.revenueMonths = this.svc.monthlyRevenue(new Date().getFullYear());
   }
-goUserProfile() {
-  this.router.navigate(['/user-profile']);
-}
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
+  }
 
   // Helpers for simple CSS charts
   getPayCount(key: 'Paid'|'Pending'|'Failed'|'Refunded') { return this.payStatusCounts[key] || 0; }
@@ -254,18 +266,29 @@ goUserProfile() {
   updateChartData() {
     this.barChartData = [
       {
-        labels: ['Paid', 'Pending', 'Failed', 'Refunded'],
+        labels: ['Paid', 'Pending', 'Failed', 'Refunded', 'Collect on Bus'],
         datasets: [{
-          data: [this.payStatusCounts['Paid'] || 0, this.payStatusCounts['Pending'] || 0, this.payStatusCounts['Failed'] || 0, this.payStatusCounts['Refunded'] || 0],
-          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
-          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
+          data: [
+            this.payStatusCounts['paid'] || 0,
+            this.payStatusCounts['pending'] || 0,
+            this.payStatusCounts['failed'] || 0,
+            this.payStatusCounts['refunded'] || 0,
+            this.payStatusCounts['collect_on_bus'] || 0
+          ],
+          backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B', '#10B981'],
+          borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B', '#10B981'],
           borderWidth: 0.25
         }]
       },
       {
         labels: ['Confirmed', 'Pending', 'Cancelled', 'Completed'],
         datasets: [{
-          data: [this.bookStatusCounts['Confirmed'] || 0, this.bookStatusCounts['Pending'] || 0, this.bookStatusCounts['Cancelled'] || 0, this.bookStatusCounts['Completed'] || 0],
+          data: [
+            this.bookStatusCounts['confirmed'] || 0,
+            this.bookStatusCounts['pending'] || 0,
+            this.bookStatusCounts['cancelled'] || 0,
+            this.bookStatusCounts['completed'] || 0
+          ],
           backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
           borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#FF6B6B'],
           borderWidth: 0.25
@@ -309,9 +332,9 @@ goUserProfile() {
           aValue = getStr(a.booking_id);
           bValue = getStr(b.booking_id);
           break;
-        case 'trip_schedule_id':
-          aValue = getStr(a.trip_schedule_id);
-          bValue = getStr(b.trip_schedule_id);
+        case 'scheduled_trip_id':
+          aValue = getStr(a.scheduled_trip_id);
+          bValue = getStr(b.scheduled_trip_id);
           break;
         case 'bus_number':
           aValue = getStr(a.bus_number);
@@ -325,25 +348,25 @@ goUserProfile() {
           aValue = getStr(a.passenger_phone);
           bValue = getStr(b.passenger_phone);
           break;
-        case 'ref_num':
-          aValue = getStr(a.ref_num);
-          bValue = getStr(b.ref_num);
+        case 'booking_reference':
+          aValue = getStr(a.booking_reference);
+          bValue = getStr(b.booking_reference);
           break;
         case 'route':
-          aValue = `${getStr(a.from)} ${getStr(a.to)}`;
-          bValue = `${getStr(b.from)} ${getStr(b.to)}`;
+          aValue = getStr(a.route);
+          bValue = getStr(b.route);
           break;
-        case 'journey_datetime':
-          aValue = new Date(a.journey_datetime).getTime();
-          bValue = new Date(b.journey_datetime).getTime();
+        case 'departure_datetime':
+          aValue = new Date(a.departure_datetime).getTime();
+          bValue = new Date(b.departure_datetime).getTime();
           break;
         case 'bus_type':
           aValue = getStr(a.bus_type);
           bValue = getStr(b.bus_type);
           break;
-        case 'seat_numbers':
-          aValue = a.seat_numbers.join(', ');
-          bValue = b.seat_numbers.join(', ');
+        case 'seat_number':
+          aValue = getStr(a.seat_number);
+          bValue = getStr(b.seat_number);
           break;
         case 'total_fare':
           aValue = a.total_fare;
@@ -385,15 +408,43 @@ goUserProfile() {
   }
 
   saveBooking(): void {
-    if (!this.selectedBooking) return;
-    this.selectedBooking.seat_numbers = this.formSeatNumbers.split(',').map(s => s.trim());
-    this.selectedBooking.seats_booked = this.selectedBooking.seat_numbers.length;
+    console.log('saveBooking called, selectedBooking:', this.selectedBooking);
+    if (!this.selectedBooking) {
+      console.log('No selected booking, returning');
+      return;
+    }
+    
+    this.selectedBooking.seat_number = this.formSeatNumbers;
+    const seatCount = this.formSeatNumbers.split(',').filter(s => s.trim()).length;
+    this.selectedBooking.number_of_seats = seatCount;
+    
+    console.log('Saving booking, isEditMode:', this.isEditMode);
+    console.log('Booking data:', this.selectedBooking);
     
     if (this.isEditMode) {
-      this.svc.update(this.selectedBooking);
+      console.log('Calling update service...');
+      this.svc.update(this.selectedBooking).subscribe({
+        next: (result) => {
+          console.log('✓ Update complete, data reloaded:', result);
+          this.closeEditModal();
+        },
+        error: (err) => {
+          console.error('✗ Error updating booking:', err);
+          alert('Error updating booking: ' + (err.error?.error || err.message));
+        }
+      });
     } else {
-      this.svc.add(this.selectedBooking);
+      console.log('Calling add service...');
+      this.svc.add(this.selectedBooking).subscribe({
+        next: (result) => {
+          console.log('✓ Add complete, data reloaded:', result);
+          this.closeEditModal();
+        },
+        error: (err) => {
+          console.error('✗ Error saving booking:', err);
+          alert('Error creating booking: ' + (err.error?.error || err.message));
+        }
+      });
     }
-    this.closeEditModal();
   }
 }

@@ -11,6 +11,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-settings',
@@ -213,7 +214,7 @@ export class SettingsComponent implements OnInit {
 
 
 
-  constructor(private router: Router, @Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private router: Router, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -318,7 +319,7 @@ export class SettingsComponent implements OnInit {
     this.selectedUser = { 
       ...user, 
       contactNumber: user.contact,
-      isActive: user.status === 'Active'
+      isActive: user.status.toLowerCase() === 'active'
     }; 
     this.updatePermissionsBasedOnUser(user);
   }
@@ -328,7 +329,7 @@ export class SettingsComponent implements OnInit {
     this.selectedUser = { 
       ...user, 
       contactNumber: user.contact,
-      isActive: user.status === 'Active'
+      isActive: user.status.toLowerCase() === 'active'
     };
     this.updatePermissionsBasedOnUser(user);
   }

@@ -11,6 +11,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-lounge-booking',
@@ -23,6 +24,7 @@ export class LoungeBookingComponent implements OnInit {
   currentPage = 'lounge-booking';
   isBrowser!: boolean;
   showNotificationPanel = false;
+  showProfileMenu = false;
 
 
   bookings: LoungeBooking[] = [];
@@ -121,7 +123,7 @@ export class LoungeBookingComponent implements OnInit {
   //   return this.colors[index % this.colors.length];
   // }
 
-  constructor(private router: Router, private svc: LoungeBookingService, @Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private router: Router, private svc: LoungeBookingService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       Chart.register(...registerables);
@@ -152,16 +154,21 @@ export class LoungeBookingComponent implements OnInit {
     this.filtered = this.bookings.filter(b => {
       const matchesSearch = !q || [
         b.booking_id,
-        b.passenger_name,
-        b.passenger_phone,
-        b.ref_num,
+        b.passenger_id || '',
+        b.passenger_name || '',
+        b.passenger_phone || '',
+        b.ref_num || '',
         b.lounge_name,
         b.payment_status,
         b.booking_status,
         b.start_datetime,
-        b.guests.toString()
+        b.guests.toString(),
+        b.adults?.toString() || '',
+        b.children?.toString() || '',
+        (b.additional_features || []).join(' '),
+        b.created_at || ''
       ].some(x => x && x.toLowerCase().includes(q)) ||
-      b.total_amount.toString().includes(q) || b.duration_hours.toString().includes(q);
+      b.total_amount.toString().includes(q) || b.duration_hours.toString().includes(q) || b.capacity_used.toString().includes(q);
 
       const matchesPay = this.paymentFilter === 'All' || b.payment_status === this.paymentFilter;
       const matchesStatus = this.statusFilter === 'All' || b.booking_status === this.statusFilter;
@@ -318,9 +325,18 @@ export class LoungeBookingComponent implements OnInit {
       }
     ];
   }
-goUserProfile() {
-  this.router.navigate(['/user-profile']);
-}
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
+  }
+
   // Bar chart helpers
   getRevenueMaxForBars(): number {
     return Math.max(1, ...this.revenueByLounge.map(x => x.total));

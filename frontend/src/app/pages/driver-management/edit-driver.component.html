@@ -58,7 +58,7 @@
 
     <div class="form-row inline">
       <label class="checkbox">
-        <input type="checkbox" [ngModel]="d.status === 'Active'" (ngModelChange)="d.status = $event ? 'Active' : 'Inactive'" name="status" />
+        <input type="checkbox" [ngModel]="d.status.toLowerCase() === 'active'" (ngModelChange)="d.status = $event ? 'Active' : 'Inactive'" name="status" />
         <span>Active</span>
       </label>
     </div>

@@ -23,25 +23,22 @@ export class LoungeService {
     });
   }
 
-  add(l: Lounge): void {
-    this.http.post(this.apiUrl, l).subscribe({
-      next: () => this.loadLounges(),
-      error: (err) => console.error('Failed to add lounge', err)
-    });
+  add(l: Lounge): Observable<any> {
+    return this.http.post(this.apiUrl, l).pipe(
+      tap(() => this.loadLounges())
+    );
   }
 
-  update(updated: Lounge): void {
-    this.http.put(`${this.apiUrl}/${updated.lounge_id}`, updated).subscribe({
-      next: () => this.loadLounges(),
-      error: (err) => console.error('Failed to update lounge', err)
-    });
+  update(updated: Lounge): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${updated.lounge_id}`, updated).pipe(
+      tap(() => this.loadLounges())
+    );
   }
 
-  delete(id: string): void {
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
-      next: () => this.loadLounges(),
-      error: (err) => console.error('Failed to delete lounge', err)
-    });
+  delete(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`).pipe(
+      tap(() => this.loadLounges())
+    );
   }
 
   getById(id: string): Lounge | undefined {

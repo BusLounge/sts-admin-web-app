@@ -10,6 +10,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-complaint-management',
@@ -32,6 +33,7 @@ import { NotificationPanelComponent } from '../../shared/components/notification
 export class ComplaintManagementComponent implements OnInit {
   activeTab: string = 'All';
   showNotificationPanel = false;
+  showProfileMenu = false;
   
   stats = [
     { title: 'Total Complaints', count: 20, icon: 'pi pi-users', color: 'blue' },
@@ -48,7 +50,7 @@ export class ComplaintManagementComponent implements OnInit {
   selectedComplaint: any = {};
   solutionText: string = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, public notificationService: NotificationService) {}
 
   ngOnInit() {
     this.loadComplaints();
@@ -264,6 +266,15 @@ export class ComplaintManagementComponent implements OnInit {
 
   closeNotificationPanel() {
     this.showNotificationPanel = false;
+  }
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('token');
+    this.router.navigate(['/login']);
   }
 
   goUserProfile() {

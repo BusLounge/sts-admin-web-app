@@ -10,6 +10,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { DriverService } from '../../core/services/driver.service';
 import { Driver } from '../../core/models/driver.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-driver-management',
@@ -25,6 +26,7 @@ export class DriverManagementComponent implements OnInit {
   statusFilter: 'All' | 'Active' | 'Inactive' = 'All';
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
   showNotificationPanel = false;
+  showProfileMenu = false;
 
   showAddDriverModal = false;
   isEditing = false;
@@ -38,7 +40,7 @@ export class DriverManagementComponent implements OnInit {
     experience_years: 0,
     status: 'Active',
     license_expiry_date: '',
-    verification_status: 'Pending',
+    verification_status: 'pending',
     verification_notes: '',
     hire_date: ''
   };
@@ -52,7 +54,7 @@ export class DriverManagementComponent implements OnInit {
   barChartOptions: any;
   isBrowser: boolean;
 
-  constructor(private router: Router, private driverService: DriverService, @Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private router: Router, private driverService: DriverService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -92,40 +94,68 @@ export class DriverManagementComponent implements OnInit {
       experience_years: 0,
       status: 'Active',
       license_expiry_date: '',
-      verification_status: 'Pending',
+      verification_status: 'pending',
       verification_notes: '',
       hire_date: ''
     };
   }
 
   saveDriver() {
-    // Split driverName into first and last name (if needed, but backend takes full name now)
-    this.newDriver.name = this.driverName.trim();
+    // Trim all text fields
+    this.newDriver.name = this.newDriver.name?.trim() || '';
+    this.newDriver.contact_number = this.newDriver.contact_number?.trim() || '';
+    this.newDriver.license_number = this.newDriver.license_number?.trim() || '';
 
-    // Relaxed validation: removed email check as it is not in the form
-    if (this.newDriver.name && this.newDriver.contact_number && this.newDriver.license_number && this.newDriver.experience_years >= 0) {
-      if (this.isEditing && this.editingDriver) {
-        const updatedDriver = { ...this.editingDriver, ...this.newDriver };
-        this.driverService.updateDriver(updatedDriver).subscribe({
-          next: () => {
-            this.closeAddDriverModal();
-          },
-          error: (err) => console.error('Failed to update driver', err)
-        });
-      } else {
-        // Generate a new driver ID (backend handles this usually, but keeping for now if needed)
-        // const newDriverId = this.generateDriverId(); 
-        // For now, let backend generate ID or use placeholder if service requires it
-        const driverToAdd: Driver = { ...this.newDriver, id: '' }; 
-        this.driverService.addDriver(driverToAdd).subscribe({
-          next: () => {
-            this.closeAddDriverModal();
-          },
-          error: (err) => console.error('Failed to add driver', err)
-        });
-      }
+    // Validate required fields
+    const requiredFields = [
+      { name: 'Driver Name', value: this.newDriver.name },
+      { name: 'Contact Number', value: this.newDriver.contact_number },
+      { name: 'License Number', value: this.newDriver.license_number }
+    ];
+    
+    const missingFields = requiredFields.filter(f => !f.value);
+    if (missingFields.length > 0) {
+      console.log('Missing fields:', missingFields);
+      console.log('Current driver data:', this.newDriver);
+      alert(`Please fill all required fields: ${missingFields.map(f => f.name).join(', ')}`);
+      return;
+    }
+
+    if (this.newDriver.experience_years < 0) {
+      alert('Experience years must be 0 or greater');
+      return;
+    }
+
+    if (this.isEditing && this.editingDriver) {
+      const updatedDriver = { ...this.editingDriver, ...this.newDriver };
+      console.log('Updating driver:', updatedDriver);
+      this.driverService.updateDriver(updatedDriver).subscribe({
+        next: (response) => {
+          console.log('✓ Driver updated successfully:', response);
+          alert('Driver updated successfully');
+          this.driverService.loadDrivers(); // Reload drivers to refresh the list
+          this.closeAddDriverModal();
+        },
+        error: (err) => {
+          console.error('✗ Failed to update driver:', err);
+          alert(`Failed to update driver: ${err.error?.error || err.message || 'Unknown error'}`);
+        }
+      });
     } else {
-      alert('Please fill all required fields');
+      const driverToAdd: Driver = { ...this.newDriver, id: '' };
+      console.log('Adding new driver:', driverToAdd);
+      this.driverService.addDriver(driverToAdd).subscribe({
+        next: (response) => {
+          console.log('✓ Driver added successfully:', response);
+          alert('Driver added successfully');
+          this.driverService.loadDrivers(); // Reload drivers to refresh the list
+          this.closeAddDriverModal();
+        },
+        error: (err) => {
+          console.error('✗ Failed to add driver:', err);
+          alert(`Failed to add driver: ${err.error?.error || err.message || 'Unknown error'}`);
+        }
+      });
     }
   }
 
@@ -160,15 +190,34 @@ export class DriverManagementComponent implements OnInit {
   }
 
   toggleActive(driver: Driver) {
-    driver.status = driver.status === 'Active' ? 'Inactive' : 'Active';
-    console.log(`${driver.name} is now ${driver.status}`);
+    const currentStatus = driver.status.toLowerCase();
+    const newStatus = currentStatus === 'active' ? 'Inactive' : 'Active';
+    
+    // Update the driver object with new status
+    const updatedDriver = { ...driver, status: newStatus };
+    
+    // Save to backend
+    this.driverService.updateDriver(updatedDriver).subscribe({
+      next: (updated) => {
+        console.log(`${driver.name} status updated to ${newStatus}`);
+        this.driverService.loadDrivers(); // Reload to reflect changes
+      },
+      error: (err) => {
+        console.error('Failed to update driver:', err);
+        alert(`Failed to update driver: ${err.error?.error || err.message}`);
+        this.driverService.loadDrivers(); // Reload to revert UI changes
+      }
+    });
   }
 
   deleteDriver(driver: Driver) {
     const confirmed = confirm(`Are you sure you want to delete ${driver.name}?`);
     if (confirmed) {
       this.driverService.deleteDriver(driver.id).subscribe({
-        next: () => console.log(`${driver.name} deleted`),
+        next: () => {
+          console.log(`${driver.name} deleted`);
+          this.driverService.loadDrivers(); // Reload drivers to refresh the list
+        },
         error: (err) => console.error('Failed to delete driver', err)
       });
     }
@@ -206,11 +255,11 @@ export class DriverManagementComponent implements OnInit {
   }
 
   getActiveCount(): number {
-    return this.drivers.filter(driver => driver.status === 'Active').length;
+    return this.drivers.filter(driver => driver.status.toLowerCase() === 'active').length;
   }
 
   getInactiveCount(): number {
-    return this.drivers.filter(driver => driver.status !== 'Active').length;
+    return this.drivers.filter(driver => driver.status.toLowerCase() !== 'active').length;
   }
 
   getAverageExperience(): number {
@@ -255,17 +304,23 @@ export class DriverManagementComponent implements OnInit {
 
     // Apply status filter
     if (this.statusFilter !== 'All') {
-      filtered = filtered.filter(driver => driver.status === this.statusFilter);
+      filtered = filtered.filter(driver => driver.status.toLowerCase() === this.statusFilter.toLowerCase());
     }
 
-    // Apply search term
+    // Apply search term - search across all columns
     if (this.searchTerm.trim()) {
+      const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(driver =>
-        driver.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        driver.contact_number.includes(this.searchTerm) ||
-        driver.license_number.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        driver.id.toString().includes(this.searchTerm) ||
-        driver.experience_years.toString().includes(this.searchTerm)
+        driver.name.toLowerCase().includes(searchLower) ||
+        driver.contact_number.toLowerCase().includes(searchLower) ||
+        driver.license_number.toLowerCase().includes(searchLower) ||
+        driver.id.toString().toLowerCase().includes(searchLower) ||
+        driver.experience_years.toString().includes(this.searchTerm) ||
+        driver.status.toLowerCase().includes(searchLower) ||
+        (driver.license_expiry_date?.toLowerCase() || '').includes(searchLower) ||
+        (driver.hire_date?.toLowerCase() || '').includes(searchLower) ||
+        (driver.verification_status?.toLowerCase() || '').includes(searchLower) ||
+        (driver.verification_notes?.toLowerCase() || '').includes(searchLower)
       );
     }
 
@@ -394,9 +449,18 @@ export class DriverManagementComponent implements OnInit {
     }
     return newId;
   }
- goUserProfile() {
-  this.router.navigate(['/user-profile']);
-}
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
+  }
+
   updateBarChart(): void {
     this.barChartData = {
       labels: ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'],

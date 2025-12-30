@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NotificationService, BusNotification } from '../../core/services/notification.service';
 
 interface NotificationDetails {
-  id: number;
+  id: string;
   type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking';
   title: string;
   message: string;
@@ -33,120 +34,197 @@ export class NotificationDetailsComponent implements OnInit {
   selectedReasons: { [key: string]: boolean } = {};
   otherReasonText = '';
   notification: NotificationDetails | null = null;
+  busId: string = '';
 
-  // Mock data for different notification types
-  private notificationData: { [key: number]: NotificationDetails } = {
-    1: {
-      id: 1,
-      type: 'bus',
-      title: 'New Bus Added Request',
-      message: 'A new bus registration request has been submitted: Bus No: NB-4587, Route: Colombo  Kandy. Awaiting approval.',
-      time: '1 day ago',
-      formData: {
-        PermitNum: 'NB-4587',
-        Seats: 45,
-        type: 'AC',
-        RegNum: 'WP-3456',
-        route: 'Colombo  Kandy',
-        "Approved fare": 2000,
-        Company: 'Transport Solutions Ltd',
-        contactNumber: '+94771234567'
-      }
-    },
-    2: {
-      id: 2,
-      type: 'driver',
-      title: 'New Driver Registration Request',
-      message: 'Driver S. Perera has requested to join. License No: B5678921. Awaiting verification.',
-      time: '1 day 1 hour ago',
-      formData: {
-        DriverName: 'Perera',
-        licenseNumber: 'B5678921',
-        licenseExpiry: '2027-12-31',
-        experienceYears: 8,
-        contactNumber: '+94771234568',
-        Hiredate: '2025-12-12',
-        
-      }
-    },
-    3: {
-      id: 3,
-      type: 'passenger',
-      title: 'New Passenger Account Request',
-      message: 'Passenger A. Wijesinghe has requested account approval. Please verify details.',
-      time: '1 day 1 hour ago',
-      formData: {
-        firstName: 'Anura',
-        lastName: 'Wijesinghe',
-        email: 'anura.w@email.com',
-        contactNumber: '+94771234569',
-        nic: '199512345678',
-        address: '456, Kandy Road, Kandy',
-        dateOfBirth: '1995-05-15'
-      }
-    },
-    4: {
-      id: 4,
-      type: 'conductor',
-      title: 'New Conductor Registration Request',
-      message: 'Conductor R. Silva has submitted registration details. Employee ID: C12345. Awaiting approval.',
-      time: '1 day 1 hour ago',
-      formData: {
-        ConductorName: 'Ruwan',
-        licenseNumber: 'B5678921',
-        licenseExpiry: '2027-12-31',
-        experienceYears: 8,
-        contactNumber: '+94771234568',
-        Hiredate: '2025-12-12',
-      }
-    },
-    5: {
-      id: 5,
-      type: 'lounge',
-      title: 'New Lounge Registration Request',
-      message: 'Premium Lounge Colombo has requested to be added to the system. Location: Terminal 2. Awaiting verification.',
-      time: '1 day 1 hour ago',
-      formData: {
-        loungeOwner: 'Shenol',
-        LoungeName: 'Bedisha Lounge',
-        capacity: 50,
-        pricePerHour: 500,
-        amenities: ['WiFi', 'AC', 'Food', 'Drinks', 'Shower', 'TV'],
-        Marketplace:['Drinks', 'Food','Essentials'],
-        operatingHours: '06:00 - 22:00',
-        contactNumber: '+94771234571'
-      }
-    },
-    6: {
-      id: 6,
-      type: 'booking',
-      title: 'New Bus Booking Modification',
-      message: 'Booking ID: BB-1023 modification requested by Passenger M. Fernando. Route change from Galle  Kandy to Galle  Colombo.',
-      time: '1 day 1 hour ago',
-      formData: {
-        bookingId: 'BB-1023',
-        passengerName: 'M. Fernando',
-        currentRoute: 'Galle  Kandy',
-        requestedRoute: 'Galle  Colombo',
-        journeyDate: '2025-10-20',
-        seatsBooked: 2,
-        reason: 'Change of destination due to personal reasons'
-      }
-    }
-  };
-
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute, 
+    private router: Router,
+    public notificationService: NotificationService
+  ) {}
 
   ngOnInit() {
-    // Try to get ID from query params or route params
-    const id = this.route.snapshot.queryParamMap.get('id') || this.route.snapshot.paramMap.get('id');
+    const id = this.route.snapshot.queryParamMap.get('id');
+    const type = this.route.snapshot.queryParamMap.get('type') as 'bus' | 'driver' | 'conductor' | 'lounge' | null;
     
-    if (id) {
-      this.notification = this.notificationData[Number(id)];
-    } else {
-      // Fallback for demo/testing if no ID provided
-      this.notification = this.notificationData[1];
+    const navigation = this.router.getCurrentNavigation();
+    const data = navigation?.extras?.state?.['data'] || history.state?.data;
+    const stateType = navigation?.extras?.state?.['type'] || history.state?.type;
+    
+    if (id && (type || stateType)) {
+      this.busId = id;
+      const notifType = type || stateType;
+      
+      if (data) {
+        // Use cached data
+        this.mapDataToNotification(data, notifType);
+      } else {
+        // Fallback: fetch from backend
+        this.loadDetails(id, notifType);
+      }
     }
+  }
+
+  mapDataToNotification(data: any, type: string) {
+    switch (type) {
+      case 'bus':
+        this.mapBusDataToNotification(data);
+        break;
+      case 'driver':
+        this.mapDriverDataToNotification(data);
+        break;
+      case 'conductor':
+        this.mapConductorDataToNotification(data);
+        break;
+      case 'lounge':
+        this.mapLoungeDataToNotification(data);
+        break;
+    }
+  }
+
+  mapBusDataToNotification(bus: any) {
+    this.notification = {
+      id: bus.id,
+      type: 'bus',
+      title: 'New Bus Added Request',
+      message: `A new bus registration request has been submitted: Bus No: ${bus.permit_number || bus.bus_number}, Route: ${bus.custom_route_name || 'Not specified'}. Awaiting approval.`,
+      time: this.getTimeAgo(new Date()),
+      formData: {
+        'Company': bus.company_name || 'N/A',
+        'Phone Number': bus.business_phone || 'N/A',
+        'NIC Number': bus.identify_or_incorporation_no || 'N/A',
+        'Email': bus.business_email || 'N/A',
+        'Permit Number': bus.permit_number || 'N/A',
+        'Registered Number': bus.license_plate || 'N/A',
+        'License plate from the permit': bus.license_plate || 'N/A',
+        'Route via (Optional)': bus.custom_route_name || 'N/A',
+        'Approved Fare': bus.fare_per_seat || 0,
+        'Bus Type': bus.bus_type || 'Normal',
+        'Validity period': '1/11/2025- 1/11/2026',
+        'Seat numbers': bus.total_seats || 0
+      }
+    };
+  }
+
+  mapDriverDataToNotification(driver: any) {
+    this.notification = {
+      id: driver.id,
+      type: 'driver',
+      title: 'New Driver Added Request',
+      message: `A new driver registration request has been submitted: ${driver.name}`,
+      time: this.getTimeAgo(new Date()),
+      formData: {
+        'Name': driver.name || 'N/A',
+        'Contact Number': driver.contact_number || 'N/A',
+        'License Number': driver.license_number || 'N/A',
+        'License Expiry Date': driver.license_expiry_date || 'N/A',
+        'Experience Years': driver.experience_years || 0,
+        'Employment Status': driver.status || 'N/A',
+        'Hire Date': driver.hire_date || 'N/A',
+        'Verification Notes': driver.verification_notes || 'None'
+      }
+    };
+  }
+
+  mapConductorDataToNotification(conductor: any) {
+    this.notification = {
+      id: conductor.id,
+      type: 'conductor',
+      title: 'New Conductor Added Request',
+      message: `A new conductor registration request has been submitted: ${conductor.name}`,
+      time: this.getTimeAgo(new Date()),
+      formData: {
+        'Name': conductor.name || 'N/A',
+        'Contact Number': conductor.contact_number || 'N/A',
+        'License Number': conductor.license_number || 'N/A',
+        'License Expiry Date': conductor.license_expiry_date || 'N/A',
+        'Experience Years': conductor.experience_years || 0,
+        'Employment Status': conductor.status || 'N/A',
+        'Hire Date': conductor.hire_date || 'N/A',
+        'Verification Notes': conductor.verification_notes || 'None'
+      }
+    };
+  }
+
+  mapLoungeDataToNotification(lounge: any) {
+    this.notification = {
+      id: lounge.lounge_id,
+      type: 'lounge',
+      title: 'New Lounge Added Request',
+      message: `A new lounge registration request has been submitted: ${lounge.lounge_name}`,
+      time: this.getTimeAgo(new Date()),
+      formData: {
+        'Lounge Name': lounge.lounge_name || 'N/A',
+        'Owner Name': lounge.lounge_owner || 'N/A',
+        'Owner NIC': lounge.owner_nic || 'N/A',
+        'Owner Email': lounge.owner_email || 'N/A',
+        'Owner Contact': lounge.owner_contact || 'N/A',
+        'Lounge Contact': lounge.lounge_contact || 'N/A',
+        'Address': lounge.address || 'N/A',
+        'Capacity': lounge.capacity || 0,
+        'Price Per Hour': lounge.price_per_hour || 0,
+        'Marketplace': lounge.marketplace || 'N/A',
+        'Operational': lounge.operational ? 'Yes' : 'No'
+      }
+    };
+  }
+
+  loadDetails(id: string, type: string) {
+    switch (type) {
+      case 'bus':
+        this.notificationService.getBusById(id).subscribe({
+          next: (bus) => this.mapBusDataToNotification(bus),
+          error: (err) => this.handleError(err)
+        });
+        break;
+      case 'driver':
+        this.notificationService.getDriverById(id).subscribe({
+          next: (driver) => this.mapDriverDataToNotification(driver),
+          error: (err) => this.handleError(err)
+        });
+        break;
+      case 'conductor':
+        this.notificationService.getConductorById(id).subscribe({
+          next: (conductor) => this.mapConductorDataToNotification(conductor),
+          error: (err) => this.handleError(err)
+        });
+        break;
+      case 'lounge':
+        this.notificationService.getLoungeById(id).subscribe({
+          next: (lounge) => this.mapLoungeDataToNotification(lounge),
+          error: (err) => this.handleError(err)
+        });
+        break;
+    }
+  }
+
+  handleError(err: any) {
+    console.error('Error loading details:', err);
+    this.router.navigate(['/dashboard']);
+  }
+
+  loadBusDetails(busId: string) {
+    this.notificationService.getBusById(busId).subscribe({
+      next: (bus) => {
+        this.mapBusDataToNotification(bus);
+      },
+      error: (err) => {
+        console.error('Error loading bus details:', err);
+        this.router.navigate(['/dashboard']);
+      }
+    });
+  }
+
+  private getTimeAgo(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffMins > 0) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    return 'Just now';
   }
 
   toggleNotificationPanel() {
@@ -175,14 +253,44 @@ export class NotificationDetailsComponent implements OnInit {
   }
 
   approveRequest(): void {
-    if (this.notification) {
-      let typeName = this.notification.type;
-      // Capitalize first letter
-      typeName = typeName.charAt(0).toUpperCase() + typeName.slice(1);
+    if (this.notification && this.busId) {
+      const type = this.notification.type;
+      let approveObservable;
       
-      this.successModalTitle = `New ${typeName} added Successfully!!!`;
-      this.successModalMessage = `The request to add a new ${this.notification.type} has been approved.\nThe ${this.notification.type} is now active in the system\nand ready for scheduling.\nThank you.`;
-      this.showSuccessModal = true;
+      switch (type) {
+        case 'bus':
+          approveObservable = this.notificationService.approveBus(this.busId);
+          this.successModalTitle = 'New Bus added Successfully!!!';
+          this.successModalMessage = `The request to add a new bus has been approved.\nThe bus is now active in the system\nand ready for scheduling.\nThank you.`;
+          break;
+        case 'driver':
+          approveObservable = this.notificationService.approveDriver(this.busId);
+          this.successModalTitle = 'New Driver added Successfully!!!';
+          this.successModalMessage = `The request to add a new driver has been approved.\nThe driver is now active in the system\nand ready for assignment.\nThank you.`;
+          break;
+        case 'conductor':
+          approveObservable = this.notificationService.approveConductor(this.busId);
+          this.successModalTitle = 'New Conductor added Successfully!!!';
+          this.successModalMessage = `The request to add a new conductor has been approved.\nThe conductor is now active in the system\nand ready for assignment.\nThank you.`;
+          break;
+        case 'lounge':
+          approveObservable = this.notificationService.approveLounge(this.busId);
+          this.successModalTitle = 'New Lounge added Successfully!!!';
+          this.successModalMessage = `The request to add a new lounge has been approved.\nThe lounge is now active in the system\nand ready for booking.\nThank you.`;
+          break;
+        default:
+          return;
+      }
+      
+      approveObservable.subscribe({
+        next: () => {
+          this.showSuccessModal = true;
+        },
+        error: (err) => {
+          console.error(`Error approving ${type}:`, err);
+          alert(`Failed to approve ${type}: ` + (err.error?.error || err.message));
+        }
+      });
     }
   }
 
@@ -192,32 +300,93 @@ export class NotificationDetailsComponent implements OnInit {
 
   sendApproval(): void {
     this.showSuccessModal = false;
-    // Here you would typically call an API to approve the request
-    console.log('Approving notification:', this.notification);
-    this.router.navigate(['/dashboard']);
+    // Navigate to appropriate management page based on notification type
+    if (this.notification && this.notification.type) {
+      const type = this.notification.type;
+      console.log('Navigating after approval, type:', type);
+      switch (type) {
+        case 'bus':
+          this.router.navigate(['/bus-management']);
+          break;
+        case 'driver':
+          this.router.navigate(['/driver-management']);
+          break;
+        case 'conductor':
+          this.router.navigate(['/conductor-management']);
+          break;
+        case 'lounge':
+          this.router.navigate(['/lounges-management']);
+          break;
+        default:
+          console.warn('Unknown notification type:', type);
+          this.router.navigate(['/dashboard']);
+      }
+    } else {
+      console.warn('No notification or notification type found, navigating to dashboard');
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   cancelRequest(): void {
     if (this.notification) {
-      let typeName = this.notification.type;
-      typeName = typeName.charAt(0).toUpperCase() + typeName.slice(1);
-
-      this.cancelModalTitle = `New ${typeName} Addition Request Cancelled`;
-      this.cancelModalMessage = `The request to add a new ${this.notification.type} has been cancelled.\nThe ${this.notification.type} has not been added to the system.\nThank you.`;
-      
-      this.cancellationReasons = [
-        `${typeName} details were missing or incorrect.`,
-        `A ${this.notification.type} with the same identifier already exists.`,
-        `The request was not approved by the authorities.`,
-        `System could not process the ${this.notification.type} addition.`
-      ];
-      
-      // Reset selection
-      this.selectedReasons = {};
-      this.otherReasonText = '';
-      
-      this.showCancelModal = true;
+      const type = this.notification.type;
+      switch (type) {
+        case 'bus':
+          this.cancelModalTitle = 'New Bus Addition Request Cancelled';
+          this.cancelModalMessage = `The request to add a new bus has been cancelled.\nThe bus has not been added to the system.\nThank you.`;
+          this.cancellationReasons = [
+            'Bus details were missing or incorrect.',
+            'A bus with the same identifier already exists.',
+            'The request was not approved by the authorities.',
+            'System could not process the bus addition.'
+          ];
+          break;
+        case 'driver':
+          this.cancelModalTitle = 'New Driver Addition Request Cancelled';
+          this.cancelModalMessage = `The request to add a new driver has been cancelled.\nThe driver has not been added to the system.\nThank you.`;
+          this.cancellationReasons = [
+            'Driver details were missing or incorrect.',
+            'A driver with the same license already exists.',
+            'The request was not approved by the authorities.',
+            'System could not process the driver addition.'
+          ];
+          break;
+        case 'conductor':
+          this.cancelModalTitle = 'New Conductor Addition Request Cancelled';
+          this.cancelModalMessage = `The request to add a new conductor has been cancelled.\nThe conductor has not been added to the system.\nThank you.`;
+          this.cancellationReasons = [
+            'Conductor details were missing or incorrect.',
+            'A conductor with the same license already exists.',
+            'The request was not approved by the authorities.',
+            'System could not process the conductor addition.'
+          ];
+          break;
+        case 'lounge':
+          this.cancelModalTitle = 'New Lounge Addition Request Cancelled';
+          this.cancelModalMessage = `The request to add a new lounge has been cancelled.\nThe lounge has not been added to the system.\nThank you.`;
+          this.cancellationReasons = [
+            'Lounge details were missing or incorrect.',
+            'A lounge with the same name already exists.',
+            'The request was not approved by the authorities.',
+            'System could not process the lounge addition.'
+          ];
+          break;
+        default:
+          this.cancelModalTitle = 'Request Cancelled';
+          this.cancelModalMessage = `The request has been cancelled.\nThank you.`;
+          this.cancellationReasons = ['Request was not approved.'];
+      }
+    } else {
+      this.cancelModalTitle = 'Request Cancelled';
+      this.cancelModalMessage = `The request has been cancelled.\nThank you.`;
+      this.cancellationReasons = ['Request was not approved.'];
     }
+    
+    // Reset selection
+    this.selectedReasons = {};
+    this.otherReasonText = '';
+    
+    this.showCancelModal = true;
   }
 
   closeCancelModal(): void {
@@ -225,12 +394,58 @@ export class NotificationDetailsComponent implements OnInit {
   }
 
   sendCancellation(): void {
-    this.showCancelModal = false;
-    console.log('Cancellation sent', {
-      reasons: this.selectedReasons,
-      other: this.otherReasonText
-    });
-    this.router.navigate(['/dashboard']);
+    if (this.busId && this.notification) {
+      const type = this.notification.type;
+      let rejectObservable;
+      
+      switch (type) {
+        case 'bus':
+          rejectObservable = this.notificationService.rejectBus(this.busId);
+          break;
+        case 'driver':
+          rejectObservable = this.notificationService.rejectDriver(this.busId);
+          break;
+        case 'conductor':
+          rejectObservable = this.notificationService.rejectConductor(this.busId);
+          break;
+        case 'lounge':
+          rejectObservable = this.notificationService.rejectLounge(this.busId);
+          break;
+        default:
+          return;
+      }
+      
+      rejectObservable.subscribe({
+        next: () => {
+          this.showCancelModal = false;
+          console.log(`${type} rejected`, {
+            reasons: this.selectedReasons,
+            other: this.otherReasonText
+          });
+          // Navigate based on type
+          switch (type) {
+            case 'bus':
+              this.router.navigate(['/bus-management']);
+              break;
+            case 'driver':
+              this.router.navigate(['/driver-management']);
+              break;
+            case 'conductor':
+              this.router.navigate(['/conductor-management']);
+              break;
+            case 'lounge':
+              this.router.navigate(['/lounges-management']);
+              break;
+            default:
+              this.router.navigate(['/dashboard']);
+          }
+        },
+        error: (err) => {
+          console.error(`Error rejecting ${type}:`, err);
+          alert(`Failed to reject ${type}: ` + (err.error?.error || err.message));
+        }
+      });
+    }
   }
 
   getFormFields(): { label: string; value: any; key: string }[] {

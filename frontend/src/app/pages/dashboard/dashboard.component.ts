@@ -10,6 +10,7 @@ import { ConductorService } from '../../core/services/conductor.service';
 import { BusBookingService } from '../../core/services/bus-booking.service';
 import { LoungeBookingService } from '../../core/services/lounge-booking.service';
 import { PassengerService } from '../../core/services/passenger.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -46,7 +47,8 @@ export class DashboardComponent implements OnInit {
     private conductorService: ConductorService,
     private busBookingService: BusBookingService,
     private loungeBookingService: LoungeBookingService,
-    private passengerService: PassengerService
+    private passengerService: PassengerService,
+    public notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -74,7 +76,7 @@ export class DashboardComponent implements OnInit {
       const monthlyTotals = Array(12).fill(0);
       bookings.forEach(b => {
         if (b.payment_status === 'Paid') {
-          const month = new Date(b.journey_datetime).getMonth();
+          const month = new Date(b.departure_datetime).getMonth();
           monthlyTotals[month] += b.total_fare;
         }
       });
@@ -106,7 +108,12 @@ export class DashboardComponent implements OnInit {
 
   private countConductorStatus(conductors: any[]): Record<string, number> {
     const map: Record<string, number> = { Active: 0, 'On Leave': 0, Resigned: 0 };
-    conductors.forEach(c => map[c.status] = (map[c.status] || 0) + 1);
+    conductors.forEach(c => {
+      const statusKey = c.status.toLowerCase() === 'active' ? 'Active' : 
+                       c.status.toLowerCase() === 'on leave' ? 'On Leave' : 
+                       c.status.toLowerCase() === 'resigned' ? 'Resigned' : c.status;
+      map[statusKey] = (map[statusKey] || 0) + 1;
+    });
     return map;
   }
 
