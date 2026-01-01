@@ -42,7 +42,7 @@ func GetBusByID(id string) (*models.Bus, error) {
 }
 
 // UpdateBusVerification updates the verification status of a bus
-func UpdateBusVerification(id string, status string) error {
+func UpdateBusVerification(id string, status string, documents string) error {
 	repo := database.NewBusRepository(database.DB)
-	return repo.UpdateBusVerification(id, status)
+	return repo.UpdateBusVerification(id, status, documents)
 }

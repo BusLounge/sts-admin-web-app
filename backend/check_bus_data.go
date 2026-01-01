@@ -1,6 +1,6 @@
 ﻿package main
 import ("database/sql"; "fmt"; "os"; _ "github.com/lib/pq")
-func main() {
+func checkBusDataMain() {
 db, _ := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 defer db.Close()
 

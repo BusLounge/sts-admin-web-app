@@ -30,7 +30,7 @@ func UpdateConductor(conductor *models.Conductor) error {
 	return repo.UpdateConductor(conductor)
 }
 
-func UpdateConductorVerification(id string, status string) error {
+func UpdateConductorVerification(id string, status string, documents string) error {
 	repo := database.NewStaffRepository(database.DB)
-	return repo.UpdateConductorVerification(id, status)
+	return repo.UpdateConductorVerification(id, status, documents)
 }

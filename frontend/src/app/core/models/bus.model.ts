@@ -13,5 +13,6 @@ export interface Bus {
   fare_per_seat: number;
   status: string;
   verification_status: 'Verified' | 'Pending' | 'Rejected';
+  owner_verification_status?: 'Verified' | 'Pending' | 'Rejected';
   verification_documents?: string[]; // Array of document URLs or file names
 }

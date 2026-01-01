@@ -115,14 +115,16 @@ export class NotificationService {
   }
 
   // Bus methods
-  approveBus(busId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/buses/${busId}/verify`, { status: 'Verified' }).pipe(
+  approveBus(busId: string, data?: any): Observable<any> {
+    const requestBody = { status: 'Verified', ...data };
+    return this.http.put(`${this.apiUrl}/buses/${busId}/verify`, requestBody).pipe(
       tap(() => this.loadAllPendingNotifications())
     );
   }
 
-  rejectBus(busId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/buses/${busId}/verify`, { status: 'Rejected' }).pipe(
+  rejectBus(busId: string, data?: any): Observable<any> {
+    const requestBody = { status: 'Rejected', ...data };
+    return this.http.put(`${this.apiUrl}/buses/${busId}/verify`, requestBody).pipe(
       tap(() => this.loadAllPendingNotifications())
     );
   }
@@ -132,14 +134,16 @@ export class NotificationService {
   }
 
   // Driver methods
-  approveDriver(driverId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/drivers/${driverId}/verify`, { status: 'Verified' }).pipe(
+  approveDriver(driverId: string, data?: any): Observable<any> {
+    const requestBody = { status: 'Verified', ...data };
+    return this.http.put(`${this.apiUrl}/drivers/${driverId}/verify`, requestBody).pipe(
       tap(() => this.loadAllPendingNotifications())
     );
   }
 
-  rejectDriver(driverId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/drivers/${driverId}/verify`, { status: 'Rejected' }).pipe(
+  rejectDriver(driverId: string, data?: any): Observable<any> {
+    const requestBody = { status: 'Rejected', ...data };
+    return this.http.put(`${this.apiUrl}/drivers/${driverId}/verify`, requestBody).pipe(
       tap(() => this.loadAllPendingNotifications())
     );
   }
@@ -149,14 +153,16 @@ export class NotificationService {
   }
 
   // Conductor methods
-  approveConductor(conductorId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/conductors/${conductorId}/verify`, { status: 'Verified' }).pipe(
+  approveConductor(conductorId: string, data?: any): Observable<any> {
+    const requestBody = { status: 'Verified', ...data };
+    return this.http.put(`${this.apiUrl}/conductors/${conductorId}/verify`, requestBody).pipe(
       tap(() => this.loadAllPendingNotifications())
     );
   }
 
-  rejectConductor(conductorId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/conductors/${conductorId}/verify`, { status: 'Rejected' }).pipe(
+  rejectConductor(conductorId: string, data?: any): Observable<any> {
+    const requestBody = { status: 'Rejected', ...data };
+    return this.http.put(`${this.apiUrl}/conductors/${conductorId}/verify`, requestBody).pipe(
       tap(() => this.loadAllPendingNotifications())
     );
   }
@@ -166,14 +172,16 @@ export class NotificationService {
   }
 
   // Lounge methods
-  approveLounge(loungeId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/lounges/${loungeId}/verify`, { status: 'Verified' }).pipe(
+  approveLounge(loungeId: string, data?: any): Observable<any> {
+    const requestBody = { status: 'Verified', ...data };
+    return this.http.put(`${this.apiUrl}/lounges/${loungeId}/verify`, requestBody).pipe(
       tap(() => this.loadAllPendingNotifications())
     );
   }
 
-  rejectLounge(loungeId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/lounges/${loungeId}/verify`, { status: 'Rejected' }).pipe(
+  rejectLounge(loungeId: string, data?: any): Observable<any> {
+    const requestBody = { status: 'Rejected', ...data };
+    return this.http.put(`${this.apiUrl}/lounges/${loungeId}/verify`, requestBody).pipe(
       tap(() => this.loadAllPendingNotifications())
     );
   }

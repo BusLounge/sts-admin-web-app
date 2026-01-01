@@ -326,18 +326,41 @@ func (r *LoungeRepository) GetLoungeByID(id string) (*models.Lounge, error) {
 	return &l, nil
 }
 
-// UpdateLoungeVerification updates the verification status of a lounge
-func (r *LoungeRepository) UpdateLoungeVerification(id string, status string) error {
+// UpdateLoungeVerification updates the verification status of a lounge and lounge owner
+func (r *LoungeRepository) UpdateLoungeVerification(id string, status string, documents string) error {
+	// Use transaction to update both tables atomically
+	tx, err := r.db.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
 	// Map 'verified' to 'approved' to match database enum values
 	if strings.ToLower(status) == "verified" {
 		status = "approved"
 	} else {
 		status = strings.ToLower(status)
 	}
-	_, err := r.db.Exec(`
+
+	// Update lounges table
+	_, err = tx.Exec(`
 		UPDATE lounges 
-		SET status = $1 
-		WHERE id = $2
-	`, status, id)
-	return err
+		SET status = $1, verification_note = $2 
+		WHERE id = $3
+	`, status, documents, id)
+	if err != nil {
+		return fmt.Errorf("error updating lounge: %v", err)
+	}
+
+	// Update lounge_owners table verification_status
+	_, err = tx.Exec(`
+		UPDATE lounge_owners 
+		SET verification_status = $1, verification_notes = $2 
+		WHERE id = (SELECT lounge_owner_id FROM lounges WHERE id = $3)
+	`, status, documents, id)
+	if err != nil {
+		return fmt.Errorf("error updating lounge owner: %v", err)
+	}
+
+	return tx.Commit()
 }

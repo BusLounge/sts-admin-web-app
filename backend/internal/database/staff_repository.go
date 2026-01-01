@@ -155,19 +155,33 @@ func (r *StaffRepository) GetDriverByID(id string) (*models.Driver, error) {
 }
 
 // UpdateDriverVerification updates the verification status of a driver
-func (r *StaffRepository) UpdateDriverVerification(id string, status string) error {
+func (r *StaffRepository) UpdateDriverVerification(id string, status string, documents string) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
 	// Map 'verified' to 'approved' to match database enum values
+	isVerified := false
 	if strings.ToLower(status) == "verified" {
 		status = "approved"
+		isVerified = true
 	} else {
 		status = strings.ToLower(status)
 	}
-	_, err := r.db.Exec(`
+
+	// Update bus_staff table with both verification_status and is_verified
+	_, err = tx.Exec(`
 		UPDATE bus_staff 
-		SET verification_status = $1 
-		WHERE id = $2 AND staff_type = 'driver'
-	`, status, id)
-	return err
+		SET verification_status = $1, verification_notes = $2, is_verified = $3 
+		WHERE id = $4 AND staff_type = 'driver'
+	`, status, documents, isVerified, id)
+	if err != nil {
+		return fmt.Errorf("error updating driver verification: %v", err)
+	}
+
+	return tx.Commit()
 }
 
 // CreateDriver creates a new driver
@@ -443,19 +457,33 @@ func (r *StaffRepository) GetConductorByID(id string) (*models.Conductor, error)
 }
 
 // UpdateConductorVerification updates the verification status of a conductor
-func (r *StaffRepository) UpdateConductorVerification(id string, status string) error {
+func (r *StaffRepository) UpdateConductorVerification(id string, status string, documents string) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
 	// Map 'verified' to 'approved' to match database enum values
+	isVerified := false
 	if strings.ToLower(status) == "verified" {
 		status = "approved"
+		isVerified = true
 	} else {
 		status = strings.ToLower(status)
 	}
-	_, err := r.db.Exec(`
+
+	// Update bus_staff table with both verification_status and is_verified
+	_, err = tx.Exec(`
 		UPDATE bus_staff 
-		SET verification_status = $1 
-		WHERE id = $2 AND staff_type = 'conductor'
-	`, status, id)
-	return err
+		SET verification_status = $1, verification_notes = $2, is_verified = $3 
+		WHERE id = $4 AND staff_type = 'conductor'
+	`, status, documents, isVerified, id)
+	if err != nil {
+		return fmt.Errorf("error updating conductor verification: %v", err)
+	}
+
+	return tx.Commit()
 }
 
 // CreateConductor creates a new conductor

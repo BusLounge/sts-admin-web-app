@@ -35,7 +35,7 @@ func DeleteLounge(id string) error {
 	return repo.DeleteLounge(id)
 }
 
-func UpdateLoungeVerification(id string, status string) error {
+func UpdateLoungeVerification(id string, status string, documents string) error {
 	repo := database.NewLoungeRepository(database.DB)
-	return repo.UpdateLoungeVerification(id, status)
+	return repo.UpdateLoungeVerification(id, status, documents)
 }

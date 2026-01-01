@@ -19,7 +19,7 @@ func NewBusRepository(db *sql.DB) *BusRepository {
 // GetAllBuses retrieves all buses with their related details
 func (r *BusRepository) GetAllBuses() ([]models.Bus, error) {
 	query := `
-		SELECT 
+		select 
 			b.id::text,
 			COALESCE(b.bus_owner_id::text, ''),
 			COALESCE(b.permit_id::text, ''),
@@ -30,19 +30,20 @@ func (r *BusRepository) GetAllBuses() ([]models.Bus, error) {
 			COALESCE(bo.business_email, ''),
 			COALESCE(bo.business_phone, ''),
 			COALESCE(rp.permit_number, ''),
-			COALESCE(b.license_plate, ''),
+			b.license_plate,
 			COALESCE(bslt.total_seats, rp.approved_seating_capacity, 0) as total_seats,
 			COALESCE(b.bus_type, 'Standard'),
 			COALESCE(mr.route_name, 'Unknown Route') as route_name,
 			COALESCE(rp.approved_fare::float8, 0.0),
 			COALESCE(b.status, 'Inactive'),
 			COALESCE(rp.status::text, 'Pending') as verification_status,
+		COALESCE(NULLIF(bo.verification_status::text, ''), 'Pending') as owner_verification_status,
 			COALESCE(rp.verification_documents::text, '{}')
-		FROM buses b
-		LEFT JOIN bus_owners bo ON b.bus_owner_id = bo.id
-		LEFT JOIN route_permits rp ON b.permit_id = rp.id
-		LEFT JOIN master_routes mr ON rp.master_route_id = mr.id
-		LEFT JOIN bus_seat_layout_templates bslt ON b.seat_layout_id = bslt.id
+		from buses b
+		left join bus_owners bo on b.bus_owner_id = bo.id
+		left join route_permits rp on b.permit_id = rp.id
+		left join master_routes mr on rp.master_route_id = mr.id
+		left join bus_seat_layout_templates bslt on b.seat_layout_id = bslt.id
 	`
 
 	rows, err := r.db.Query(query)
@@ -75,6 +76,7 @@ func (r *BusRepository) GetAllBuses() ([]models.Bus, error) {
 			&bus.FarePerSeat,
 			&bus.Status,
 			&bus.VerificationStatus,
+			&bus.OwnerVerificationStatus,
 			&verificationDocsStr,
 		)
 		if err != nil {
@@ -117,6 +119,7 @@ func (r *BusRepository) GetBusByID(id string) (*models.Bus, error) {
 			COALESCE(rp.approved_fare::float8, 0.0),
 			COALESCE(b.status, 'Inactive'),
 			COALESCE(rp.status::text, 'Pending') as verification_status,
+		COALESCE(NULLIF(bo.verification_status::text, ''), 'Pending') as owner_verification_status,
 			COALESCE(rp.verification_documents::text, '{}')
 		FROM buses b
 		LEFT JOIN bus_owners bo ON b.bus_owner_id = bo.id
@@ -148,6 +151,7 @@ func (r *BusRepository) GetBusByID(id string) (*models.Bus, error) {
 		&bus.FarePerSeat,
 		&bus.Status,
 		&bus.VerificationStatus,
+		&bus.OwnerVerificationStatus,
 		&verificationDocsStr,
 	)
 
@@ -187,7 +191,7 @@ func (r *BusRepository) CreateBus(bus *models.Bus) error {
 	var busOwnerID string
 	// Check if owner exists by identity_or_incorporation_no
 	err = tx.QueryRow(`SELECT id FROM bus_owners WHERE identity_or_incorporation_no = $1`, bus.IdentifyOrIncorporationNo).Scan(&busOwnerID)
-	
+
 	if err == sql.ErrNoRows {
 		// Owner doesn't exist, try to find a user that doesn't already have a bus_owner
 		var userID string
@@ -197,7 +201,7 @@ func (r *BusRepository) CreateBus(bus *models.Bus) error {
 			WHERE bo.id IS NULL
 			LIMIT 1
 		`).Scan(&userID)
-		
+
 		if err == sql.ErrNoRows {
 			// All users have bus_owners, create without user_id (set to NULL if allowed)
 			// Or we could create a new default user here
@@ -383,16 +387,6 @@ func (r *BusRepository) UpdateBus(bus *models.Bus) error {
 		return fmt.Errorf("error updating route permit: %v", err)
 	}
 
-	// 4b. Update bus_owners verification_status to match route_permits status
-	_, err = tx.Exec(`
-		UPDATE bus_owners 
-		SET verification_status = $1
-		WHERE id = $2
-	`, strings.ToLower(bus.VerificationStatus), busOwnerID)
-	if err != nil {
-		return fmt.Errorf("error updating bus owner verification status: %v", err)
-	}
-
 	// 5. Update Bus
 	query := `
 		UPDATE buses SET
@@ -452,6 +446,7 @@ func (r *BusRepository) GetPendingBuses() ([]models.Bus, error) {
 			COALESCE(rp.approved_fare::float8, 0.0),
 			COALESCE(b.status, 'Inactive'),
 			COALESCE(rp.status::text, 'Pending') as verification_status,
+		COALESCE(NULLIF(bo.verification_status::text, ''), 'Pending') as owner_verification_status,
 			COALESCE(rp.verification_documents::text, '{}')
 		FROM buses b
 		LEFT JOIN bus_owners bo ON b.bus_owner_id = bo.id
@@ -491,6 +486,7 @@ func (r *BusRepository) GetPendingBuses() ([]models.Bus, error) {
 			&bus.FarePerSeat,
 			&bus.Status,
 			&bus.VerificationStatus,
+			&bus.OwnerVerificationStatus,
 			&verificationDocsStr,
 		)
 		if err != nil {
@@ -511,9 +507,9 @@ func (r *BusRepository) GetPendingBuses() ([]models.Bus, error) {
 	return buses, nil
 }
 
-// UpdateBusVerification updates the verification status of a bus
-func (r *BusRepository) UpdateBusVerification(id string, status string) error {
-	// Use transaction to update both route_permits and bus_owners
+// UpdateBusVerification updates the verification status of a bus (only updates route_permits, not bus_owners)
+func (r *BusRepository) UpdateBusVerification(id string, status string, documents string) error {
+	// Use transaction to update only route_permits
 	tx, err := r.db.Begin()
 	if err != nil {
 		return fmt.Errorf("error starting transaction: %v", err)
@@ -522,36 +518,39 @@ func (r *BusRepository) UpdateBusVerification(id string, status string) error {
 
 	// Convert status to lowercase to match database enum (pending, verified, rejected)
 	status = strings.ToLower(status)
-	fmt.Printf("UpdateBusVerification: bus_id=%s, status=%s\n", id, status)
+	fmt.Printf("UpdateBusVerification: bus_id=%s, status=%s, documents=%s\n", id, status, documents)
 
-	// Get permit_id and bus_owner_id first to debug
-	var permitID, busOwnerID string
-	err = tx.QueryRow(`SELECT permit_id, bus_owner_id FROM buses WHERE id = $1`, id).Scan(&permitID, &busOwnerID)
+	// Get permit_id from the bus
+	var permitID string
+	err = tx.QueryRow(`SELECT permit_id FROM buses WHERE id = $1`, id).Scan(&permitID)
 	if err != nil {
-		return fmt.Errorf("error getting bus foreign keys: %v", err)
+		return fmt.Errorf("error getting bus permit_id: %v", err)
 	}
-	fmt.Printf("Found: permit_id=%s, bus_owner_id=%s\n", permitID, busOwnerID)
+	fmt.Printf("Found: permit_id=%s\n", permitID)
 
-	// 1. Update route_permits status
-	result, err := tx.Exec(`UPDATE route_permits SET status = $1 WHERE id = $2`, status, permitID)
+	// Prepare documents JSON array
+	var docsJSON string
+	if documents != "" {
+		// Convert single document string to JSON array
+		docsArray := []string{documents}
+		docsBytes, _ := json.Marshal(docsArray)
+		docsJSON = string(docsBytes)
+	} else {
+		docsJSON = "[]"
+	}
+
+	// Update only route_permits status and documents
+	result, err := tx.Exec(`UPDATE route_permits SET status = $1, verification_documents = $2 WHERE id = $3`, status, docsJSON, permitID)
 	if err != nil {
 		return fmt.Errorf("error updating route permit verification status: %v", err)
 	}
 	rowsAffected, _ := result.RowsAffected()
 	fmt.Printf("Updated route_permits: %d rows\n", rowsAffected)
 
-	// 2. Update bus_owners verification_status
-	result, err = tx.Exec(`UPDATE bus_owners SET verification_status = $1 WHERE id = $2`, status, busOwnerID)
-	if err != nil {
-		return fmt.Errorf("error updating bus owner verification status: %v", err)
-	}
-	rowsAffected, _ = result.RowsAffected()
-	fmt.Printf("Updated bus_owners: %d rows\n", rowsAffected)
-
 	err = tx.Commit()
 	if err != nil {
 		return fmt.Errorf("error committing transaction: %v", err)
 	}
-	fmt.Printf("✓ Successfully committed both updates\n")
+	fmt.Printf("✓ Successfully committed route_permits update\n")
 	return nil
 }

@@ -183,7 +183,20 @@
           <td>{{ driver.experience_years }}</td>
           <td>{{ driver.hire_date | date:'shortDate' }}</td>
           <td>{{ driver.verification_status || 'Pending' }}</td>
-          <td>{{ driver.verification_notes || '-' }}</td>
+          <td>
+            <div *ngIf="driver.verification_status?.toLowerCase() === 'approved' || driver.verification_status?.toLowerCase() === 'verified'">
+              <div *ngIf="driver.verification_notes && driver.verification_notes.trim(); else noDocuments">
+                <a [href]="driver.verification_notes" target="_blank" class="document-link" title="Open document">
+                  <i class="fas fa-external-link-alt"></i> Document 1
+                </a>
+              </div>
+              <ng-template #noDocuments>
+                <span class="no-documents">No documents</span>
+              </ng-template>
+            </div>
+            <span *ngIf="driver.verification_status?.toLowerCase() === 'rejected'" class="no-documents">-</span>
+            <span *ngIf="driver.verification_status?.toLowerCase() === 'pending'" class="no-documents">Pending approval</span>
+          </td>
           <td>{{ driver.status }}</td>
           <td class="actions-cell">
             <i class="fas fa-edit action-icon edit-icon" (click)="updateDriver(driver)" title="Update"></i>

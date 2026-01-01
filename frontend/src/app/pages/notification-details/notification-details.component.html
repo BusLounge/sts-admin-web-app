@@ -76,6 +76,17 @@
           </div>
         </div>
 
+        <!-- Documents Section (Admin fills) -->
+        <div class="documents-section">
+          <h3>Documents <span class="required">*</span></h3>
+          <p class="field-description">Please provide the verification documents or notes for this request.</p>
+          <textarea 
+            [(ngModel)]="adminDocuments" 
+            placeholder="Enter document details, links, or verification notes here..."
+            class="documents-textarea"
+            rows="4"></textarea>
+        </div>
+
         <!-- Actions -->
         <div class="action-buttons">
           <button class="btn btn-cancel" (click)="cancelRequest()">

@@ -178,7 +178,20 @@
             <td>{{ conductor.license_expiry_date | date:'shortDate' }}</td>
             <td>{{ conductor.experience_years }}yrs</td>
             <td>{{ conductor.verification_status }}</td>
-            <td>{{ conductor.verification_notes || '-' }}</td>
+            <td>
+              <div *ngIf="conductor.verification_status?.toLowerCase() === 'approved' || conductor.verification_status?.toLowerCase() === 'verified'">
+                <div *ngIf="conductor.verification_notes && conductor.verification_notes.trim(); else noDocuments">
+                  <a [href]="conductor.verification_notes" target="_blank" class="document-link" title="Open document">
+                    <i class="fas fa-external-link-alt"></i> Document 1
+                  </a>
+                </div>
+                <ng-template #noDocuments>
+                  <span class="no-documents">No documents</span>
+                </ng-template>
+              </div>
+              <span *ngIf="conductor.verification_status?.toLowerCase() === 'rejected'" class="no-documents">-</span>
+              <span *ngIf="conductor.verification_status?.toLowerCase() === 'pending'" class="no-documents">Pending approval</span>
+            </td>
             <td>
               <span class="status-badge" [ngClass]="conductor.status.toLowerCase().replace(' ', '-')">
                 {{ conductor.status }}

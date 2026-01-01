@@ -75,7 +75,8 @@ func UpdateDriver(c *gin.Context) {
 }
 
 type DriverVerificationRequest struct {
-	Status string `json:"status"`
+	Status    string `json:"status"`
+	Documents string `json:"documents"`
 }
 
 func VerifyDriver(c *gin.Context) {
@@ -86,7 +87,7 @@ func VerifyDriver(c *gin.Context) {
 		return
 	}
 
-	err := services.UpdateDriverVerification(id, req.Status)
+	err := services.UpdateDriverVerification(id, req.Status, req.Documents)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

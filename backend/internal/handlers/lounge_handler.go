@@ -78,7 +78,8 @@ func DeleteLounge(c *gin.Context) {
 }
 
 type LoungeVerificationRequest struct {
-	Status string `json:"status"`
+	Status    string `json:"status"`
+	Documents string `json:"documents"`
 }
 
 func VerifyLounge(c *gin.Context) {
@@ -89,7 +90,7 @@ func VerifyLounge(c *gin.Context) {
 		return
 	}
 
-	err := services.UpdateLoungeVerification(id, req.Status)
+	err := services.UpdateLoungeVerification(id, req.Status, req.Documents)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

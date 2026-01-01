@@ -171,8 +171,11 @@
         <th (click)="onSort('status')" style="cursor: pointer;" title="Click to sort">
           status {{ getSortIcon('status') }}
         </th>
+        <th (click)="onSort('owner_verification_status')" style="cursor: pointer;" title="Click to sort">
+          Owner Verification  {{ getSortIcon('owner_verification_status') }}
+        </th>
         <th (click)="onSort('verification_status')" style="cursor: pointer;" title="Click to sort">
-          Verification  {{ getSortIcon('verification_status') }}
+          Permit Verify (Route Permit Status)  {{ getSortIcon('verification_status') }}
         </th>
         <th>Documents</th>
         <th>Action</th>
@@ -190,18 +193,23 @@
         <td>{{ bus.custom_route_name }}</td>
         <td>{{ bus.fare_per_seat }}</td>
         <td>{{ bus.status }}</td>
+        <td>{{ bus.owner_verification_status }}</td>
         <td>{{ bus.verification_status }}</td>
         <td>
-          <div *ngIf="bus.verification_documents && bus.verification_documents.length > 0; else noDocuments">
-            <div *ngFor="let doc of bus.verification_documents; let i = index">
-              <a [href]="doc" target="_blank" class="document-link" title="Open document">
-                <i class="fas fa-external-link-alt"></i> Document {{ i + 1 }}
-              </a>
+          <div *ngIf="bus.verification_status?.toLowerCase() === 'verified' || bus.verification_status?.toLowerCase() === 'approved'">
+            <div *ngIf="bus.verification_documents && bus.verification_documents.length > 0; else noDocuments">
+              <div *ngFor="let doc of bus.verification_documents; let i = index">
+                <a [href]="doc" target="_blank" class="document-link" title="Open document">
+                  <i class="fas fa-external-link-alt"></i> Document {{ i + 1 }}
+                </a>
+              </div>
             </div>
+            <ng-template #noDocuments>
+              <span class="no-documents">No documents</span>
+            </ng-template>
           </div>
-          <ng-template #noDocuments>
-            <span class="no-documents">No documents</span>
-          </ng-template>
+          <span *ngIf="bus.verification_status?.toLowerCase() === 'rejected'" class="no-documents">-</span>
+          <span *ngIf="bus.verification_status?.toLowerCase() === 'pending'" class="no-documents">Pending approval</span>
         </td>
         <td>
           <i class="fas fa-edit action-icon edit-icon" (click)="updateBus(bus)" title="Edit"></i>

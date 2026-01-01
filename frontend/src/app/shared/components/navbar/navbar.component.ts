@@ -20,7 +20,15 @@ interface MenuItem {
 export class NavbarComponent implements OnInit {
   menuItems: MenuItem[] = [
     { label: 'Dashboard', icon: 'fas fa-th-large', route: '/dashboard' },
-    { label: 'Bus', icon: 'fas fa-bus', route: '/bus-management' },
+    { 
+      label: 'Bus', 
+      icon: 'fas fa-bus', 
+      route: '/bus-management',
+      children: [
+        { label: 'Bus Owners', route: '/bus-owners' },
+        { label: 'Route Permits', route: '/bus-management' }
+      ]
+    },
     { label: 'Driver', icon: 'fas fa-user-tie', route: '/driver-management' },
     { label: 'Conductor', icon: 'fas fa-user-secret', route: '/conductor-management' },
     { label: 'Passenger', icon: 'fas fa-users', route: '/passenger-management' },

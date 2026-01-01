@@ -36,23 +36,134 @@
       </div>
 
       <div class="page-header">
-        <div class="header-content">
-          <h1>Dashboard</h1>
-          <p>Welcome back! Manage buses, lounges, and customer bookings — all in one place.</p>
-        </div>
-        <div class="search-filter-card">
-          <p>Search Bus,Driver,Conductor,Lounge.... </p>
-          <div class="filters-row">
-            <span class="filter-label">Filters</span>
-            <div class="filter-pills">
-              <span class="pill">Bus</span>
-              <span class="pill">Lounge</span>
-              <span class="pill">Driver</span>
-              <span class="pill">Conductor</span>
-              <span class="pill">Lounge booking</span>
-              <span class="pill">Bus booking</span>
+        <div class="left-dashboard-section">
+          <div class="header-welcome">
+            <h1>Dashboard</h1>
+            <p>Welcome back! Manage buses, lounges, and customer bookings — all in one place.</p>
+          </div>
+          
+          <!-- Quick Stats Grid -->
+          <div class="quick-stats-mini">
+            <div class="mini-card buses">
+              <div class="mini-card-icon">
+                <i class="fas fa-bus"></i>
+              </div>
+              <div class="mini-card-content">
+                <span class="mini-label">Total Buses</span>
+                <span class="mini-value">{{ numBuses }}</span>
+              </div>
+            </div>
+            <div class="mini-card drivers">
+              <div class="mini-card-icon">
+                <i class="fas fa-id-card"></i>
+              </div>
+              <div class="mini-card-content">
+                <span class="mini-label">Drivers</span>
+                <span class="mini-value">{{ numDrivers }}</span>
+              </div>
+            </div>
+            <div class="mini-card conductors">
+              <div class="mini-card-icon">
+                <i class="fas fa-user-tie"></i>
+              </div>
+              <div class="mini-card-content">
+                <span class="mini-label">Conductors</span>
+                <span class="mini-value">{{ numConductors }}</span>
+              </div>
+            </div>
+            <div class="mini-card lounges">
+              <div class="mini-card-icon">
+                <i class="fas fa-couch"></i>
+              </div>
+              <div class="mini-card-content">
+                <span class="mini-label">Lounges</span>
+                <span class="mini-value">{{ numLounges }}</span>
+              </div>
             </div>
           </div>
+
+          <!-- Activity Summary Card -->
+          <div class="activity-summary-card">
+            <h4>Today's Activity</h4>
+            <div class="activity-items">
+              <div class="activity-item">
+                <span class="activity-icon active">
+                  <i class="fas fa-check-circle"></i>
+                </span>
+                <div class="activity-details">
+                  <span class="activity-label">Active Buses</span>
+                  <span class="activity-value">{{ busStatusCounts['Active'] || 0 }}</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <span class="activity-icon drivers">
+                  <i class="fas fa-user-check"></i>
+                </span>
+                <div class="activity-details">
+                  <span class="activity-label">Active Drivers</span>
+                  <span class="activity-value">{{ driverStatusCounts['Active'] || 0 }}</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <span class="activity-icon revenue">
+                  <i class="fas fa-dollar-sign"></i>
+                </span>
+                <div class="activity-details">
+                  <span class="activity-label">Today Revenue</span>
+                  <span class="activity-value">Rs 1.2M</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-filter-card">
+          <h3>Search bus,lounge,Driver,etc</h3>
+          <p class="select-label">Select one you want to search</p>
+          <div class="search-type-pills">
+            <button 
+              *ngFor="let type of ['Bus', 'Lounge', 'Driver', 'Conductor', 'Lounge booking', 'Bus booking']"
+              [class.active]="selectedSearchType === type"
+              (click)="selectSearchType(type)"
+              class="pill-btn">
+              {{ type }}
+            </button>
+          </div>
+
+          <div class="sort-section">
+            <div class="sort-header">
+              <span class="sort-label">Sort by</span>
+              <button 
+                *ngFor="let attr of selectedAttributes" 
+                class="selected-pill" 
+                (click)="toggleAttribute(attr)">
+                {{ attr }} ×
+              </button>
+            </div>
+            <div class="attribute-pills">
+              <button 
+                *ngFor="let attr of attributeOptions[selectedSearchType]"
+                [class.active]="isAttributeSelected(attr)"
+                (click)="toggleAttribute(attr)"
+                class="attr-pill">
+                {{ attr }}
+              </button>
+            </div>
+          </div>
+
+          <div class="search-inputs" *ngIf="selectedAttributes.length > 0">
+            <div class="input-group" *ngFor="let attr of selectedAttributes">
+              <label>{{ attr }}</label>
+              <input 
+                type="text" 
+                [(ngModel)]="searchValues[attr]" 
+                [placeholder]="'Enter ' + attr"
+                class="search-input">
+            </div>
+          </div>
+
+          <button class="search-btn" (click)="performSearch()">Search</button>
+          <button class="clear-btn" (click)="clearSearch()" *ngIf="selectedAttributes.length > 0">Clear</button>
         </div>
       </div>
 
@@ -252,6 +363,160 @@
           <div class="income-details">
             <span class="income-label">Araliya lounge</span>
             <span class="income-value">12,567,000</span>
+          </div>
+        </div>
+
+        <!-- Monthly Lounge Revenue Growth Chart -->
+        <div class="overview-card multi-year-chart-card">
+          <div class="chart-header-with-years">
+            <h3>Monthly lounge Revenue Growth</h3>
+            <div class="year-selector">
+              <button 
+                *ngFor="let yearOption of loungeRevenueYears"
+                [class.active]="selectedYear === yearOption.value"
+                (click)="selectLoungeYear(yearOption.value)"
+                class="year-btn">
+                {{ yearOption.label }}<br>{{ yearOption.value }}
+              </button>
+            </div>
+          </div>
+          <svg viewBox="0 0 640 240" class="multi-year-line-chart">
+            <!-- Grid lines -->
+            <line *ngFor="let label of getLoungeYAxisLabels()" 
+              x1="40" [attr.y1]="label.y + 10" 
+              x2="600" [attr.y2]="label.y + 10" 
+              stroke="#f0f0f0" stroke-width="1"></line>
+            
+            <!-- Y-axis -->
+            <line x1="40" y1="30" x2="40" y2="210" stroke="#ccc" stroke-width="1"></line>
+            <text *ngFor="let label of getLoungeYAxisLabels()" 
+              x="30" [attr.y]="label.y + 14" 
+              text-anchor="end" font-size="11" fill="#666">{{ label.value }}</text>
+            
+            <!-- Lines for all years -->
+            <polyline *ngFor="let yearOption of loungeRevenueYears"
+              fill="none"
+              [attr.stroke]="getLineColor(yearOption.value)"
+              [attr.stroke-opacity]="selectedYear === yearOption.value ? '1' : '0.3'"
+              stroke-width="2"
+              [attr.points]="getLoungeRevenuePointsForYear(yearOption.value)"
+              [attr.transform]="'translate(0, 10)'"
+            ></polyline>
+            
+            <!-- Dots for selected year -->
+            <circle *ngFor="let month of [0,1,2,3,4,5,6,7,8,9,10,11]; let i = index"
+              [attr.cx]="i * 50 + 50"
+              [attr.cy]="getLoungeRevenueDotY(selectedYear, i) - 10"
+              r="3"
+              [attr.fill]="getLineColor(selectedYear)"
+            ></circle>
+          </svg>
+          <div class="months-labels">
+            <span *ngFor="let m of months">{{ m }}</span>
+          </div>
+          <div class="legend">
+            <div class="legend-item" *ngFor="let yearOption of loungeRevenueYears">
+              <span class="legend-color" [style.background-color]="getLineColor(yearOption.value)"></span>
+              <span class="legend-text">{{ yearOption.value }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drivers by Experience -->
+        <div class="overview-card horizontal-bar-chart-card">
+          <h3>Drivers by Experience</h3>
+          <div class="horizontal-bar-container">
+            <div class="horizontal-bar-item" *ngFor="let item of driversByExperience">
+              <span class="bar-label-left">{{ item.label }}</span>
+              <div class="bar-wrapper">
+                <div class="horizontal-bar" 
+                  [style.width.%]="getHorizontalBarWidth(item.count, driversByExperience)"
+                  [style.background-color]="item.color">
+                </div>
+                <span class="bar-value-right">{{ item.count }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-footer">
+            <span class="legend-box" style="background: #3B82F6;"></span>
+            <span class="legend-label">2025</span>
+          </div>
+        </div>
+
+        <!-- Conductors by Experience -->
+        <div class="overview-card horizontal-bar-chart-card">
+          <h3>Conductors by Experience</h3>
+          <div class="horizontal-bar-container">
+            <div class="horizontal-bar-item" *ngFor="let item of conductorsByExperience">
+              <span class="bar-label-left">{{ item.label }}</span>
+              <div class="bar-wrapper">
+                <div class="horizontal-bar" 
+                  [style.width.%]="getHorizontalBarWidth(item.count, conductorsByExperience)"
+                  [style.background-color]="item.color">
+                </div>
+                <span class="bar-value-right">{{ item.count }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-footer">
+            <span class="legend-box" style="background: #93C5FD;"></span>
+            <span class="legend-label">2025</span>
+          </div>
+        </div>
+
+        <!-- Bus Types -->
+        <div class="overview-card horizontal-bar-chart-card">
+          <h3>Bus Types</h3>
+          <div class="horizontal-bar-container">
+            <div class="horizontal-bar-item" *ngFor="let item of busByType">
+              <span class="bar-label-left">{{ item.label }}</span>
+              <div class="bar-wrapper">
+                <div class="horizontal-bar" 
+                  [style.width.%]="getHorizontalBarWidth(item.count, busByType)"
+                  [style.background-color]="item.color">
+                </div>
+                <span class="bar-value-right">{{ item.count }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-footer">
+            <span class="legend-box" style="background: #93C5FD;"></span>
+            <span class="legend-label">Buses</span>
+          </div>
+        </div>
+
+        <!-- Lounges by Capacity -->
+        <div class="overview-card vertical-bar-chart-card">
+          <h3>Lounges by capacity</h3>
+          <div class="vertical-bar-chart">
+            <div class="vertical-bars-container">
+              <div class="vertical-bar-item" *ngFor="let item of loungesByCapacity">
+                <div class="vertical-bar-bg">
+                  <div class="vertical-bar-fill" 
+                    [style.height.%]="getHorizontalBarWidth(item.count, loungesByCapacity)"
+                    [style.background-color]="item.color">
+                  </div>
+                </div>
+                <span class="vertical-bar-label">{{ item.label }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-footer">
+            <span class="legend-box" style="background: #3B82F6;"></span>
+            <span class="legend-label">I</span>
+          </div>
+        </div>
+
+        <!-- Routes -->
+        <div class="overview-card routes-card">
+          <h3>Routes</h3>
+          <div class="routes-list">
+            <div class="route-item" 
+              *ngFor="let route of busesByRoute; let i = index"
+              [class.highlighted]="i === 0">
+              <span class="route-name">{{ route.label }}</span>
+              <span class="route-count">{{ route.count }}</span>
+            </div>
           </div>
         </div>
       </div>

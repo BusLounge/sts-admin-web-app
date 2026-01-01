@@ -30,7 +30,7 @@ func UpdateDriver(driver *models.Driver) error {
 	return repo.UpdateDriver(driver)
 }
 
-func UpdateDriverVerification(id string, status string) error {
+func UpdateDriverVerification(id string, status string, documents string) error {
 	repo := database.NewStaffRepository(database.DB)
-	return repo.UpdateDriverVerification(id, status)
+	return repo.UpdateDriverVerification(id, status, documents)
 }

@@ -124,4 +124,6 @@ alter table lounge_owners add column if not exists email text;
 alter table lounge_owners add column if not exists contact_number text;
 alter table lounge_owners add column if not exists nic text;
 
+-- Add verification_documents column to bus_owners if it doesn't exist
+alter table bus_owners add column if not exists verification_documents text;
 

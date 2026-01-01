@@ -75,7 +75,8 @@ func UpdateConductor(c *gin.Context) {
 }
 
 type ConductorVerificationRequest struct {
-	Status string `json:"status"`
+	Status    string `json:"status"`
+	Documents string `json:"documents"`
 }
 
 func VerifyConductor(c *gin.Context) {
@@ -86,7 +87,7 @@ func VerifyConductor(c *gin.Context) {
 		return
 	}
 
-	err := services.UpdateConductorVerification(id, req.Status)
+	err := services.UpdateConductorVerification(id, req.Status, req.Documents)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

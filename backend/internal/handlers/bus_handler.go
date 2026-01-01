@@ -96,7 +96,8 @@ func UpdateBus(c *gin.Context) {
 }
 
 type BusVerificationRequest struct {
-	Status string `json:"status"`
+	Status    string `json:"status"`
+	Documents string `json:"documents"`
 }
 
 func VerifyBus(c *gin.Context) {
@@ -107,7 +108,7 @@ func VerifyBus(c *gin.Context) {
 		return
 	}
 
-	err := services.UpdateBusVerification(id, req.Status)
+	err := services.UpdateBusVerification(id, req.Status, req.Documents)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

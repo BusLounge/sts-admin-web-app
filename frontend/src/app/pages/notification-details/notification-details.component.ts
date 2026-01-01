@@ -5,6 +5,10 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { NotificationService, BusNotification } from '../../core/services/notification.service';
+import { BusService } from '../../core/services/bus.service';
+import { DriverService } from '../../core/services/driver.service';
+import { ConductorService } from '../../core/services/conductor.service';
+import { LoungeService } from '../../core/services/lounge.service';
 
 interface NotificationDetails {
   id: string;
@@ -35,11 +39,18 @@ export class NotificationDetailsComponent implements OnInit {
   otherReasonText = '';
   notification: NotificationDetails | null = null;
   busId: string = '';
+  
+  // Documents field for admin to fill
+  adminDocuments: string = '';
 
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
-    public notificationService: NotificationService
+    public notificationService: NotificationService,
+    private busService: BusService,
+    private driverService: DriverService,
+    private conductorService: ConductorService,
+    private loungeService: LoungeService
   ) {}
 
   ngOnInit() {
@@ -257,24 +268,29 @@ export class NotificationDetailsComponent implements OnInit {
       const type = this.notification.type;
       let approveObservable;
       
+      // Prepare approval data with documents
+      const approvalData = {
+        documents: this.adminDocuments.trim()
+      };
+      
       switch (type) {
         case 'bus':
-          approveObservable = this.notificationService.approveBus(this.busId);
+          approveObservable = this.notificationService.approveBus(this.busId, approvalData);
           this.successModalTitle = 'New Bus added Successfully!!!';
           this.successModalMessage = `The request to add a new bus has been approved.\nThe bus is now active in the system\nand ready for scheduling.\nThank you.`;
           break;
         case 'driver':
-          approveObservable = this.notificationService.approveDriver(this.busId);
+          approveObservable = this.notificationService.approveDriver(this.busId, approvalData);
           this.successModalTitle = 'New Driver added Successfully!!!';
           this.successModalMessage = `The request to add a new driver has been approved.\nThe driver is now active in the system\nand ready for assignment.\nThank you.`;
           break;
         case 'conductor':
-          approveObservable = this.notificationService.approveConductor(this.busId);
+          approveObservable = this.notificationService.approveConductor(this.busId, approvalData);
           this.successModalTitle = 'New Conductor added Successfully!!!';
           this.successModalMessage = `The request to add a new conductor has been approved.\nThe conductor is now active in the system\nand ready for assignment.\nThank you.`;
           break;
         case 'lounge':
-          approveObservable = this.notificationService.approveLounge(this.busId);
+          approveObservable = this.notificationService.approveLounge(this.busId, approvalData);
           this.successModalTitle = 'New Lounge added Successfully!!!';
           this.successModalMessage = `The request to add a new lounge has been approved.\nThe lounge is now active in the system\nand ready for booking.\nThank you.`;
           break;
@@ -284,6 +300,21 @@ export class NotificationDetailsComponent implements OnInit {
       
       approveObservable.subscribe({
         next: () => {
+          // Reload the respective service data after approval
+          switch (type) {
+            case 'bus':
+              this.busService.loadBuses();
+              break;
+            case 'driver':
+              this.driverService.loadDrivers();
+              break;
+            case 'conductor':
+              this.conductorService.loadConductors();
+              break;
+            case 'lounge':
+              this.loungeService.loadLounges();
+              break;
+          }
           this.showSuccessModal = true;
         },
         error: (err) => {
