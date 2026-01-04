@@ -167,6 +167,30 @@
               <span class="value">Rs. {{ selectedNotification.data.price_per_hour }}</span>
             </div>
           </ng-container>
+
+          <!-- Bus Owner Details -->
+          <ng-container *ngIf="selectedNotification.type === 'bus-owner'">
+            <div class="detail-item">
+              <span class="label">Company Name:</span>
+              <span class="value">{{ selectedNotification.data.company_name }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Business Email:</span>
+              <span class="value">{{ selectedNotification.data.business_email }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Business Phone:</span>
+              <span class="value">{{ selectedNotification.data.business_phone }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">NIC/Incorporation No:</span>
+              <span class="value">{{ selectedNotification.data.identity_or_incorporation_no }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Verification Status:</span>
+              <span class="value">{{ selectedNotification.data.verification_status }}</span>
+            </div>
+          </ng-container>
         </div>
       </div>
 

@@ -36,9 +36,7 @@
     <div class="header-content">
       <h2>Bus Owners Management</h2>
     </div>
-    <div class="header-actions">
-      <button class="add-owner-btn" (click)="addOwner()">Add Bus Owner</button>
-    </div>
+    
   </div>
 
   <div class="stats-grid">
@@ -98,17 +96,17 @@
         <th (click)="onSort('id')" style="cursor: pointer;" title="Click to sort">
           Bus Owner ID {{ getSortIcon('id') }}
         </th>
-        <th (click)="onSort('company')" style="cursor: pointer;" title="Click to sort">
-          Company {{ getSortIcon('company') }}
+        <th (click)="onSort('company_name')" style="cursor: pointer;" title="Click to sort">
+          Company {{ getSortIcon('company_name') }}
         </th>
-        <th (click)="onSort('email')" style="cursor: pointer;" title="Click to sort">
-          Email {{ getSortIcon('email') }}
+        <th (click)="onSort('business_email')" style="cursor: pointer;" title="Click to sort">
+          Email {{ getSortIcon('business_email') }}
         </th>
-        <th (click)="onSort('contact')" style="cursor: pointer;" title="Click to sort">
-          Contact {{ getSortIcon('contact') }}
+        <th (click)="onSort('business_phone')" style="cursor: pointer;" title="Click to sort">
+          Contact {{ getSortIcon('business_phone') }}
         </th>
-        <th (click)="onSort('nic_number')" style="cursor: pointer;" title="Click to sort">
-          NIC Number {{ getSortIcon('nic_number') }}
+        <th (click)="onSort('identity_or_incorporation_no')" style="cursor: pointer;" title="Click to sort">
+          NIC Number {{ getSortIcon('identity_or_incorporation_no') }}
         </th>
         <th (click)="onSort('verification_status')" style="cursor: pointer;" title="Click to sort">
           Verification {{ getSortIcon('verification_status') }}
@@ -120,28 +118,33 @@
     <tbody>
       <tr *ngFor="let owner of filteredBusOwners">
         <td>{{ owner.id }}</td>
-        <td class="company-name">{{ owner.company }}</td>
-        <td>{{ owner.email }}</td>
-        <td>{{ owner.contact }}</td>
-        <td>{{ owner.nic_number }}</td>
+        <td class="company-name">{{ owner.company_name }}</td>
+        <td>{{ owner.business_email }}</td>
+        <td>{{ owner.business_phone }}</td>
+        <td>{{ owner.identity_or_incorporation_no }}</td>
+        <td>{{ owner.verification_status }}</td>
         <td>
-          <span class="verification-badge" [ngClass]="getVerificationBadgeClass(owner.verification_status)">
-            {{ owner.verification_status }}
-          </span>
-        </td>
-        <td>
-          <button class="view-docs-btn" (click)="viewDocuments(owner)">
-            <i class="fas fa-file-alt"></i> View ({{ owner.documents.length }})
-          </button>
+          <div *ngIf="owner.verification_status?.toLowerCase() === 'verified'">
+            <div *ngIf="owner.verification_documents && owner.verification_documents.length > 0; else noDocuments">
+              <div *ngFor="let doc of owner.verification_documents; let i = index">
+                <a [href]="doc" target="_blank" class="document-link" title="Open document">
+                  <i class="fas fa-external-link-alt"></i> Document {{ i + 1 }}
+                </a>
+              </div>
+            </div>
+            <ng-template #noDocuments>
+              <span class="no-documents">No documents</span>
+            </ng-template>
+          </div>
+          <span *ngIf="owner.verification_status?.toLowerCase() === 'rejected'" class="no-documents">-</span>
+          <span *ngIf="owner.verification_status?.toLowerCase() === 'pending'" class="no-documents">Pending approval</span>
         </td>
         <td>
           <div class="action-buttons">
             <button class="action-btn edit-btn" (click)="editOwner(owner)" title="Edit">
               <i class="fas fa-edit"></i>
             </button>
-            <button class="action-btn delete-btn" (click)="deleteOwner(owner)" title="Delete">
-              <i class="fas fa-trash"></i>
-            </button>
+            
           </div>
         </td>
       </tr>
@@ -156,11 +159,11 @@
     (close)="closeNotificationPanel()">
   </app-notification-panel>
 
-  <!-- Add Bus Owner Modal -->
+  <!-- Add/Edit Bus Owner Modal -->
   <div class="modal-overlay" *ngIf="showAddOwnerModal" (click)="closeAddOwnerModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Add New Bus Owner</h3>
+        <h3>{{ isEditMode ? 'Edit Bus Owner' : 'Add New Bus Owner' }}</h3>
         <button class="close-btn" (click)="closeAddOwnerModal()">&times;</button>
       </div>
       <div class="modal-body">
@@ -170,8 +173,8 @@
             <input
               type="text"
               id="company"
-              [(ngModel)]="newOwner.company"
-              name="company"
+              [(ngModel)]="newOwner.company_name"
+              name="company_name"
               class="form-control"
               placeholder="Enter company name"
               required
@@ -183,8 +186,8 @@
             <input
               type="email"
               id="email"
-              [(ngModel)]="newOwner.email"
-              name="email"
+              [(ngModel)]="newOwner.business_email"
+              name="business_email"
               class="form-control"
               placeholder="Enter email address"
               required
@@ -196,8 +199,8 @@
             <input
               type="text"
               id="contact"
-              [(ngModel)]="newOwner.contact"
-              name="contact"
+              [(ngModel)]="newOwner.business_phone"
+              name="business_phone"
               class="form-control"
               placeholder="e.g., +94 77 123 4567"
               required
@@ -205,14 +208,14 @@
           </div>
 
           <div class="form-group">
-            <label for="nic">NIC Number <span class="required">*</span></label>
+            <label for="nic">NIC/Incorporation Number <span class="required">*</span></label>
             <input
               type="text"
               id="nic"
-              [(ngModel)]="newOwner.nic_number"
-              name="nic_number"
+              [(ngModel)]="newOwner.identity_or_incorporation_no"
+              name="identity_or_incorporation_no"
               class="form-control"
-              placeholder="Enter NIC number"
+              placeholder="Enter NIC or Incorporation number"
               required
             />
           </div>
@@ -220,7 +223,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" (click)="closeAddOwnerModal()">Cancel</button>
-        <button class="btn-save" (click)="saveOwner()">Save Bus Owner</button>
+        <button class="btn-save" (click)="saveOwner()">{{ isEditMode ? 'Update Bus Owner' : 'Save Bus Owner' }}</button>
       </div>
     </div>
   </div>

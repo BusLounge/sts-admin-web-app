@@ -2,18 +2,33 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { NotificationService } from '../../core/services/notification.service';
+import { environment } from '../../../environments/environment';
 
 interface BusOwner {
-  id: number;
-  company: string;
-  email: string;
-  contact: string;
-  nic_number: string;
-  verification_status: 'Pending' | 'Verified' | 'Rejected';
-  documents: string[];
+  id: string;
+  user_id: string;
+  company_name: string;
+  business_email: string;
+  business_phone: string;
+  identity_or_incorporation_no: string;
+  verification_status: string;
+  verification_documents: any;
+  license_number?: string;
+  contact_person?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
+  tax_id?: string;
+  total_buses?: number;
+  profile_completed?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 @Component({
@@ -30,6 +45,8 @@ export class BusOwnersComponent implements OnInit {
   showNotificationPanel = false;
   showProfileMenu = false;
   showAddOwnerModal = false;
+  isEditMode = false;
+  editingOwnerId: string = '';
 
   // Sorting properties
   sortColumn: string = '';
@@ -37,14 +54,18 @@ export class BusOwnersComponent implements OnInit {
 
   // New bus owner form
   newOwner = {
-    company: '',
-    email: '',
-    contact: '',
-    nic_number: ''
+    company_name: '',
+    business_email: '',
+    business_phone: '',
+    identity_or_incorporation_no: '',
+    user_id: ''
   };
+
+  private apiUrl = `${environment.apiUrl}/bus-owners`;
 
   constructor(
     private router: Router,
+    private http: HttpClient,
     public notificationService: NotificationService
   ) {}
 
@@ -53,55 +74,17 @@ export class BusOwnersComponent implements OnInit {
   }
 
   loadBusOwners(): void {
-    // Mock data - replace with actual API call
-    this.busOwners = [
-      {
-        id: 1,
-        company: 'Swift Transport Ltd',
-        email: 'contact@swifttransport.com',
-        contact: '+94 77 123 4567',
-        nic_number: '199012345678',
-        verification_status: 'Verified',
-        documents: ['license.pdf', 'incorporation.pdf']
+    this.http.get<BusOwner[]>(this.apiUrl).subscribe({
+      next: (data) => {
+        this.busOwners = data;
+        this.filteredBusOwners = data;
       },
-      {
-        id: 2,
-        company: 'Express Lines Pvt Ltd',
-        email: 'info@expresslines.lk',
-        contact: '+94 71 234 5678',
-        nic_number: '198523456789',
-        verification_status: 'Pending',
-        documents: ['license.pdf']
-      },
-      {
-        id: 3,
-        company: 'City Bus Service',
-        email: 'admin@citybus.lk',
-        contact: '+94 76 345 6789',
-        nic_number: '199234567890',
-        verification_status: 'Verified',
-        documents: ['license.pdf', 'incorporation.pdf', 'tax.pdf']
-      },
-      {
-        id: 4,
-        company: 'Metro Coach Company',
-        email: 'support@metrocoach.com',
-        contact: '+94 75 456 7890',
-        nic_number: '198834567891',
-        verification_status: 'Pending',
-        documents: ['license.pdf']
-      },
-      {
-        id: 5,
-        company: 'Royal Transit Services',
-        email: 'contact@royaltransit.lk',
-        contact: '+94 77 567 8901',
-        nic_number: '199545678902',
-        verification_status: 'Rejected',
-        documents: ['license.pdf', 'incorporation.pdf']
+      error: (error) => {
+        console.error('Error loading bus owners:', error);
+        this.busOwners = [];
+        this.filteredBusOwners = [];
       }
-    ];
-    this.applyFilters();
+    });
   }
 
   getTotalBusOwners(): number {
@@ -109,11 +92,11 @@ export class BusOwnersComponent implements OnInit {
   }
 
   getPendingVerifications(): number {
-    return this.busOwners.filter(owner => owner.verification_status === 'Pending').length;
+    return this.busOwners.filter(owner => owner.verification_status?.toLowerCase() === 'pending').length;
   }
 
   getVerifiedCount(): number {
-    return this.busOwners.filter(owner => owner.verification_status === 'Verified').length;
+    return this.busOwners.filter(owner => owner.verification_status?.toLowerCase() === 'verified').length;
   }
 
   onSearchChange(): void {
@@ -125,10 +108,10 @@ export class BusOwnersComponent implements OnInit {
       const searchLower = this.searchTerm.toLowerCase();
       return (
         owner.id.toString().includes(searchLower) ||
-        owner.company.toLowerCase().includes(searchLower) ||
-        owner.email.toLowerCase().includes(searchLower) ||
-        owner.contact.toLowerCase().includes(searchLower) ||
-        owner.nic_number.toLowerCase().includes(searchLower) ||
+        (owner.company_name && owner.company_name.toLowerCase().includes(searchLower)) ||
+        (owner.business_email && owner.business_email.toLowerCase().includes(searchLower)) ||
+        (owner.business_phone && owner.business_phone.toLowerCase().includes(searchLower)) ||
+        (owner.identity_or_incorporation_no && owner.identity_or_incorporation_no.toLowerCase().includes(searchLower)) ||
         owner.verification_status.toLowerCase().includes(searchLower)
       );
     });
@@ -191,42 +174,61 @@ export class BusOwnersComponent implements OnInit {
 
   resetForm(): void {
     this.newOwner = {
-      company: '',
-      email: '',
-      contact: '',
-      nic_number: ''
+      company_name: '',
+      business_email: '',
+      business_phone: '',
+      identity_or_incorporation_no: '',
+      user_id: ''
     };
   }
 
   saveOwner(): void {
     // Validate required fields
-    if (!this.newOwner.company || !this.newOwner.email || !this.newOwner.contact || !this.newOwner.nic_number) {
+    if (!this.newOwner.company_name || !this.newOwner.business_email || 
+        !this.newOwner.business_phone || !this.newOwner.identity_or_incorporation_no) {
       alert('Please fill all required fields');
       return;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.newOwner.email)) {
+    if (!emailRegex.test(this.newOwner.business_email)) {
       alert('Please enter a valid email address');
       return;
     }
 
-    // Create new owner
-    const newBusOwner: BusOwner = {
-      id: this.busOwners.length > 0 ? Math.max(...this.busOwners.map(o => o.id)) + 1 : 1,
-      company: this.newOwner.company,
-      email: this.newOwner.email,
-      contact: this.newOwner.contact,
-      nic_number: this.newOwner.nic_number,
-      verification_status: 'Pending',
-      documents: []
-    };
-
-    this.busOwners.push(newBusOwner);
-    this.applyFilters();
-    alert('Bus owner added successfully!');
-    this.closeAddOwnerModal();
+    if (this.isEditMode) {
+      // Update existing owner
+      this.http.put<BusOwner>(`${this.apiUrl}/${this.editingOwnerId}`, this.newOwner).subscribe({
+        next: (data) => {
+          const index = this.busOwners.findIndex(o => o.id === this.editingOwnerId);
+          if (index > -1) {
+            this.busOwners[index] = data;
+            this.applyFilters();
+          }
+          alert('Bus owner updated successfully!');
+          this.closeAddOwnerModal();
+        },
+        error: (error) => {
+          console.error('Error updating bus owner:', error);
+          alert('Failed to update bus owner. Please try again.');
+        }
+      });
+    } else {
+      // Create new owner via API
+      this.http.post<BusOwner>(this.apiUrl, this.newOwner).subscribe({
+        next: (data) => {
+          this.busOwners.push(data);
+          this.applyFilters();
+          alert('Bus owner added successfully!');
+          this.closeAddOwnerModal();
+        },
+        error: (error) => {
+          console.error('Error creating bus owner:', error);
+          alert('Failed to add bus owner. Please try again.');
+        }
+      });
+    }
   }
 
   viewDocuments(owner: BusOwner): void {
@@ -235,17 +237,33 @@ export class BusOwnersComponent implements OnInit {
   }
 
   editOwner(owner: BusOwner): void {
-    console.log('Edit owner:', owner);
-    // Implement edit logic or navigate to edit page
+    this.isEditMode = true;
+    this.editingOwnerId = owner.id;
+    this.newOwner = {
+      company_name: owner.company_name,
+      business_email: owner.business_email,
+      business_phone: owner.business_phone,
+      identity_or_incorporation_no: owner.identity_or_incorporation_no,
+      user_id: owner.user_id
+    };
+    this.showAddOwnerModal = true;
   }
 
   deleteOwner(owner: BusOwner): void {
-    if (confirm(`Are you sure you want to delete ${owner.company}?`)) {
-      const index = this.busOwners.findIndex(o => o.id === owner.id);
-      if (index > -1) {
-        this.busOwners.splice(index, 1);
-        this.applyFilters();
-      }
+    if (confirm(`Are you sure you want to delete ${owner.company_name}?`)) {
+      this.http.delete(`${this.apiUrl}/${owner.id}`).subscribe({
+        next: () => {
+          const index = this.busOwners.findIndex(o => o.id === owner.id);
+          if (index > -1) {
+            this.busOwners.splice(index, 1);
+            this.applyFilters();
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting bus owner:', error);
+          alert('Failed to delete bus owner. Please try again.');
+        }
+      });
     }
   }
 

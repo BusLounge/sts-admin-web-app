@@ -65,6 +65,15 @@ func main() {
 		api.PUT("/buses/:id", handlers.UpdateBus)
 		api.PUT("/buses/:id/verify", handlers.VerifyBus)
 
+		// Bus Owner routes
+		api.GET("/bus-owners", handlers.GetBusOwners)
+		api.GET("/bus-owners/pending", handlers.GetPendingBusOwners)
+		api.GET("/bus-owners/:id", handlers.GetBusOwnerById)
+		api.POST("/bus-owners", handlers.CreateBusOwner)
+		api.PUT("/bus-owners/:id", handlers.UpdateBusOwner)
+		api.PUT("/bus-owners/:id/verify", handlers.VerifyBusOwner)
+		api.DELETE("/bus-owners/:id", handlers.DeleteBusOwner)
+
 		// Driver routes
 		api.GET("/drivers", handlers.GetDrivers)
 		api.GET("/drivers/pending", handlers.GetPendingDrivers)

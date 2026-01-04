@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { NotificationService, BusNotification, DriverNotification, ConductorNotification, LoungeNotification } from '../../../core/services/notification.service';
+import { NotificationService, BusNotification, DriverNotification, ConductorNotification, LoungeNotification, BusOwnerNotification } from '../../../core/services/notification.service';
 import { BusService } from '../../../core/services/bus.service';
 import { DriverService } from '../../../core/services/driver.service';
 import { ConductorService } from '../../../core/services/conductor.service';
 import { LoungeService } from '../../../core/services/lounge.service';
+import { BusOwnerService } from '../../../core/services/bus-owner.service';
 import { combineLatest } from 'rxjs';
 
 export interface Notification {
@@ -16,7 +17,7 @@ export interface Notification {
   title: string;
   message: string;
   time: string;
-  type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking';
+  type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking' | 'bus-owner';
   data?: any;
 }
 
@@ -37,7 +38,8 @@ export class NotificationPanelComponent implements OnInit {
     private busService: BusService,
     private driverService: DriverService,
     private conductorService: ConductorService,
-    private loungeService: LoungeService
+    private loungeService: LoungeService,
+    private busOwnerService: BusOwnerService
   ) {}
 
   notifications: Notification[] = [];
@@ -50,20 +52,22 @@ export class NotificationPanelComponent implements OnInit {
   isRejectionSuccess = false;
   showRejectModal = false;
   rejectReason: string = '';
-  lastProcessedType: 'bus' | 'driver' | 'conductor' | 'lounge' | null = null;
+  lastProcessedType: 'bus' | 'driver' | 'conductor' | 'lounge' | 'bus-owner' | null = null;
 
   ngOnInit() {
     combineLatest([
       this.notificationService.pendingBuses$,
       this.notificationService.pendingDrivers$,
       this.notificationService.pendingConductors$,
-      this.notificationService.pendingLounges$
-    ]).subscribe(([buses, drivers, conductors, lounges]) => {
+      this.notificationService.pendingLounges$,
+      this.notificationService.pendingBusOwners$
+    ]).subscribe(([buses, drivers, conductors, lounges, busOwners]) => {
       this.notifications = [
         ...buses.map(bus => this.mapBusToNotification(bus)),
         ...drivers.map(driver => this.mapDriverToNotification(driver)),
         ...conductors.map(conductor => this.mapConductorToNotification(conductor)),
-        ...lounges.map(lounge => this.mapLoungeToNotification(lounge))
+        ...lounges.map(lounge => this.mapLoungeToNotification(lounge)),
+        ...busOwners.map(busOwner => this.mapBusOwnerToNotification(busOwner))
       ];
     });
   }
@@ -117,6 +121,19 @@ export class NotificationPanelComponent implements OnInit {
       time: timeAgo,
       type: 'lounge',
       data: lounge
+    };
+  }
+
+  private mapBusOwnerToNotification(busOwner: BusOwnerNotification): Notification {
+    const timeAgo = this.getTimeAgo(new Date());
+    return {
+      id: busOwner.id,
+      icon: '👔',
+      title: 'New Bus Owner Request',
+      message: `A new bus owner registration request has been submitted: ${busOwner.company_name}, Email: ${busOwner.business_email}. Awaiting approval.`,
+      time: timeAgo,
+      type: 'bus-owner',
+      data: busOwner
     };
   }
 
@@ -189,6 +206,18 @@ export class NotificationPanelComponent implements OnInit {
         this.successModalTitle = 'New Lounge added Successfully!!!';
         this.successModalMessage = `The request to add a new lounge has been approved.\nThe lounge is now active in the system\nand ready for booking.\nThank you.`;
         break;
+      case 'bus-owner':
+        // Convert comma-separated string to array of document links
+        const documentLinks = this.adminDocuments.trim()
+          .split(',')
+          .map(link => link.trim())
+          .filter(link => link.length > 0);
+        
+        console.log('Sending bus owner verification with documents:', documentLinks);
+        approveObservable = this.notificationService.approveBusOwner(id, { verification_documents: documentLinks });
+        this.successModalTitle = 'New Bus Owner added Successfully!!!';
+        this.successModalMessage = `The request to add a new bus owner has been approved.\nThe bus owner is now verified in the system\nand ready to manage buses.\nThank you.`;
+        break;
       default:
         return;
     }
@@ -210,6 +239,9 @@ export class NotificationPanelComponent implements OnInit {
             break;
           case 'lounge':
             this.loungeService.loadLounges();
+            break;
+          case 'bus-owner':
+            this.busOwnerService.loadBusOwners();
             break;
         }
         this.closeDetailsModal();
@@ -272,6 +304,11 @@ export class NotificationPanelComponent implements OnInit {
         this.successModalTitle = 'Lounge Request Rejected';
         this.successModalMessage = `The lounge registration request has been rejected.\nReason: ${this.rejectReason}\nThank you.`;
         break;
+      case 'bus-owner':
+        rejectObservable = this.notificationService.rejectBusOwner(id, { verification_documents: this.rejectReason.trim() });
+        this.successModalTitle = 'Bus Owner Request Rejected';
+        this.successModalMessage = `The bus owner registration request has been rejected.\nReason: ${this.rejectReason}\nThank you.`;
+        break;
       default:
         return;
     }
@@ -293,6 +330,9 @@ export class NotificationPanelComponent implements OnInit {
             break;
           case 'lounge':
             this.loungeService.loadLounges();
+            break;
+          case 'bus-owner':
+            this.busOwnerService.loadBusOwners();
             break;
         }
         this.closeRejectModal();

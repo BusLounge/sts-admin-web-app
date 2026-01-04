@@ -39,7 +39,7 @@ export class DashboardComponent implements OnInit {
   // Attribute options for each search type
   attributeOptions: { [key: string]: string[] } = {
     Bus: ['Company', 'Route', 'Permit Num', 'Register Num', 'Verification', 'No of Seat', 'Approved fare', 'Type', 'Status'],
-    Lounge: ['Lounge Name', 'Owner', 'Capacity', 'Price', 'Marketplace', 'Status'],
+    Lounge: ['Lounge Name', 'Owner', 'Contact', 'Address', 'Price per hour', 'Capacity', 'Operation', 'Verification'],
     Driver: ['Name', 'Contact', 'License Num', 'Experience', 'Status'],
     Conductor: ['Name', 'Contact', 'License Num', 'Experience', 'Status'],
     'Lounge booking': ['Passenger ID', 'Lounge Name', 'Adults', 'Children', 'Status'],
@@ -413,15 +413,19 @@ export class DashboardComponent implements OnInit {
             return lounge.lounge_name?.toLowerCase().includes(searchValue);
           case 'Owner':
             return lounge.lounge_owner?.toLowerCase().includes(searchValue);
+          case 'Contact':
+            return lounge.lounge_contact?.toLowerCase().includes(searchValue);
+          case 'Address':
+            return lounge.address?.toLowerCase().includes(searchValue);
+          case 'Price per hour':
+            return lounge.price_per_hour?.toString().includes(searchValue);
           case 'Capacity':
             return lounge.capacity?.toString().includes(searchValue);
-          case 'Price':
-            return lounge.price_per_hour?.toString().includes(searchValue);
-          case 'Marketplace':
-            return lounge.marketplace?.toLowerCase().includes(searchValue);
-          case 'Status':
+          case 'Operation':
             const status = typeof lounge.operational === 'string' ? lounge.operational : (lounge.operational ? 'open' : 'closed');
             return status.toLowerCase().includes(searchValue);
+          case 'Verification':
+            return lounge.verification?.toLowerCase().includes(searchValue);
           default:
             return true;
         }
