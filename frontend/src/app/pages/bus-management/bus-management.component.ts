@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { BaseChartDirective } from 'ng2-charts';
@@ -17,7 +17,7 @@ import { Bus } from '../../core/models/bus.model';
 @Component({
   selector: 'app-bus-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, BaseChartDirective, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, BaseChartDirective, NotificationPanelComponent, RouterModule],
   templateUrl: './bus-management.component.html',
   styleUrls: ['./bus-management.component.scss']
 })

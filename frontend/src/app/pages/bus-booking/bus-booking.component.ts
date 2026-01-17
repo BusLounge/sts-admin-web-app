@@ -3,7 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { BusBookingService } from '../../core/services/bus-booking.service';
@@ -16,7 +16,7 @@ import { NotificationService } from '../../core/services/notification.service';
 @Component({
   selector: 'app-bus-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseChartDirective, NotificationPanelComponent, NavbarComponent],
+  imports: [CommonModule, FormsModule, BaseChartDirective, NotificationPanelComponent, NavbarComponent, RouterModule],
   templateUrl: './bus-booking.component.html',
   styleUrls: ['./bus-booking.component.scss']
 })

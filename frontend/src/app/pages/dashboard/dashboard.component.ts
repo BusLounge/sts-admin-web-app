@@ -38,12 +38,12 @@ export class DashboardComponent implements OnInit {
 
   // Attribute options for each search type
   attributeOptions: { [key: string]: string[] } = {
-    Bus: ['Company', 'Route', 'Permit Num', 'Register Num', 'Verification', 'No of Seat', 'Approved fare', 'Type', 'Status'],
+    Bus: ['Company', 'Route', 'Permit Num', 'Register Num', 'Owner Verification', 'Permit Verify', 'Contact', 'No of Seat', 'Approved fare', 'Type', 'Status'],
     Lounge: ['Lounge Name', 'Owner', 'Contact', 'Address', 'Price per hour', 'Capacity', 'Operation', 'Verification'],
-    Driver: ['Name', 'Contact', 'License Num', 'Experience', 'Status'],
-    Conductor: ['Name', 'Contact', 'License Num', 'Experience', 'Status'],
+    Driver: ['Name', 'Contact', 'License Num', 'License Expire date', 'Experience', 'Hire date', 'Verification', 'Status'],
+    Conductor: ['Name', 'Contact', 'License Num', 'Experience', 'Hire date', 'Verification', 'Status'],
     'Lounge booking': ['Passenger ID', 'Lounge Name', 'Adults', 'Children', 'Status'],
-    'Bus booking': ['Passenger ID', 'Bus ID', 'Departure', 'Payment Status', 'Booking Status']
+    'Bus booking': ['Bus Number', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Route', 'Date & Time', 'Bus Type', 'Seat No', 'Total Fare', 'Payment Status', 'Booking Status']
   };
 
   // Chart data
@@ -372,7 +372,7 @@ export class DashboardComponent implements OnInit {
     const buses = this.busService.buses; // Get all buses
     this.searchResults = buses.filter(bus => {
       return this.selectedAttributes.every(attr => {
-        const searchValue = this.searchValues[attr]?.toLowerCase();
+        const searchValue = this.searchValues[attr]?.toLowerCase().trim();
         if (!searchValue) return true;
 
         switch (attr) {
@@ -384,8 +384,12 @@ export class DashboardComponent implements OnInit {
             return bus.permit_number?.toLowerCase().includes(searchValue);
           case 'Register Num':
             return bus.license_plate?.toLowerCase().includes(searchValue);
-          case 'Verification':
+          case 'Owner Verification':
+            return bus.owner_verification_status?.toLowerCase().includes(searchValue);
+          case 'Permit Verify':
             return bus.verification_status?.toLowerCase().includes(searchValue);
+          case 'Contact':
+            return bus.business_phone?.toLowerCase().includes(searchValue);
           case 'No of Seat':
             return bus.total_seats?.toString().includes(searchValue);
           case 'Approved fare':
@@ -437,7 +441,7 @@ export class DashboardComponent implements OnInit {
     const drivers = this.driverService.drivers; // Get all drivers
     this.searchResults = drivers.filter(driver => {
       return this.selectedAttributes.every(attr => {
-        const searchValue = this.searchValues[attr]?.toLowerCase();
+        const searchValue = this.searchValues[attr]?.toLowerCase().trim();
         if (!searchValue) return true;
 
         switch (attr) {
@@ -447,8 +451,14 @@ export class DashboardComponent implements OnInit {
             return driver.contact_number?.toLowerCase().includes(searchValue);
           case 'License Num':
             return driver.license_number?.toLowerCase().includes(searchValue);
+          case 'License Expire date':
+            return driver.license_expiry_date?.toLowerCase().includes(searchValue);
           case 'Experience':
             return driver.experience_years?.toString().includes(searchValue);
+          case 'Hire date':
+            return driver.hire_date?.toLowerCase().includes(searchValue);
+          case 'Verification':
+            return driver.verification_status?.toLowerCase().includes(searchValue);
           case 'Status':
             return driver.status?.toLowerCase().includes(searchValue);
           default:
@@ -462,7 +472,7 @@ export class DashboardComponent implements OnInit {
     const conductors = this.conductorService.conductors; // Get all conductors
     this.searchResults = conductors.filter(conductor => {
       return this.selectedAttributes.every(attr => {
-        const searchValue = this.searchValues[attr]?.toLowerCase();
+        const searchValue = this.searchValues[attr]?.toLowerCase().trim();
         if (!searchValue) return true;
 
         switch (attr) {
@@ -474,6 +484,10 @@ export class DashboardComponent implements OnInit {
             return conductor.license_number?.toLowerCase().includes(searchValue);
           case 'Experience':
             return conductor.experience_years?.toString().includes(searchValue);
+          case 'Hire date':
+            return conductor.hire_date?.toLowerCase().includes(searchValue);
+          case 'Verification':
+            return conductor.verification_status?.toLowerCase().includes(searchValue);
           case 'Status':
             return conductor.status?.toLowerCase().includes(searchValue);
           default:
@@ -487,17 +501,28 @@ export class DashboardComponent implements OnInit {
     const bookings = this.busBookingService.bookings; // Get all bus bookings
     this.searchResults = bookings.filter(booking => {
       return this.selectedAttributes.every(attr => {
-        const searchValue = this.searchValues[attr]?.toLowerCase();
+        const searchValue = this.searchValues[attr]?.toLowerCase().trim();
         if (!searchValue) return true;
 
         switch (attr) {
-          case 'Passenger ID':
-            return booking.passenger_name?.toLowerCase().includes(searchValue) || 
-                   booking.passenger_phone?.toLowerCase().includes(searchValue);
-          case 'Bus ID':
-            return booking.bus_id?.toLowerCase().includes(searchValue);
-          case 'Departure':
+          case 'Bus Number':
+            return booking.bus_number?.toLowerCase().includes(searchValue);
+          case 'Passenger Name':
+            return booking.passenger_name?.toLowerCase().includes(searchValue);
+          case 'Passenger Phone':
+            return booking.passenger_phone?.toLowerCase().includes(searchValue);
+          case 'Ref NUM':
+            return booking.booking_reference?.toLowerCase().includes(searchValue);
+          case 'Route':
+            return booking.route?.toLowerCase().includes(searchValue);
+          case 'Date & Time':
             return booking.departure_datetime?.toLowerCase().includes(searchValue);
+          case 'Bus Type':
+            return booking.bus_type?.toLowerCase().includes(searchValue);
+          case 'Seat No':
+            return booking.seat_number?.toLowerCase().includes(searchValue);
+          case 'Total Fare':
+            return booking.total_fare?.toString().includes(searchValue);
           case 'Payment Status':
             return booking.payment_status?.toLowerCase().includes(searchValue);
           case 'Booking Status':

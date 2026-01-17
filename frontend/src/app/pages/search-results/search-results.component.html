@@ -102,17 +102,18 @@
         <table class="bus-table" *ngIf="searchType === 'Bus' && searchResults.length > 0">
           <thead>
             <tr>
-              <th>BusID</th>
-              <th>Company</th>
-              <th>Contact Num</th>
-              <th>permitNum</th>
-              <th>Regnum</th>
-              <th>Type</th>
-              <th>Seats</th>
-              <th>Route</th>
-              <th>Approved fare</th>
-              <th>status</th>
-              <th>Verification</th>
+              <th>BusD ID</th>
+              <th>Company ID</th>
+              <th>Contact Num ID</th>
+              <th>permitNum ID</th>
+              <th>Regnum ID</th>
+              <th>Type ID</th>
+              <th>Seats ID</th>
+              <th>Route ID</th>
+              <th>Approved fare ID</th>
+              <th>status ID</th>
+              <th>Owner Verification ID</th>
+              <th>Permit Verify (Route Permit Status) ID</th>
               <th>Documents</th>
               <th>Action</th>
             </tr>
@@ -129,6 +130,7 @@
               <td>{{ bus.custom_route_name }}</td>
               <td>{{ bus.fare_per_seat }}</td>
               <td>{{ bus.status }}</td>
+              <td>{{ bus.owner_verification_status }}</td>
               <td>{{ bus.verification_status }}</td>
               <td>
                 <div *ngIf="bus.verification_documents && bus.verification_documents.length > 0; else noDocuments">
@@ -250,24 +252,34 @@
         <table class="bus-table" *ngIf="searchType === 'Bus booking' && searchResults.length > 0">
           <thead>
             <tr>
-              <th>Booking ID</th>
-              <th>Passenger</th>
-              <th>Bus</th>
-              <th>Departure</th>
-              <th>Seats</th>
-              <th>Total Fare</th>
-              <th>Payment Status</th>
-              <th>Booking Status</th>
-              <th>Action</th>
+              <th>Booking ID ID</th>
+              <th>Trip Schedule ID ID</th>
+              <th>Bus Number ID</th>
+              <th>Passenger Name ID</th>
+              <th>Passenger Phone ID</th>
+              <th>Ref NUM ID</th>
+              <th>Route ID</th>
+              <th>Date & Time ID</th>
+              <th>Bus Type ID</th>
+              <th>Seat No ID</th>
+              <th>Total Fare ID</th>
+              <th>Payment Status ID</th>
+              <th>Booking Status ID</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let booking of searchResults">
               <td>{{ booking.booking_id }}</td>
-              <td>{{ booking.passenger_name || booking.passenger_phone }}</td>
-              <td>{{ booking.bus_id }}</td>
+              <td>{{ booking.scheduled_trip_id }}</td>
+              <td>{{ booking.bus_number }}</td>
+              <td>{{ booking.passenger_name }}</td>
+              <td>{{ booking.passenger_phone }}</td>
+              <td>{{ booking.booking_reference }}</td>
+              <td>{{ booking.route }}</td>
               <td>{{ booking.departure_datetime }}</td>
-              <td>{{ booking.selected_seats }}</td>
+              <td>{{ booking.bus_type }}</td>
+              <td>{{ booking.seat_number }}</td>
               <td>{{ booking.total_fare }}</td>
               <td>{{ booking.payment_status }}</td>
               <td>{{ booking.booking_status }}</td>

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
@@ -34,7 +34,7 @@ interface BusOwner {
 @Component({
   selector: 'app-bus-owners',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent, RouterModule],
   templateUrl: './bus-owners.component.html',
   styleUrls: ['./bus-owners.component.scss']
 })

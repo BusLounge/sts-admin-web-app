@@ -58,6 +58,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    overflow: visible;
+    gap: 0.5rem;
     
     .app-branding {
       display: flex;
@@ -65,6 +67,7 @@
       align-items: center;
       gap: 0.2rem;
       padding-right: 10px;
+      flex-shrink: 0;
       
       .logo-circle {
         width: 28px;
@@ -101,6 +104,7 @@
       display: flex;
       gap: 1rem;
       align-items: center;
+      flex-shrink: 0;
 
       .icon-btn {
         background: none;

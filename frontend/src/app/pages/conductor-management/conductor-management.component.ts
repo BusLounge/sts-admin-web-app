@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import Chart from 'chart.js/auto';
 import jsPDF from 'jspdf';
@@ -15,7 +15,7 @@ import { NotificationService } from '../../core/services/notification.service';
 @Component({
   selector: 'app-conductor-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent, RouterModule],
   templateUrl: './conductor-management.component.html',
   styleUrls: ['./conductor-management.component.scss']
 })

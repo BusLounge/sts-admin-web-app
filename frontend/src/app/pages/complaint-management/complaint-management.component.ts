@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -25,7 +25,8 @@ import { NotificationService } from '../../core/services/notification.service';
     DialogModule,
     TextareaModule,
     NavbarComponent,
-    NotificationPanelComponent
+    NotificationPanelComponent,
+    RouterModule
   ],
   templateUrl: './complaint-management.component.html',
   styleUrls: ['./complaint-management.component.scss']

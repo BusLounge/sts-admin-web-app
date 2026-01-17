@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { PassengerService } from '../../core/services/passenger.service';
@@ -13,7 +13,7 @@ import { NotificationService } from '../../core/services/notification.service';
 @Component({
   selector: 'app-passenger-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent, RouterModule],
   templateUrl: './passenger-management.component.html',
   styleUrls: ['./passenger-management.component.scss']
 })
