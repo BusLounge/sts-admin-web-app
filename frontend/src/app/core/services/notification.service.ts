@@ -19,6 +19,7 @@ export interface BusNotification {
   status: string;
   verification_status: string;
   verification_documents?: string[];
+  created_at?: string;
 }
 
 export interface DriverNotification {
@@ -32,6 +33,7 @@ export interface DriverNotification {
   verification_notes: string;
   status: string;
   hire_date: string;
+  created_at?: string;
 }
 
 export interface ConductorNotification {
@@ -45,6 +47,7 @@ export interface ConductorNotification {
   verification_notes: string;
   status: string;
   hire_date: string;
+  created_at?: string;
 }
 
 export interface LoungeNotification {
@@ -63,6 +66,7 @@ export interface LoungeNotification {
   verification: string;
   verification_note: string;
   operational: boolean;
+  created_at?: string;
 }
 
 export interface BusOwnerNotification {

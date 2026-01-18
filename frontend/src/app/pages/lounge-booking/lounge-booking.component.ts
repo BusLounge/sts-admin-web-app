@@ -31,8 +31,8 @@ export class LoungeBookingComponent implements OnInit {
   filtered: LoungeBooking[] = [];
   searchTerm = '';
 
-  paymentFilter: 'All' | 'Pending' | 'Paid' | 'Failed' = 'All';
-  statusFilter: 'All' | 'Confirmed' | 'Pending' | 'Cancelled' | 'Completed' = 'All';
+  paymentFilter: 'All' | 'pending' | 'paid' | 'failed' = 'All';
+  statusFilter: 'All' | 'confirmed' | 'pending' | 'cancelled' | 'completed' = 'All';
 
   // Sorting properties
   sortColumn: string = '';
@@ -77,21 +77,21 @@ export class LoungeBookingComponent implements OnInit {
       doc.text('Lounge Booking History', 14, 16);
 
       const tableHead = [[
-        'Booking ID', 'Passenger Name', 'Phone', 'Ref Num', 'Lounge Name', 'Date', 'Time/Duration', 'Guests (A/C)', 'Features', 'Total Amount', 'Payment', 'Status'
+        'Booking ID', 'Passenger Name', 'Phone', 'Ref Num', 'Lounge Name', 'Date', 'Time', 'Guests', 'Features', 'Total Amount', 'Payment', 'Status'
       ]];
       const tableBody = this.filtered.map(b => [
-        b.booking_id,
+        b.lounge_booking_id,
         b.passenger_name || '',
         b.passenger_phone || '',
-        b.ref_num || '',
+        b.booking_reference || '',
         b.lounge_name,
-        new Date(b.start_datetime).toLocaleDateString(),
-        `${new Date(b.start_datetime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} / ${b.duration_hours}h`,
-        `Adult ${b.adults || 0}, Child ${b.children || 0}`,
-        (b.additional_features || []).join(', '),
+        new Date(b.scheduled_arrival).toLocaleDateString(),
+        new Date(b.scheduled_arrival).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        b.number_of_guests?.toString() || '0',
+        (b.selected_amenities || []).join(', '),
         `$${b.total_amount}`,
         b.payment_status,
-        b.booking_status
+        b.status
       ]);
 
       autoTable(doc, {
@@ -153,25 +153,25 @@ export class LoungeBookingComponent implements OnInit {
     const q = this.searchTerm.trim().toLowerCase();
     this.filtered = this.bookings.filter(b => {
       const matchesSearch = !q || [
-        b.booking_id,
-        b.passenger_id || '',
+        b.lounge_booking_id,
+        b.bus_booking_id || '',
         b.passenger_name || '',
         b.passenger_phone || '',
-        b.ref_num || '',
+        b.booking_reference || '',
         b.lounge_name,
         b.payment_status,
-        b.booking_status,
-        b.start_datetime,
-        b.guests.toString(),
-        b.adults?.toString() || '',
-        b.children?.toString() || '',
-        (b.additional_features || []).join(' '),
+        b.status,
+        b.scheduled_arrival,
+        b.number_of_guests.toString(),
+        b.pricing_type || '',
+        (b.selected_amenities || []).join(' '),
+        b.product_name || '',
         b.created_at || ''
       ].some(x => x && x.toLowerCase().includes(q)) ||
-      b.total_amount.toString().includes(q) || b.duration_hours.toString().includes(q) || b.capacity_used.toString().includes(q);
+      b.total_amount.toString().includes(q);
 
       const matchesPay = this.paymentFilter === 'All' || b.payment_status === this.paymentFilter;
-      const matchesStatus = this.statusFilter === 'All' || b.booking_status === this.statusFilter;
+      const matchesStatus = this.statusFilter === 'All' || b.status === this.statusFilter;
       return matchesSearch && matchesPay && matchesStatus;
     });
     this.applySorting();
@@ -190,14 +190,13 @@ export class LoungeBookingComponent implements OnInit {
     this.isEditMode = false;
     this.formBooking = {
       lounge_name: '',
-      start_datetime: '',
-      duration_hours: 1,
-      adults: 1,
-      children: 0,
-      additional_features: [],
+      scheduled_arrival: '',
+      pricing_type: '1 hour',
+      number_of_guests: 1,
+      selected_amenities: [],
       total_amount: 0,
-      payment_status: 'Pending',
-      booking_status: 'Confirmed'
+      payment_status: 'pending',
+      status: 'confirmed'
     };
     this.showModal = true;
   }
@@ -207,17 +206,17 @@ export class LoungeBookingComponent implements OnInit {
     this.formBooking = { ...b };
     
     // Format datetime for input (YYYY-MM-DDTHH:mm)
-    if (this.formBooking.start_datetime) {
+    if (this.formBooking.scheduled_arrival) {
       try {
-        this.formBooking.start_datetime = new Date(this.formBooking.start_datetime).toISOString().slice(0, 16);
+        this.formBooking.scheduled_arrival = new Date(this.formBooking.scheduled_arrival).toISOString().slice(0, 16);
       } catch (e) {
         console.error('Invalid date format', e);
       }
     }
 
-    // Ensure additional_features is an array
-    if (!this.formBooking.additional_features) {
-      this.formBooking.additional_features = [];
+    // Ensure selected_amenities is an array
+    if (!this.formBooking.selected_amenities) {
+      this.formBooking.selected_amenities = [];
     }
     this.showModal = true;
   }
@@ -228,44 +227,65 @@ export class LoungeBookingComponent implements OnInit {
 
   saveBooking() {
     if (this.isEditMode) {
-      this.svc.update(this.formBooking as LoungeBooking);
+      this.svc.update(this.formBooking as LoungeBooking).subscribe({
+        next: () => {
+          this.svc.loadBookings();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error updating booking:', err)
+      });
     } else {
-      const newId = 'LBK-' + Math.floor(1000 + Math.random() * 9000);
       const newBooking = { 
-        ...this.formBooking, 
-        booking_id: newId,
-        passenger_id: 'PAS-' + Math.floor(100 + Math.random() * 900), // Auto-gen for now
-        capacity_used: (this.formBooking.adults || 0) + (this.formBooking.children || 0),
+        ...this.formBooking,
+        bus_booking_id: null,
         created_at: new Date().toISOString()
       } as LoungeBooking;
-      this.svc.add(newBooking);
+      
+      this.svc.add(newBooking).subscribe({
+        next: () => {
+          this.svc.loadBookings();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error creating booking:', err)
+      });
     }
-    this.closeModal();
   }
 
   toggleFeature(feature: string) {
-    const features = this.formBooking.additional_features || [];
+    const features = this.formBooking.selected_amenities || [];
     if (features.includes(feature)) {
-      this.formBooking.additional_features = features.filter(f => f !== feature);
+      this.formBooking.selected_amenities = features.filter(f => f !== feature);
     } else {
-      this.formBooking.additional_features = [...features, feature];
+      this.formBooking.selected_amenities = [...features, feature];
     }
   }
 
   isFeatureSelected(feature: string): boolean {
-    return (this.formBooking.additional_features || []).includes(feature);
+    return (this.formBooking.selected_amenities || []).includes(feature);
   }
 
   deleteBooking(b: LoungeBooking) {
-    const ok = confirm(`Delete booking ${b.booking_id}?`);
-    if (ok) this.svc.delete(b.booking_id);
+    const ok = confirm(`Delete booking ${b.lounge_booking_id}?`);
+    if (ok) {
+      this.svc.delete(b.lounge_booking_id).subscribe({
+        next: () => this.svc.loadBookings(),
+        error: (err) => console.error('Error deleting booking:', err)
+      });
+    }
   }
 
-  changePaymentStatus(b: LoungeBooking, v: 'Pending'|'Paid'|'Failed') {
-    this.svc.update({ ...b, payment_status: v });
+  changePaymentStatus(b: LoungeBooking, v: 'pending'|'paid'|'failed') {
+    this.svc.updatePaymentStatus(b.lounge_booking_id, v).subscribe({
+      next: () => this.svc.loadBookings(),
+      error: (err) => console.error('Error updating payment status:', err)
+    });
   }
-  changeBookingStatus(b: LoungeBooking, v: 'Confirmed'|'Pending'|'Cancelled'|'Completed') {
-    this.svc.update({ ...b, booking_status: v });
+  
+  changeBookingStatus(b: LoungeBooking, v: 'confirmed'|'pending'|'cancelled'|'completed') {
+    this.svc.updateBookingStatus(b.lounge_booking_id, v).subscribe({
+      next: () => this.svc.loadBookings(),
+      error: (err) => console.error('Error updating booking status:', err)
+    });
   }
 
   refreshCharts() {
@@ -299,7 +319,7 @@ export class LoungeBookingComponent implements OnInit {
       {
         labels: ['Paid', 'Pending', 'Failed'],
         datasets: [{
-          data: [this.payStatusCounts['Paid'] || 0, this.payStatusCounts['Pending'] || 0, this.payStatusCounts['Failed'] || 0],
+          data: [this.payStatusCounts['paid'] || 0, this.payStatusCounts['pending'] || 0, this.payStatusCounts['failed'] || 0],
           backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533'],
           borderColor: ['#0046FF', '#a3a3a3', '#FAA533'],
           borderWidth: 0.25
@@ -308,7 +328,7 @@ export class LoungeBookingComponent implements OnInit {
       {
         labels: ['Confirmed', 'Pending', 'Cancelled', 'Completed'],
         datasets: [{
-          data: [this.bookStatusCounts['Confirmed'] || 0, this.bookStatusCounts['Pending'] || 0, this.bookStatusCounts['Cancelled'] || 0, this.bookStatusCounts['Completed'] || 0],
+          data: [this.bookStatusCounts['confirmed'] || 0, this.bookStatusCounts['pending'] || 0, this.bookStatusCounts['cancelled'] || 0, this.bookStatusCounts['completed'] || 0],
           backgroundColor: ['#0046FF', '#a3a3a3', '#FAA533', '#6db9f8ff'],
           borderColor: ['#0046FF', '#a3a3a3', '#FAA533', '#6db9f8ff'],
           borderWidth: 0.25
@@ -405,9 +425,9 @@ export class LoungeBookingComponent implements OnInit {
       let bValue: any;
 
       switch (this.sortColumn) {
-        case 'booking_id':
-          aValue = a.booking_id.toLowerCase();
-          bValue = b.booking_id.toLowerCase();
+        case 'lounge_booking_id':
+          aValue = a.lounge_booking_id?.toLowerCase() || '';
+          bValue = b.lounge_booking_id?.toLowerCase() || '';
           break;
         case 'passenger_name':
           aValue = a.passenger_name?.toLowerCase() || '';
@@ -417,29 +437,33 @@ export class LoungeBookingComponent implements OnInit {
           aValue = a.passenger_phone?.toLowerCase() || '';
           bValue = b.passenger_phone?.toLowerCase() || '';
           break;
-        case 'ref_num':
-          aValue = a.ref_num?.toLowerCase() || '';
-          bValue = b.ref_num?.toLowerCase() || '';
+        case 'booking_reference':
+          aValue = a.booking_reference?.toLowerCase() || '';
+          bValue = b.booking_reference?.toLowerCase() || '';
           break;
         case 'lounge_name':
           aValue = a.lounge_name.toLowerCase();
           bValue = b.lounge_name.toLowerCase();
           break;
-        case 'start_datetime':
-          aValue = new Date(a.start_datetime).getTime();
-          bValue = new Date(b.start_datetime).getTime();
+        case 'scheduled_arrival':
+          aValue = new Date(a.scheduled_arrival).getTime();
+          bValue = new Date(b.scheduled_arrival).getTime();
           break;
-        case 'duration':
-          aValue = a.duration_hours;
-          bValue = b.duration_hours;
+        case 'pricing_type':
+          aValue = a.pricing_type?.toLowerCase() || '';
+          bValue = b.pricing_type?.toLowerCase() || '';
           break;
-        case 'guests':
-          aValue = (a.adults || 0) + (a.children || 0);
-          bValue = (b.adults || 0) + (b.children || 0);
+        case 'number_of_guests':
+          aValue = a.number_of_guests;
+          bValue = b.number_of_guests;
           break;
-        case 'additional_features':
-          aValue = (a.additional_features || []).join(', ').toLowerCase();
-          bValue = (b.additional_features || []).join(', ').toLowerCase();
+        case 'selected_amenities':
+          aValue = (a.selected_amenities || []).join(', ').toLowerCase();
+          bValue = (b.selected_amenities || []).join(', ').toLowerCase();
+          break;
+        case 'product_name':
+          aValue = a.product_name?.toLowerCase() || '';
+          bValue = b.product_name?.toLowerCase() || '';
           break;
         case 'total_amount':
           aValue = a.total_amount;
@@ -449,9 +473,9 @@ export class LoungeBookingComponent implements OnInit {
           aValue = a.payment_status.toLowerCase();
           bValue = b.payment_status.toLowerCase();
           break;
-        case 'booking_status':
-          aValue = a.booking_status.toLowerCase();
-          bValue = b.booking_status.toLowerCase();
+        case 'status':
+          aValue = a.status.toLowerCase();
+          bValue = b.status.toLowerCase();
           break;
         default:
           return 0;

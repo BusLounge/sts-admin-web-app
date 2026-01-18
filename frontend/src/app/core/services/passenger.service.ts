@@ -12,6 +12,10 @@ export class PassengerService {
 
   readonly passengers$ = this._passengers$.asObservable();
 
+  // For tracking bookings data
+  private busBookingsData: any[] = [];
+  private loungeBookingsData: any[] = [];
+
   get passengers(): Passenger[] { return this._passengers$.getValue(); }
 
   addPassenger(p: Partial<Passenger>): void {
@@ -29,12 +33,30 @@ export class PassengerService {
   getById(id: string): Passenger | undefined { return this.passengers.find(x => x.passenger_id === id); }
   getPassengerById(id: string): Passenger | undefined { return this.getById(id); }
 
+  // Update bookings data from external sources
+  setBusBookingsData(bookings: any[]): void {
+    this.busBookingsData = bookings;
+  }
+
+  setLoungeBookingsData(bookings: any[]): void {
+    this.loungeBookingsData = bookings;
+  }
+
   getMonthlyCounts(year: number): number[] {
     const counts = new Array(12).fill(0);
-    this.passengers.forEach(p => {
-      const d = new Date(p.created_at);
+    
+    // Count bus bookings by month
+    this.busBookingsData.forEach(b => {
+      const d = new Date(b.created_at || b.booking_date);
       if (d.getFullYear() === year) counts[d.getMonth()]++;
     });
+    
+    // Count lounge bookings by month
+    this.loungeBookingsData.forEach(b => {
+      const d = new Date(b.created_at);
+      if (d.getFullYear() === year) counts[d.getMonth()]++;
+    });
+    
     return counts;
   }
 }

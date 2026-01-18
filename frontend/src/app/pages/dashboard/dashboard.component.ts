@@ -42,7 +42,7 @@ export class DashboardComponent implements OnInit {
     Lounge: ['Lounge Name', 'Owner', 'Contact', 'Address', 'Price per hour', 'Capacity', 'Operation', 'Verification'],
     Driver: ['Name', 'Contact', 'License Num', 'License Expire date', 'Experience', 'Hire date', 'Verification', 'Status'],
     Conductor: ['Name', 'Contact', 'License Num', 'Experience', 'Hire date', 'Verification', 'Status'],
-    'Lounge booking': ['Passenger ID', 'Lounge Name', 'Adults', 'Children', 'Status'],
+    'Lounge booking': ['Passenger Name', 'Passenger Phone', 'Ref NUM', 'Lounge Name', 'Market place', 'Booking Type', 'Date and Time', 'Duration', 'No of Guests', 'Total Amount', 'Payment Status', 'Booking Status'],
     'Bus booking': ['Bus Number', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Route', 'Date & Time', 'Bus Type', 'Seat No', 'Total Fare', 'Payment Status', 'Booking Status']
   };
 
@@ -135,26 +135,43 @@ export class DashboardComponent implements OnInit {
     });
 
     this.busBookingService.bookings$.subscribe(bookings => {
-      // Calculate total fare for each month for paid bookings
+      // Calculate total fare for each month for paid bookings (current year)
+      const currentYear = new Date().getFullYear();
       const monthlyTotals = Array(12).fill(0);
       bookings.forEach(b => {
-        if (b.payment_status === 'Paid') {
-          const month = new Date(b.departure_datetime).getMonth();
+        const bookingDate = new Date(b.departure_datetime || b.created_at);
+        const bookingYear = bookingDate.getFullYear();
+        const month = bookingDate.getMonth();
+        
+        // Only count paid bookings for the current year
+        if (b.payment_status?.toLowerCase() === 'paid' && bookingYear === currentYear) {
           monthlyTotals[month] += b.total_fare;
         }
       });
       this.busMonthlyRevenue = monthlyTotals;
+      
+      // Update passenger service with bus bookings data for passenger growth chart
+      this.passengerService.setBusBookingsData(bookings);
+      this.updatePassengerGrowth();
     });
 
     this.loungeBookingService.bookings$.subscribe(bookings => {
       this.loungeRevenueByLounge = this.computeLoungeRevenue(bookings);
-      this.totalLoungeRevenue = bookings.reduce((sum, b) => sum + (b.payment_status === 'Paid' ? b.total_amount : 0), 0);
+      this.totalLoungeRevenue = bookings.reduce((sum, b) => sum + (b.payment_status === 'paid' ? b.total_amount : 0), 0);
+      
+      // Update passenger service with lounge bookings data for passenger growth chart
+      this.passengerService.setLoungeBookingsData(bookings);
+      this.updatePassengerGrowth();
     });
 
     this.passengerService.passengers$.subscribe(passengers => {
-      const currentYear = new Date().getFullYear();
-      this.passengerMonthlyCounts = this.passengerService.getMonthlyCounts(currentYear);
+      this.updatePassengerGrowth();
     });
+  }
+
+  private updatePassengerGrowth(): void {
+    const currentYear = new Date().getFullYear();
+    this.passengerMonthlyCounts = this.passengerService.getMonthlyCounts(currentYear);
   }
 
   private countBusStatus(buses: any[]): Record<string, number> {
@@ -542,16 +559,30 @@ export class DashboardComponent implements OnInit {
         if (!searchValue) return true;
 
         switch (attr) {
-          case 'Passenger ID':
-            return booking.passenger_id?.toLowerCase().includes(searchValue);
+          case 'Passenger Name':
+            return booking.passenger_name?.toLowerCase().includes(searchValue);
+          case 'Passenger Phone':
+            return booking.passenger_phone?.toLowerCase().includes(searchValue);
+          case 'Ref NUM':
+            return booking.booking_reference?.toLowerCase().includes(searchValue);
           case 'Lounge Name':
             return booking.lounge_name?.toLowerCase().includes(searchValue);
-          case 'Adults':
-            return booking.adults?.toString().includes(searchValue);
-          case 'Children':
-            return booking.children?.toString().includes(searchValue);
-          case 'Status':
-            return booking.booking_status?.toLowerCase().includes(searchValue);
+          case 'Market place':
+            return booking.product_name?.toLowerCase().includes(searchValue);
+          case 'Booking Type':
+            return booking.booking_type?.toLowerCase().includes(searchValue);
+          case 'Date and Time':
+            return booking.scheduled_arrival?.toLowerCase().includes(searchValue);
+          case 'Duration':
+            return booking.pricing_type?.toLowerCase().includes(searchValue);
+          case 'No of Guests':
+            return booking.number_of_guests?.toString().includes(searchValue);
+          case 'Total Amount':
+            return booking.total_amount?.toString().includes(searchValue);
+          case 'Payment Status':
+            return booking.payment_status?.toLowerCase().includes(searchValue);
+          case 'Booking Status':
+            return booking.status?.toLowerCase().includes(searchValue);
           default:
             return true;
         }
@@ -572,7 +603,7 @@ export class DashboardComponent implements OnInit {
       case 'Bus booking':
         return ['Booking ID', 'Passenger ID', 'Bus ID', 'Departure', 'Seats', 'Total Fare', 'Payment Status', 'Booking Status', 'Action'];
       case 'Lounge booking':
-        return ['Booking ID', 'Passenger ID', 'Lounge Name', 'Check-in', 'Check-out', 'Adults', 'Children', 'Total', 'Payment Status', 'Action'];
+        return ['L_Booking ID', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Lounge Name', 'Market place', 'Booking Type', 'Date and Time', 'Duration', 'No of Guests', 'Total Amount', 'Payment Status', 'Booking Status'];
       default:
         return [];
     }

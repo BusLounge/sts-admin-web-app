@@ -75,16 +75,16 @@
             </div>
             <select [(ngModel)]="paymentFilter" (change)="applyFilters()">
               <option>All</option>
-              <option>Paid</option>
-              <option>Pending</option>
-              <option>Failed</option>
+              <option>paid</option>
+              <option>pending</option>
+              <option>failed</option>
             </select>
             <select [(ngModel)]="statusFilter" (change)="applyFilters()">
               <option>All</option>
-              <option>Confirmed</option>
-              <option>Pending</option>
-              <option>Cancelled</option>
-              <option>Completed</option>
+              <option>confirmed</option>
+              <option>pending</option>
+              <option>cancelled</option>
+              <option>completed</option>
             </select>
           </div>
           <button class="export-btn" (click)="exportLoungeBookingHistoryPdf()">Export Lounge Booking History</button>
@@ -95,8 +95,9 @@
         <table class="lb-table">
           <thead>
             <tr>
-              <th (click)="onSort('booking_id')" style="cursor: pointer;" title="Click to sort">
-                L_Booking id {{ getSortIcon('booking_id') }}
+
+              <th (click)="onSort('lounge_booking_id')" style="cursor: pointer;" title="Click to sort">
+                L_Booking id {{ getSortIcon('lounge_booking_id') }}
               </th>
               <th (click)="onSort('passenger_name')" style="cursor: pointer;" title="Click to sort">
                 Passenger Name {{ getSortIcon('passenger_name') }}
@@ -104,20 +105,26 @@
               <th (click)="onSort('passenger_phone')" style="cursor: pointer;" title="Click to sort">
                 Passenger Phone {{ getSortIcon('passenger_phone') }}
               </th>
-              <th (click)="onSort('ref_num')" style="cursor: pointer;" title="Click to sort">
-                Ref NUM {{ getSortIcon('ref_num') }}
+              <th (click)="onSort('booking_reference')" style="cursor: pointer;" title="Click to sort">
+                Ref NUM {{ getSortIcon('booking_reference') }}
               </th>
               <th (click)="onSort('lounge_name')" style="cursor: pointer;" title="Click to sort">
                 Lounge Name {{ getSortIcon('lounge_name') }}
               </th>
-              <th (click)="onSort('start_datetime')" style="cursor: pointer;" title="Click to sort">
-                Date {{ getSortIcon('start_datetime') }}
+              <th (click)="onSort('product_name')" style="cursor: pointer;" title="Click to sort">
+                Market place {{ getSortIcon('product_name') }}
               </th>
-              <th (click)="onSort('duration')" style="cursor: pointer;" title="Click to sort">
-                Time/Duration {{ getSortIcon('duration') }}
+              <th (click)="onSort('booking_type')" style="cursor: pointer;" title="Click to sort">
+                Booking Type {{ getSortIcon('booking_type') }}
               </th>
-              <th (click)="onSort('guests')" style="cursor: pointer;" title="Click to sort">
-                No of Guests {{ getSortIcon('guests') }}
+              <th (click)="onSort('scheduled_arrival')" style="cursor: pointer;" title="Click to sort">
+                Date and Time {{ getSortIcon('scheduled_arrival') }}
+              </th>
+              <th (click)="onSort('pricing_type')" style="cursor: pointer;" title="Click to sort">
+                Duration {{ getSortIcon('pricing_type') }}
+              </th>
+              <th (click)="onSort('number_of_guests')" style="cursor: pointer;" title="Click to sort">
+                No of Guests {{ getSortIcon('number_of_guests') }}
               </th>
               <th>Additional features</th>
               <th (click)="onSort('total_amount')" style="cursor: pointer;" title="Click to sort">
@@ -126,37 +133,39 @@
               <th (click)="onSort('payment_status')" style="cursor: pointer;" title="Click to sort">
                 Payment Status {{ getSortIcon('payment_status') }}
               </th>
-              <th (click)="onSort('booking_status')" style="cursor: pointer;" title="Click to sort">
-                Booking Status {{ getSortIcon('booking_status') }}
+              <th (click)="onSort('status')" style="cursor: pointer;" title="Click to sort">
+                Booking Status {{ getSortIcon('status') }}
               </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let b of filtered">
-              <td>{{ b.booking_id }}</td>
+              <td>{{ b.lounge_booking_id }}</td>
               <td>{{ b.passenger_name || '-' }}</td>
               <td>{{ b.passenger_phone || '-' }}</td>
-              <td>{{ b.ref_num || '-' }}</td>
+              <td>{{ b.booking_reference || '-' }}</td>
               <td>{{ b.lounge_name }}</td>
-              <td>{{ b.start_datetime | date:'mediumDate' }}</td>
-              <td>{{ b.start_datetime | date:'shortTime' }} / {{ b.duration_hours }}h</td>
-              <td>Adult {{ b.adults || 0 }}, Child {{ b.children || 0 }}</td>
-              <td>{{ b.additional_features?.join(', ') || '-' }}</td>
-              <td>${{ b.total_amount }}</td>
+              <td>{{ b.product_name || '-' }}</td>
+              <td>{{ b.booking_type || '-' }}</td>
+              <td>{{ b.scheduled_arrival | date:'medium' }}</td>
+              <td>{{ b.pricing_type }}</td>
+              <td>{{ b.number_of_guests }}</td>
+              <td>{{ b.selected_amenities?.join(', ') || '-' }}</td>
+              <td>{{ b.total_amount }}</td>
               <td>
                 <select [ngModel]="b.payment_status" (ngModelChange)="changePaymentStatus(b, $event)" [class]="'status-dropdown ' + b.payment_status.toLowerCase()">
-                  <option value="Paid">Paid</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Failed">Failed</option>
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
                 </select>
               </td>
               <td>
-                <select [ngModel]="b.booking_status" (ngModelChange)="changeBookingStatus(b, $event)" [class]="'status-dropdown ' + b.booking_status.toLowerCase()">
-                  <option value="Confirmed">Confirmed</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Cancelled">Cancelled</option>
-                  <option value="Completed">Completed</option>
+                <select [ngModel]="b.status" (ngModelChange)="changeBookingStatus(b, $event)" [class]="'status-dropdown ' + b.status.toLowerCase()">
+                  <option value="confirmed">Confirmed</option>
+                  <option value="pending">Pending</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed</option>
                 </select>
               </td>
               <td class="actions-cell">
@@ -176,7 +185,7 @@
               <!-- Booking ID (Read-only, Edit Mode Only) -->
               <div class="form-row" *ngIf="isEditMode">
                 <label>Booking ID</label>
-                <input type="text" [ngModel]="formBooking.booking_id" name="booking_id" readonly />
+                <input type="text" [ngModel]="formBooking.lounge_booking_id" name="lounge_booking_id" readonly />
               </div>
 
               <!-- Passenger Name -->
@@ -194,7 +203,7 @@
               <!-- Ref NUM -->
               <div class="form-row">
                 <label>Ref NUM</label>
-                <input type="text" [(ngModel)]="formBooking.ref_num" name="ref_num" />
+                <input type="text" [(ngModel)]="formBooking.booking_reference" name="booking_reference" />
               </div>
 
               <!-- Lounge Name -->
@@ -203,28 +212,40 @@
                 <input type="text" [(ngModel)]="formBooking.lounge_name" name="lounge_name" required />
               </div>
 
+              <!-- Market place -->
+              <div class="form-row">
+                <label>Market place</label>
+                <input type="text" [(ngModel)]="formBooking.product_name" name="product_name" />
+              </div>
+
+              <!-- Booking Type -->
+              <div class="form-row">
+                <label>Booking Type</label>
+                <select [(ngModel)]="formBooking.booking_type" name="booking_type">
+                  <option value="">Select Type</option>
+                  <option value="Regular">Regular</option>
+                  <option value="VIP">VIP</option>
+                  <option value="Premium">Premium</option>
+                  <option value="Corporate">Corporate</option>
+                </select>
+              </div>
+
               <!-- Date & Time -->
               <div class="form-row">
                 <label>Date & Time</label>
-                <input type="datetime-local" [(ngModel)]="formBooking.start_datetime" name="start_datetime" required />
+                <input type="datetime-local" [(ngModel)]="formBooking.scheduled_arrival" name="scheduled_arrival" required />
               </div>
 
-              <!-- Duration -->
+              <!-- Pricing Type -->
               <div class="form-row">
-                <label>Duration (hours)</label>
-                <input type="number" [(ngModel)]="formBooking.duration_hours" name="duration_hours" min="1" required />
+                <label>Pricing Type</label>
+                <input type="text" [(ngModel)]="formBooking.pricing_type" name="pricing_type" required />
               </div>
 
-              <!-- Adults -->
+              <!-- Number of Guests -->
               <div class="form-row">
-                <label>Adults</label>
-                <input type="number" [(ngModel)]="formBooking.adults" name="adults" min="1" required />
-              </div>
-
-              <!-- Children -->
-              <div class="form-row">
-                <label>Children</label>
-                <input type="number" [(ngModel)]="formBooking.children" name="children" min="0" />
+                <label>Number of Guests</label>
+                <input type="number" [(ngModel)]="formBooking.number_of_guests" name="number_of_guests" min="1" required />
               </div>
 
               <!-- Total Amount -->
@@ -246,7 +267,7 @@
               <!-- Booking Status (Edit Mode Only) -->
               <div class="form-row" *ngIf="isEditMode">
                 <label>Booking Status</label>
-                <select [(ngModel)]="formBooking.booking_status" name="booking_status">
+                <select [(ngModel)]="formBooking.status" name="status">
                   <option value="Confirmed">Confirmed</option>
                   <option value="Pending">Pending</option>
                   <option value="Cancelled">Cancelled</option>

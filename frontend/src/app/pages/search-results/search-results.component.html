@@ -294,31 +294,54 @@
         <table class="bus-table" *ngIf="searchType === 'Lounge booking' && searchResults.length > 0">
           <thead>
             <tr>
-              <th>Booking ID</th>
-              <th>Passenger ID</th>
-              <th>Lounge</th>
-              <th>Check-in</th>
-              <th>Check-out</th>
-              <th>Adults</th>
-              <th>Children</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Action</th>
+              <th>L_Booking id</th>
+              <th>Passenger Name</th>
+              <th>Passenger Phone</th>
+              <th>Ref NUM</th>
+              <th>Lounge Name</th>
+              <th>Market place</th>
+              <th>Booking Type</th>
+              <th>Date and Time</th>
+              <th>Duration</th>
+              <th>No of Guests</th>
+              <th>Additional features</th>
+              <th>Total Amount</th>
+              <th>Payment Status</th>
+              <th>Booking Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let booking of searchResults">
-              <td>{{ booking.booking_id }}</td>
-              <td>{{ booking.passenger_id }}</td>
-              <td>{{ booking.lounge_id }}</td>
-              <td>{{ booking.check_in_datetime }}</td>
-              <td>{{ booking.check_out_datetime }}</td>
-              <td>{{ booking.number_of_adults }}</td>
-              <td>{{ booking.number_of_children }}</td>
-              <td>{{ booking.total_price }}</td>
-              <td>{{ booking.booking_status }}</td>
+            <tr *ngFor="let b of searchResults">
+              <td>{{ b.lounge_booking_id }}</td>
+              <td>{{ b.passenger_name || '-' }}</td>
+              <td>{{ b.passenger_phone || '-' }}</td>
+              <td>{{ b.booking_reference || '-' }}</td>
+              <td>{{ b.lounge_name }}</td>
+              <td>{{ b.product_name || '-' }}</td>
+              <td>{{ b.booking_type || '-' }}</td>
+              <td>{{ b.scheduled_arrival | date:'medium' }}</td>
+              <td>{{ b.pricing_type }}</td>
+              <td>{{ b.number_of_guests }}</td>
+              <td>{{ b.selected_amenities?.join(', ') || '-' }}</td>
+              <td>{{ b.total_amount }}</td>
               <td>
-                <i class="fas fa-edit action-icon edit-icon" title="Edit"></i>
+                <select [ngModel]="b.payment_status" (ngModelChange)="changePaymentStatus(b, $event)" class="status-dropdown">
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </td>
+              <td>
+                <select [ngModel]="b.status" (ngModelChange)="changeBookingStatus(b, $event)" class="status-dropdown">
+                  <option value="confirmed">Confirmed</option>
+                  <option value="pending">Pending</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </td>
+              <td class="actions-cell">
+                <i class="fas fa-edit action-icon edit-icon" (click)="openEditModal(b)" title="Update"></i>
               </td>
             </tr>
           </tbody>

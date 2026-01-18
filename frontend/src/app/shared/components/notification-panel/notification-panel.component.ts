@@ -19,6 +19,7 @@ export interface Notification {
   time: string;
   type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking' | 'bus-owner';
   data?: any;
+  timestamp: Date;
 }
 
 @Component({
@@ -69,90 +70,96 @@ export class NotificationPanelComponent implements OnInit {
         ...lounges.map(lounge => this.mapLoungeToNotification(lounge)),
         ...busOwners.map(busOwner => this.mapBusOwnerToNotification(busOwner))
       ];
+      
+      // Sort by timestamp - newest first
+      this.notifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     });
   }
 
   private mapBusToNotification(bus: BusNotification): Notification {
-    const timeAgo = this.getTimeAgo(new Date());
+    const timestamp = bus.created_at ? new Date(bus.created_at) : new Date();
+    const formattedTime = this.formatDateTime(timestamp);
     return {
       id: bus.id,
       icon: '🚌',
       title: 'New Bus Added Request',
       message: `A new bus registration request has been submitted: Bus No: ${bus.permit_number || bus.bus_number}, Route: ${bus.custom_route_name || 'Not specified'}. Awaiting approval.`,
-      time: timeAgo,
+      time: formattedTime,
       type: 'bus',
-      data: bus
+      data: bus,
+      timestamp: timestamp
     };
   }
 
   private mapDriverToNotification(driver: DriverNotification): Notification {
-    const timeAgo = this.getTimeAgo(new Date());
+    const timestamp = driver.created_at ? new Date(driver.created_at) : (driver.hire_date ? new Date(driver.hire_date) : new Date());
+    const formattedTime = this.formatDateTime(timestamp);
     return {
       id: driver.id,
       icon: '🚗',
       title: 'New Driver Added Request',
       message: `A new driver registration request has been submitted: ${driver.name}, License: ${driver.license_number}. Awaiting approval.`,
-      time: timeAgo,
+      time: formattedTime,
       type: 'driver',
-      data: driver
+      data: driver,
+      timestamp: timestamp
     };
   }
 
   private mapConductorToNotification(conductor: ConductorNotification): Notification {
-    const timeAgo = this.getTimeAgo(new Date());
+    const timestamp = conductor.created_at ? new Date(conductor.created_at) : (conductor.hire_date ? new Date(conductor.hire_date) : new Date());
+    const formattedTime = this.formatDateTime(timestamp);
     return {
       id: conductor.id,
       icon: '👤',
       title: 'New Conductor Added Request',
       message: `A new conductor registration request has been submitted: ${conductor.name}, License: ${conductor.license_number}. Awaiting approval.`,
-      time: timeAgo,
+      time: formattedTime,
       type: 'conductor',
-      data: conductor
+      data: conductor,
+      timestamp: timestamp
     };
   }
 
   private mapLoungeToNotification(lounge: LoungeNotification): Notification {
-    const timeAgo = this.getTimeAgo(new Date());
+    const timestamp = lounge.created_at ? new Date(lounge.created_at) : new Date();
+    const formattedTime = this.formatDateTime(timestamp);
     return {
       id: lounge.lounge_id,
       icon: '🛋️',
       title: 'New Lounge Added Request',
       message: `A new lounge registration request has been submitted: ${lounge.lounge_name}, Owner: ${lounge.lounge_owner}. Awaiting approval.`,
-      time: timeAgo,
+      time: formattedTime,
       type: 'lounge',
-      data: lounge
+      data: lounge,
+      timestamp: timestamp
     };
   }
 
   private mapBusOwnerToNotification(busOwner: BusOwnerNotification): Notification {
-    const timeAgo = this.getTimeAgo(new Date());
+    const timestamp = new Date(busOwner.created_at);
+    const formattedTime = this.formatDateTime(timestamp);
     return {
       id: busOwner.id,
       icon: '👔',
       title: 'New Bus Owner Request',
       message: `A new bus owner registration request has been submitted: ${busOwner.company_name}, Email: ${busOwner.business_email}. Awaiting approval.`,
-      time: timeAgo,
+      time: formattedTime,
       type: 'bus-owner',
-      data: busOwner
+      data: busOwner,
+      timestamp: timestamp
     };
   }
 
-  private getTimeAgo(date: Date): string {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) {
-      return diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
-    } else if (diffHours > 0) {
-      return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
-    } else if (diffMins > 0) {
-      return diffMins === 1 ? '1 minute ago' : `${diffMins} minutes ago`;
-    } else {
-      return 'Just now';
-    }
+  private formatDateTime(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 
   onClose(): void {

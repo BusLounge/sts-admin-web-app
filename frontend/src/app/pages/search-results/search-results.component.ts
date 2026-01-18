@@ -30,7 +30,7 @@ export class SearchResultsComponent implements OnInit {
     Lounge: ['Lounge Name', 'Owner', 'Contact', 'Address', 'Price per hour', 'Capacity', 'Operation', 'Verification'],
     Driver: ['Name', 'Contact', 'License Num', 'License Expire date', 'Experience', 'Hire date', 'Verification', 'Status'],
     Conductor: ['Name', 'Contact', 'License Num', 'Experience', 'Hire date', 'Verification', 'Status'],
-    'Lounge booking': ['Passenger ID', 'Lounge Name', 'Adults', 'Children', 'Status'],
+    'Lounge booking': ['Passenger Name', 'Passenger Phone', 'Ref NUM', 'Lounge Name', 'Market place', 'Booking Type', 'Date and Time', 'Duration', 'No of Guests', 'Total Amount', 'Payment Status', 'Booking Status'],
     'Bus booking': ['Bus Number', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Route', 'Date & Time', 'Bus Type', 'Seat No', 'Total Fare', 'Payment Status', 'Booking Status']
   };
 
@@ -255,16 +255,30 @@ export class SearchResultsComponent implements OnInit {
         if (!searchValue) return true;
 
         switch (attr) {
-          case 'Passenger ID':
-            return booking.passenger_id?.toLowerCase().includes(searchValue);
+          case 'Passenger Name':
+            return booking.passenger_name?.toLowerCase().includes(searchValue);
+          case 'Passenger Phone':
+            return booking.passenger_phone?.toLowerCase().includes(searchValue);
+          case 'Ref NUM':
+            return booking.booking_reference?.toLowerCase().includes(searchValue);
           case 'Lounge Name':
             return booking.lounge_name?.toLowerCase().includes(searchValue);
-          case 'Adults':
-            return booking.adults?.toString().includes(searchValue);
-          case 'Children':
-            return booking.children?.toString().includes(searchValue);
-          case 'Status':
-            return booking.booking_status?.toLowerCase().includes(searchValue);
+          case 'Market place':
+            return booking.product_name?.toLowerCase().includes(searchValue);
+          case 'Booking Type':
+            return booking.booking_type?.toLowerCase().includes(searchValue);
+          case 'Date and Time':
+            return booking.scheduled_arrival?.toLowerCase().includes(searchValue);
+          case 'Duration':
+            return booking.pricing_type?.toLowerCase().includes(searchValue);
+          case 'No of Guests':
+            return booking.number_of_guests?.toString().includes(searchValue);
+          case 'Total Amount':
+            return booking.total_amount?.toString().includes(searchValue);
+          case 'Payment Status':
+            return booking.payment_status?.toLowerCase().includes(searchValue);
+          case 'Booking Status':
+            return booking.status?.toLowerCase().includes(searchValue);
           default:
             return true;
         }
@@ -325,5 +339,37 @@ export class SearchResultsComponent implements OnInit {
     this.selectedAttributes = [];
     this.searchCriteria = {};
     this.searchResults = [];
+  }
+
+  // Lounge booking status change methods
+  changePaymentStatus(b: any, v: 'pending'|'paid'|'failed') {
+    this.loungeBookingService.updatePaymentStatus(b.lounge_booking_id, v).subscribe({
+      next: () => {
+        b.payment_status = v;
+      },
+      error: (err) => {
+        console.error('Error updating payment status:', err);
+      }
+    });
+  }
+  
+  changeBookingStatus(b: any, v: 'confirmed'|'pending'|'cancelled'|'completed') {
+    this.loungeBookingService.updateBookingStatus(b.lounge_booking_id, v).subscribe({
+      next: () => {
+        b.status = v;
+      },
+      error: (err) => {
+        console.error('Error updating booking status:', err);
+      }
+    });
+  }
+
+  openEditModal(b: any) {
+    // Navigate to lounge booking page with edit modal
+    this.router.navigate(['/lounge-booking'], { 
+      queryParams: { 
+        edit: b.lounge_booking_id 
+      } 
+    });
   }
 }

@@ -15,10 +15,8 @@ import { LoungeBooking } from '../../core/models/lounge-booking.model';
 export class EditLoungeBookingComponent implements OnInit {
   booking?: LoungeBooking;
 
-  // Editable fields
-  formDurationHours = 1;
+  // Editable fields (not all fields are editable after backend change)
   formGuests = 0;
-  formCapacityUsed = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -29,26 +27,21 @@ export class EditLoungeBookingComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.router.navigate(['/lounge-booking']); return; }
-    const found = this.svc.bookings.find(b => b.booking_id === id);
+    const found = this.svc.bookings.find(b => b.lounge_booking_id === id);
     if (!found) { this.router.navigate(['/lounge-booking']); return; }
     this.booking = { ...found };
 
     // Initialize form from existing booking
-    this.formDurationHours = this.booking.duration_hours;
-    this.formGuests = this.booking.guests;
-    this.formCapacityUsed = this.booking.capacity_used;
+    this.formGuests = this.booking.number_of_guests;
   }
 
   save(): void {
     if (!this.booking) return;
 
-    // Only allow changes to duration_hours, guests, capacity_used
+    // Only allow changes to number_of_guests
     const updated: LoungeBooking = {
       ...this.booking,
-      duration_hours: Math.max(1, Number(this.formDurationHours) || 1),
-      guests: Math.max(0, Number(this.formGuests) || 0),
-      capacity_used: Math.max(0, Number(this.formCapacityUsed) || 0),
-      // start_datetime remains unchanged (date/time locked)
+      number_of_guests: Math.max(0, Number(this.formGuests) || 0),
     };
 
     this.svc.update(updated);
@@ -63,7 +56,7 @@ export class EditLoungeBookingComponent implements OnInit {
   get startDateTime(): string {
     if (!this.booking) return '';
     // Display as local datetime string for readability
-    const d = new Date(this.booking.start_datetime);
+    const d = new Date(this.booking.scheduled_arrival);
     return d.toLocaleString();
   }
 }

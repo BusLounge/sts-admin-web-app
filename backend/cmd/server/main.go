@@ -100,6 +100,15 @@ func main() {
 		api.PUT("/bookings/:id/status", handlers.UpdateBookingStatus)
 		api.PUT("/bookings/:id/payment", handlers.UpdatePaymentStatus)
 		api.DELETE("/bookings/:id", handlers.CancelBooking)
+
+		// Lounge Booking routes
+		api.GET("/lounge-bookings", handlers.GetLoungeBookings)
+		api.GET("/lounge-bookings/:id", handlers.GetLoungeBookingByID)
+		api.POST("/lounge-bookings", handlers.CreateLoungeBooking)
+		api.PUT("/lounge-bookings/:id", handlers.UpdateLoungeBooking)
+		api.PATCH("/lounge-bookings/:id/payment-status", handlers.UpdateLoungeBookingPaymentStatus)
+		api.PATCH("/lounge-bookings/:id/booking-status", handlers.UpdateLoungeBookingStatus)
+		api.DELETE("/lounge-bookings/:id", handlers.DeleteLoungeBooking)
 	}
 
 	log.Printf("Server starting on port %s", cfg.Port)

@@ -1,23 +1,28 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { PassengerService } from '../../core/services/passenger.service';
+import { BusBookingService } from '../../core/services/bus-booking.service';
+import { LoungeBookingService } from '../../core/services/lounge-booking.service';
 import { Passenger } from '../../core/models/passenger.model';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { NotificationService } from '../../core/services/notification.service';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, ChartData, ChartOptions, registerables } from 'chart.js';
 
 @Component({
   selector: 'app-passenger-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent, RouterModule],
+  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent, RouterModule, BaseChartDirective],
   templateUrl: './passenger-management.component.html',
   styleUrls: ['./passenger-management.component.scss']
 })
 export class PassengerManagementComponent implements OnInit {
+  isBrowser!: boolean;
   passengers: Passenger[] = [];
   filteredPassengers: Passenger[] = [];
   searchTerm = '';
@@ -31,13 +36,79 @@ export class PassengerManagementComponent implements OnInit {
 
   monthlyCounts: number[] = [];
   months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  routeBookingCounts: { route: string; count: number; percentage: number }[] = [];
+  
+  // Chart.js data
+  routeChartData: ChartData<'bar'> = {
+    labels: [],
+    datasets: [{
+      data: [],
+      backgroundColor: ['#0046FF', '#9CA3AF', '#FB923C', '#60A5FA', '#0046FF', '#6B7280', '#FBBF24'],
+      borderColor: ['#0046FF', '#9CA3AF', '#FB923C', '#60A5FA', '#0046FF', '#6B7280', '#FBBF24'],
+      borderWidth: 1
+    }]
+  };
+  
+  routeChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: '#E5E7EB'
+        },
+        ticks: {
+          stepSize: 1300,
+          callback: function(value) {
+            return value.toLocaleString();
+          }
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        }
+      }
+    }
+  };
 
-  constructor(private router: Router, private passengerService: PassengerService, public notificationService: NotificationService) {}
+  constructor(
+    private router: Router, 
+    private passengerService: PassengerService,
+    private busBookingService: BusBookingService,
+    private loungeBookingService: LoungeBookingService,
+    public notificationService: NotificationService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      Chart.register(...registerables);
+    }
+  }
 
   ngOnInit(): void {
     this.passengerService.passengers$.subscribe(ps => {
       this.passengers = ps;
       this.filteredPassengers = ps;
+      this.refreshChart();
+    });
+
+    // Subscribe to bus bookings and update passenger service
+    this.busBookingService.bookings$.subscribe(bookings => {
+      this.passengerService.setBusBookingsData(bookings);
+      this.refreshChart();
+      this.refreshRouteChart();
+    });
+
+    // Subscribe to lounge bookings and update passenger service
+    this.loungeBookingService.bookings$.subscribe(bookings => {
+      this.passengerService.setLoungeBookingsData(bookings);
       this.refreshChart();
     });
   }
@@ -113,6 +184,35 @@ export class PassengerManagementComponent implements OnInit {
   clearSearch(): void { this.searchTerm = ''; this.filteredPassengers = this.passengers; }
 
   refreshChart(): void { this.monthlyCounts = this.passengerService.getMonthlyCounts(new Date().getFullYear()); }
+  
+  refreshRouteChart(): void {
+    const routeCounts = new Map<string, number>();
+    this.busBookingService.bookings.forEach(booking => {
+      if (booking.route) {
+        routeCounts.set(booking.route, (routeCounts.get(booking.route) || 0) + 1);
+      }
+    });
+    
+    const totalCount = Array.from(routeCounts.values()).reduce((sum, count) => sum + count, 0);
+    this.routeBookingCounts = Array.from(routeCounts.entries())
+      .map(([route, count]) => ({
+        route,
+        count,
+        percentage: totalCount > 0 ? count / totalCount : 0
+      }))
+      .sort((a, b) => b.count - a.count);
+    
+    // Update Chart.js data
+    this.routeChartData = {
+      labels: this.routeBookingCounts.map(item => item.route),
+      datasets: [{
+        data: this.routeBookingCounts.map(item => item.count),
+        backgroundColor: ['#0046FF', '#9CA3AF', '#FB923C', '#60A5FA', '#0046FF', '#6B7280', '#FBBF24'],
+        borderColor: ['#0046FF', '#9CA3AF', '#FB923C', '#60A5FA', '#0046FF', '#6B7280', '#FBBF24'],
+        borderWidth: 1
+      }]
+    };
+  }
     // 🚀 Export PDF Function
   exportHistoryPdf() {
     const doc = new jsPDF();

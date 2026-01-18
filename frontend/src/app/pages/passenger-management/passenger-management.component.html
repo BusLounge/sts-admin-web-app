@@ -106,27 +106,9 @@
           <h3>Passenger Booking by Route Chart</h3>
         </div>
         <div class="route-chart">
-          <div class="route-bars">
-            <div class="route-bar" style="--value: 0.65">
-              <div class="bar"></div>
-              <span class="label">Colombo–Galle</span>
-            </div>
-            <div class="route-bar" style="--value: 0.4">
-              <div class="bar"></div>
-              <span class="label">Colombo–Gampaha</span>
-            </div>
-            <div class="route-bar" style="--value: 0.95">
-              <div class="bar"></div>
-              <span class="label">Colombo–Negombo</span>
-            </div>
-            <div class="route-bar" style="--value: 0.2">
-              <div class="bar"></div>
-              <span class="label">Colombo–Jaffna</span>
-            </div>
-            <div class="route-bar" style="--value: 0.6">
-              <div class="bar"></div>
-              <span class="label">Colombo–Matara</span>
-            </div>
+          <canvas *ngIf="isBrowser" baseChart [data]="routeChartData" [options]="routeChartOptions" type="bar"></canvas>
+          <div *ngIf="!isBrowser || routeBookingCounts.length === 0" style="padding: 20px; text-align: center; color: #666;">
+            No route data available
           </div>
         </div>
       </div>

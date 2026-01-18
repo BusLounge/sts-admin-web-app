@@ -93,6 +93,45 @@ func Init(cfg *config.Config) {
 		ALTER TABLE lounge_owners ADD COLUMN IF NOT EXISTS email text;
 		ALTER TABLE lounge_owners ADD COLUMN IF NOT EXISTS contact_number text;
 		ALTER TABLE lounge_owners ADD COLUMN IF NOT EXISTS nic text;
+
+		-- Lounge Booking Tables
+		CREATE TABLE IF NOT EXISTS bookings (
+			bus_booking_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+			passenger_name TEXT NOT NULL,
+			passenger_phone TEXT,
+			booking_reference TEXT UNIQUE,
+			scheduled_arrival TIMESTAMP WITH TIME ZONE,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+		);
+
+		CREATE TABLE IF NOT EXISTS lounge_bookings (
+			lounge_booking_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+			bus_booking_id UUID REFERENCES bookings(bus_booking_id),
+			lounge_name TEXT NOT NULL,
+			pricing_type TEXT,
+			number_of_guests INT DEFAULT 1,
+			selected_amenities JSONB DEFAULT '[]'::jsonb,
+			booking_type TEXT,
+			total_amount DECIMAL(10, 2) DEFAULT 0,
+			payment_status TEXT DEFAULT 'Pending',
+			status TEXT DEFAULT 'Pending',
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+			updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+		);
+
+		CREATE TABLE IF NOT EXISTS lounge_booking_pre_orders (
+			pre_order_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+			lounge_booking_id UUID REFERENCES lounge_bookings(lounge_booking_id) ON DELETE CASCADE UNIQUE,
+			product_name TEXT,
+			quantity INT DEFAULT 1,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+		);
+
+		CREATE INDEX IF NOT EXISTS idx_lounge_bookings_bus_booking ON lounge_bookings(bus_booking_id);
+		CREATE INDEX IF NOT EXISTS idx_lounge_bookings_payment_status ON lounge_bookings(payment_status);
+		CREATE INDEX IF NOT EXISTS idx_lounge_bookings_status ON lounge_bookings(status);
+		CREATE INDEX IF NOT EXISTS idx_lounge_bookings_created_at ON lounge_bookings(created_at DESC);
+		CREATE INDEX IF NOT EXISTS idx_lounge_booking_pre_orders_booking ON lounge_booking_pre_orders(lounge_booking_id);
 	`)
 	if err != nil {
 		log.Printf("Error creating/updating tables: %v", err)

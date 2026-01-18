@@ -595,7 +595,7 @@
       </div>
       <div class="bars">
         <div class="bar" *ngFor="let item of loungeRevenueByLounge" [style.--height]="getLoungeRevenueBarHeight(item.total)" [style.background-color]="getColorForLounge(item.name)">
-          <span class="bar-value">${{ item.total | number:'1.0-0' }}</span>
+          <span class="bar-value">{{ item.total | number:'1.0-0' }}</span>
           <span class="bar-label">{{ item.name }}</span>
         </div>
       </div>
