@@ -1,0 +1,704 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { BusService } from '../../core/services/bus.service';
+import { LoungeService } from '../../core/services/lounge.service';
+import { DriverService } from '../../core/services/driver.service';
+import { ConductorService } from '../../core/services/conductor.service';
+import { BusBookingService } from '../../core/services/bus-booking.service';
+import { LoungeBookingService } from '../../core/services/lounge-booking.service';
+import { NotificationService } from '../../core/services/notification.service';
+
+@Component({
+  selector: 'app-search-results',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NavbarComponent],
+  templateUrl: './search-results.component.html',
+  styleUrls: ['./search-results.component.scss']
+})
+export class SearchResultsComponent implements OnInit {
+  searchType: string = '';
+  searchCriteria: any = {};
+  searchResults: any[] = [];
+  showProfileMenu = false;
+  selectedAttributes: string[] = [];
+  showAddModal = false;
+  showEditModal = false;
+  showViewModal = false;
+  newEntity: any = {};
+  selectedEntity: any = null;
+  modalMode: 'add' | 'edit' | 'view' = 'add';
+  entityType: 'bus' | 'driver' | 'conductor' | 'lounge' | 'bus-booking' | 'lounge-booking' = 'bus';
+  newBusDocuments: string = '';
+  editBusDocuments: string = '';
+  availableFeatures = ['Premium meals', 'Express loundary', 'cargo storage', 'spa service', 'personal assist', 'Airport transfer', 'Tuk tuk'];
+
+  attributeOptions: { [key: string]: string[] } = {
+    Bus: ['Company', 'Route', 'Permit Num', 'Register Num', 'Owner Verification', 'Permit Verify', 'Contact', 'No of Seat', 'Approved fare', 'Type', 'Status'],
+    Lounge: ['Lounge Name', 'Owner', 'Contact', 'Address', 'Price per hour', 'Capacity', 'Operation', 'Verification'],
+    Driver: ['Name', 'Contact', 'License Num', 'License Expire date', 'Experience', 'Hire date', 'Verification', 'Status'],
+    Conductor: ['Name', 'Contact', 'License Num', 'Experience', 'Hire date', 'Verification', 'Status'],
+    'Lounge booking': ['Passenger Name', 'Passenger Phone', 'Ref NUM', 'Lounge Name', 'Market place', 'Booking Type', 'Date and Time', 'Duration', 'No of Guests', 'Total Amount', 'Payment Status', 'Booking Status'],
+    'Bus booking': ['Bus Number', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Route', 'Date & Time', 'Bus Type', 'Seat No', 'Total Fare', 'Payment Status', 'Booking Status']
+  };
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private busService: BusService,
+    private loungeService: LoungeService,
+    private driverService: DriverService,
+    private conductorService: ConductorService,
+    private busBookingService: BusBookingService,
+    private loungeBookingService: LoungeBookingService,
+    public notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.searchType = params['type'] || 'Bus';
+      const criteriaStr = params['criteria'];
+      if (criteriaStr) {
+        this.searchCriteria = JSON.parse(criteriaStr);
+        this.selectedAttributes = Object.keys(this.searchCriteria).filter(key => this.searchCriteria[key]);
+        this.performSearch();
+      }
+    });
+  }
+
+  performSearch() {
+    switch (this.searchType) {
+      case 'Bus':
+        this.searchBuses();
+        break;
+      case 'Lounge':
+        this.searchLounges();
+        break;
+      case 'Driver':
+        this.searchDrivers();
+        break;
+      case 'Conductor':
+        this.searchConductors();
+        break;
+      case 'Bus booking':
+        this.searchBusBookings();
+        break;
+      case 'Lounge booking':
+        this.searchLoungeBookings();
+        break;
+    }
+  }
+
+  private searchBuses() {
+    const buses = this.busService.buses;
+    this.searchResults = buses.filter(bus => {
+      return Object.keys(this.searchCriteria).every(attr => {
+        const searchValue = this.searchCriteria[attr]?.toLowerCase().trim();
+        if (!searchValue) return true;
+
+        switch (attr) {
+          case 'Company':
+            return bus.company_name?.toLowerCase().includes(searchValue);
+          case 'Route':
+            return bus.custom_route_name?.toLowerCase().includes(searchValue);
+          case 'Permit Num':
+            return bus.permit_number?.toLowerCase().includes(searchValue);
+          case 'Register Num':
+            return bus.license_plate?.toLowerCase().includes(searchValue);
+          case 'Owner Verification':
+            return bus.owner_verification_status?.toLowerCase().includes(searchValue);
+          case 'Permit Verify':
+            return bus.verification_status?.toLowerCase().includes(searchValue);
+          case 'Contact':
+            return bus.business_phone?.toLowerCase().includes(searchValue);
+          case 'No of Seat':
+            return bus.total_seats?.toString().includes(searchValue);
+          case 'Approved fare':
+            return bus.fare_per_seat?.toString().includes(searchValue);
+          case 'Type':
+            return bus.bus_type?.toLowerCase().includes(searchValue);
+          case 'Status':
+            return bus.status?.toLowerCase().includes(searchValue);
+          default:
+            return true;
+        }
+      });
+    });
+  }
+
+  private searchLounges() {
+    const lounges = this.loungeService.lounges;
+    this.searchResults = lounges.filter(lounge => {
+      return Object.keys(this.searchCriteria).every(attr => {
+        const searchValue = this.searchCriteria[attr]?.toLowerCase().trim();
+        if (!searchValue) return true;
+
+        switch (attr) {
+          case 'Lounge Name':
+            return lounge.lounge_name?.toLowerCase().includes(searchValue);
+          case 'Owner':
+            return lounge.lounge_owner?.toLowerCase().includes(searchValue);
+          case 'Contact':
+            return lounge.lounge_contact?.toLowerCase().includes(searchValue);
+          case 'Address':
+            return lounge.address?.toLowerCase().includes(searchValue);
+          case 'Price per hour':
+            return lounge.price_per_hour?.toString().includes(searchValue);
+          case 'Capacity':
+            return lounge.capacity?.toString().includes(searchValue);
+          case 'Operation':
+            const status = typeof lounge.operational === 'string' ? lounge.operational : (lounge.operational ? 'open' : 'closed');
+            return status.toLowerCase().includes(searchValue);
+          case 'Verification':
+            return lounge.verification?.toLowerCase().includes(searchValue);
+          default:
+            return true;
+        }
+      });
+    });
+  }
+
+  private searchDrivers() {
+    const drivers = this.driverService.drivers;
+    this.searchResults = drivers.filter(driver => {
+      return Object.keys(this.searchCriteria).every(attr => {
+        const searchValue = this.searchCriteria[attr]?.toLowerCase().trim();
+        if (!searchValue) return true;
+
+        switch (attr) {
+          case 'Name':
+            return driver.name?.toLowerCase().includes(searchValue);
+          case 'Contact':
+            return driver.contact_number?.toLowerCase().includes(searchValue);
+          case 'License Num':
+            return driver.license_number?.toLowerCase().includes(searchValue);
+          case 'License Expire date':
+            return driver.license_expiry_date?.toLowerCase().includes(searchValue);
+          case 'Experience':
+            return driver.experience_years?.toString().includes(searchValue);
+          case 'Hire date':
+            return driver.hire_date?.toLowerCase().includes(searchValue);
+          case 'Verification':
+            return driver.verification_status?.toLowerCase().includes(searchValue);
+          case 'Status':
+            return driver.status?.toLowerCase().includes(searchValue);
+          default:
+            return true;
+        }
+      });
+    });
+  }
+
+  private searchConductors() {
+    const conductors = this.conductorService.conductors;
+    this.searchResults = conductors.filter(conductor => {
+      return Object.keys(this.searchCriteria).every(attr => {
+        const searchValue = this.searchCriteria[attr]?.toLowerCase().trim();
+        if (!searchValue) return true;
+
+        switch (attr) {
+          case 'Name':
+            return conductor.name?.toLowerCase().includes(searchValue);
+          case 'Contact':
+            return conductor.contact_number?.toLowerCase().includes(searchValue);
+          case 'License Num':
+            return conductor.license_number?.toLowerCase().includes(searchValue);
+          case 'Experience':
+            return conductor.experience_years?.toString().includes(searchValue);
+          case 'Hire date':
+            return conductor.hire_date?.toLowerCase().includes(searchValue);
+          case 'Verification':
+            return conductor.verification_status?.toLowerCase().includes(searchValue);
+          case 'Status':
+            return conductor.status?.toLowerCase().includes(searchValue);
+          default:
+            return true;
+        }
+      });
+    });
+  }
+
+  private searchBusBookings() {
+    const bookings = this.busBookingService.bookings;
+    this.searchResults = bookings.filter(booking => {
+      return Object.keys(this.searchCriteria).every(attr => {
+        const searchValue = this.searchCriteria[attr]?.toLowerCase().trim();
+        if (!searchValue) return true;
+
+        switch (attr) {
+          case 'Bus Number':
+            return booking.bus_number?.toLowerCase().includes(searchValue);
+          case 'Passenger Name':
+            return booking.passenger_name?.toLowerCase().includes(searchValue);
+          case 'Passenger Phone':
+            return booking.passenger_phone?.toLowerCase().includes(searchValue);
+          case 'Ref NUM':
+            return booking.booking_reference?.toLowerCase().includes(searchValue);
+          case 'Route':
+            return booking.route?.toLowerCase().includes(searchValue);
+          case 'Date & Time':
+            return booking.departure_datetime?.toLowerCase().includes(searchValue);
+          case 'Bus Type':
+            return booking.bus_type?.toLowerCase().includes(searchValue);
+          case 'Seat No':
+            return booking.seat_number?.toLowerCase().includes(searchValue);
+          case 'Total Fare':
+            return booking.total_fare?.toString().includes(searchValue);
+          case 'Payment Status':
+            return booking.payment_status?.toLowerCase().includes(searchValue);
+          case 'Booking Status':
+            return booking.booking_status?.toLowerCase().includes(searchValue);
+          default:
+            return true;
+        }
+      });
+    });
+  }
+
+  private searchLoungeBookings() {
+    const bookings = this.loungeBookingService.bookings;
+    this.searchResults = bookings.filter(booking => {
+      return Object.keys(this.searchCriteria).every(attr => {
+        const searchValue = this.searchCriteria[attr]?.toLowerCase();
+        if (!searchValue) return true;
+
+        switch (attr) {
+          case 'Passenger Name':
+            return booking.passenger_name?.toLowerCase().includes(searchValue);
+          case 'Passenger Phone':
+            return booking.passenger_phone?.toLowerCase().includes(searchValue);
+          case 'Ref NUM':
+            return booking.booking_reference?.toLowerCase().includes(searchValue);
+          case 'Lounge Name':
+            return booking.lounge_name?.toLowerCase().includes(searchValue);
+          case 'Market place':
+            return booking.product_name?.toLowerCase().includes(searchValue);
+          case 'Booking Type':
+            return booking.booking_type?.toLowerCase().includes(searchValue);
+          case 'Date and Time':
+            return booking.scheduled_arrival?.toLowerCase().includes(searchValue);
+          case 'Duration':
+            return booking.pricing_type?.toLowerCase().includes(searchValue);
+          case 'No of Guests':
+            return booking.number_of_guests?.toString().includes(searchValue);
+          case 'Total Amount':
+            return booking.total_amount?.toString().includes(searchValue);
+          case 'Payment Status':
+            return booking.payment_status?.toLowerCase().includes(searchValue);
+          case 'Booking Status':
+            return booking.status?.toLowerCase().includes(searchValue);
+          default:
+            return true;
+        }
+      });
+    });
+  }
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    this.router.navigate(['/login']);
+  }
+
+  backToDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
+
+  selectSearchType(type: string) {
+    this.searchType = type;
+    this.selectedAttributes = [];
+    this.searchCriteria = {};
+    this.searchResults = [];
+  }
+
+  toggleAttribute(attribute: string) {
+    const index = this.selectedAttributes.indexOf(attribute);
+    if (index > -1) {
+      this.selectedAttributes.splice(index, 1);
+      delete this.searchCriteria[attribute];
+    } else {
+      this.selectedAttributes.push(attribute);
+      this.searchCriteria[attribute] = '';
+    }
+  }
+
+  isAttributeSelected(attribute: string): boolean {
+    return this.selectedAttributes.includes(attribute);
+  }
+
+  executeSearch() {
+    if (this.selectedAttributes.length === 0) {
+      alert('Please select at least one search attribute');
+      return;
+    }
+
+    const hasValue = this.selectedAttributes.some(attr => this.searchCriteria[attr]?.trim());
+    if (!hasValue) {
+      alert('Please enter at least one search value');
+      return;
+    }
+
+    this.performSearch();
+  }
+
+  clearSearch() {
+    this.selectedAttributes = [];
+    this.searchCriteria = {};
+    this.searchResults = [];
+  }
+
+  // Lounge booking status change methods
+  changePaymentStatus(b: any, v: 'pending'|'paid'|'failed') {
+    this.loungeBookingService.updatePaymentStatus(b.lounge_booking_id, v).subscribe({
+      next: () => {
+        b.payment_status = v;
+      },
+      error: (err) => {
+        console.error('Error updating payment status:', err);
+      }
+    });
+  }
+  
+  changeBookingStatus(b: any, v: 'confirmed'|'pending'|'cancelled'|'completed') {
+    this.loungeBookingService.updateBookingStatus(b.lounge_booking_id, v).subscribe({
+      next: () => {
+        b.status = v;
+      },
+      error: (err) => {
+        console.error('Error updating booking status:', err);
+      }
+    });
+  }
+
+  openEditModal(b: any) {
+    // Navigate to lounge booking page with edit modal
+    this.router.navigate(['/lounge-booking'], { 
+      queryParams: { 
+        edit: b.lounge_booking_id 
+      } 
+    });
+  }
+
+  navigateToAdd() {
+    this.initializeNewEntity();
+    this.showAddModal = true;
+  }
+
+  editBus(bus: any) {
+    this.selectedEntity = { ...bus };
+    this.editBusDocuments = bus.verification_documents ? bus.verification_documents.join(', ') : '';
+    this.modalMode = 'edit';
+    this.entityType = 'bus';
+    this.showEditModal = true;
+  }
+
+  viewBus(bus: any) {
+    this.selectedEntity = { ...bus };
+    this.modalMode = 'view';
+    this.entityType = 'bus';
+    this.showViewModal = true;
+  }
+
+  editDriver(driver: any) {
+    this.selectedEntity = { ...driver };
+    this.modalMode = 'edit';
+    this.entityType = 'driver';
+    this.showEditModal = true;
+  }
+
+  editConductor(conductor: any) {
+    this.selectedEntity = { ...conductor };
+    this.modalMode = 'edit';
+    this.entityType = 'conductor';
+    this.showEditModal = true;
+  }
+
+  editLounge(lounge: any) {
+    this.selectedEntity = { ...lounge };
+    this.modalMode = 'edit';
+    this.entityType = 'lounge';
+    this.showEditModal = true;
+  }
+
+  viewLounge(lounge: any) {
+    this.selectedEntity = { ...lounge };
+    this.modalMode = 'view';
+    this.entityType = 'lounge';
+    this.showViewModal = true;
+  }
+
+  editBusBooking(booking: any) {
+    this.selectedEntity = { ...booking };
+    this.modalMode = 'edit';
+    this.entityType = 'bus-booking';
+    this.showEditModal = true;
+  }
+
+  editLoungeBooking(booking: any) {
+    this.selectedEntity = { ...booking };
+    if (!this.selectedEntity.selected_amenities) {
+      this.selectedEntity.selected_amenities = [];
+    }
+    this.modalMode = 'edit';
+    this.entityType = 'lounge-booking';
+    this.showEditModal = true;
+  }
+
+  closeEditModal() {
+    this.showEditModal = false;
+    this.selectedEntity = null;
+  }
+
+  closeViewModal() {
+    this.showViewModal = false;
+    this.selectedEntity = null;
+  }
+
+  saveEdit() {
+    switch (this.searchType) {
+      case 'Bus':
+        if (this.editBusDocuments) {
+          this.selectedEntity.verification_documents = this.editBusDocuments.split(',').map((doc: string) => doc.trim());
+        }
+        this.busService.updateBus(this.selectedEntity).subscribe({
+          next: () => {
+            this.closeEditModal();
+            this.busService.loadBuses();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err: any) => console.error('Error updating bus:', err)
+        });
+        break;
+      case 'Driver':
+        this.driverService.updateDriver(this.selectedEntity).subscribe({
+          next: () => {
+            this.closeEditModal();
+            this.driverService.loadDrivers();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err: any) => console.error('Error updating driver:', err)
+        });
+        break;
+      case 'Conductor':
+        this.conductorService.updateConductor(this.selectedEntity).subscribe({
+          next: () => {
+            this.closeEditModal();
+            this.conductorService.loadConductors();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err: any) => console.error('Error updating conductor:', err)
+        });
+        break;
+      case 'Lounge':
+        this.loungeService.update(this.selectedEntity).subscribe({
+          next: () => {
+            this.closeEditModal();
+            this.loungeService.loadLounges();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err: any) => console.error('Error updating lounge:', err)
+        });
+        break;
+      case 'Bus booking':
+        this.busBookingService.update(this.selectedEntity).subscribe({
+          next: () => {
+            this.closeEditModal();
+            this.busBookingService.loadBookings().subscribe(() => {
+              this.performSearch();
+            });
+          },
+          error: (err: any) => console.error('Error updating bus booking:', err)
+        });
+        break;
+      case 'Lounge booking':
+        this.loungeBookingService.update(this.selectedEntity).subscribe({
+          next: () => {
+            this.closeEditModal();
+            this.loungeBookingService.loadBookings();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err: any) => console.error('Error updating lounge booking:', err)
+        });
+        break;
+    }
+  }
+
+  initializeNewEntity() {
+    switch (this.searchType) {
+      case 'Bus':
+        this.newEntity = {
+          company_name: '',
+          identify_or_incorporation_no: '',
+          business_email: '',
+          business_phone: '',
+          bus_number: '',
+          permit_number: '',
+          license_plate: '',
+          total_seats: 0,
+          bus_type: 'Standard',
+          custom_route_name: '',
+          fare_per_seat: 0,
+          status: 'inactive',
+          documents: ''
+        };
+        break;
+      case 'Driver':
+        this.newEntity = {
+          name: '',
+          contact_number: '',
+          license_number: '',
+          experience_years: 0,
+          license_expiry_date: '',
+          hire_date: '',
+          verification_status: 'Pending',
+          verification_notes: '',
+          status: 'Inactive'
+        };
+        break;
+      case 'Conductor':
+        this.newEntity = {
+          name: '',
+          contact_number: '',
+          license_number: '',
+          experience_years: 0,
+          license_expiry_date: '',
+          hire_date: '',
+          verification_status: 'Pending',
+          verification_notes: '',
+          status: 'Inactive'
+        };
+        break;
+      case 'Lounge':
+        this.newEntity = {
+          lounge_owner: '',
+          owner_nic: '',
+          owner_email: '',
+          owner_contact: '',
+          lounge_name: '',
+          lounge_contact: '',
+          address: '',
+          price_per_hour: 0,
+          capacity: 0,
+          operational: true
+        };
+        break;
+      case 'Bus booking':
+        this.newEntity = {
+          passenger_name: '',
+          passenger_phone: '',
+          route: '',
+          departure_datetime: '',
+          bus_type: 'normal',
+          seat_number: '',
+          total_fare: 0
+        };
+        break;
+      case 'Lounge booking':
+        this.newEntity = {
+          passenger_name: '',
+          passenger_phone: '',
+          booking_reference: '',
+          lounge_name: '',
+          product_name: '',
+          booking_type: '',
+          scheduled_arrival: '',
+          pricing_type: '',
+          number_of_guests: 1,
+          total_amount: 0,
+          selected_amenities: []
+        };
+        break;
+    }
+  }
+
+  closeAddModal() {
+    this.showAddModal = false;
+    this.newEntity = {};
+  }
+
+  isFeatureSelected(feature: string): boolean {
+    return this.newEntity.selected_amenities?.includes(feature) || false;
+  }
+
+  toggleFeature(feature: string) {
+    if (!this.newEntity.selected_amenities) {
+      this.newEntity.selected_amenities = [];
+    }
+    const index = this.newEntity.selected_amenities.indexOf(feature);
+    if (index > -1) {
+      this.newEntity.selected_amenities.splice(index, 1);
+    } else {
+      this.newEntity.selected_amenities.push(feature);
+    }
+  }
+
+  saveNewEntity() {
+    switch (this.searchType) {
+      case 'Bus':
+        this.busService.addBus(this.newEntity).subscribe({
+          next: () => {
+            this.closeAddModal();
+            this.busService.loadBuses();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err) => console.error('Error adding bus:', err)
+        });
+        break;
+      case 'Driver':
+        this.driverService.addDriver(this.newEntity).subscribe({
+          next: () => {
+            this.closeAddModal();
+            this.driverService.loadDrivers();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err) => console.error('Error adding driver:', err)
+        });
+        break;
+      case 'Conductor':
+        this.conductorService.addConductor(this.newEntity).subscribe({
+          next: () => {
+            this.closeAddModal();
+            this.conductorService.loadConductors();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err) => console.error('Error adding conductor:', err)
+        });
+        break;
+      case 'Lounge':
+        this.loungeService.add(this.newEntity).subscribe({
+          next: () => {
+            this.closeAddModal();
+            this.loungeService.loadLounges();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err: any) => console.error('Error adding lounge:', err)
+        });
+        break;
+      case 'Bus booking':
+        this.busBookingService.add(this.newEntity).subscribe({
+          next: () => {
+            this.closeAddModal();
+            this.busBookingService.loadBookings().subscribe(() => {
+              this.performSearch();
+            });
+          },
+          error: (err: any) => console.error('Error adding bus booking:', err)
+        });
+        break;
+      case 'Lounge booking':
+        this.loungeBookingService.add(this.newEntity).subscribe({
+          next: () => {
+            this.closeAddModal();
+            this.loungeBookingService.loadBookings();
+            setTimeout(() => this.performSearch(), 300);
+          },
+          error: (err: any) => console.error('Error adding lounge booking:', err)
+        });
+        break;
+    }
+  }
+}

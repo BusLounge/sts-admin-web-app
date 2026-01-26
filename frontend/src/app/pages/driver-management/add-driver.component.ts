@@ -6,27 +6,21 @@ import { DriverService } from '../../core/services/driver.service';
 import { Driver } from '../../core/models/driver.model';
 
 interface AddDriverForm {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
+  name: string;
+  contact_number: string;
   license_number: string;
-  license_expiry: string;
+  license_expiry_date: string;
   experience_years: number | null;
-  is_active: boolean;
-  assigned_bus_id: string;
+  status: 'Active' | 'Inactive' | 'On Leave';
   hire_date: string;
 }
 
 interface ValidationErrors {
-  first_name?: string | null;
-  last_name?: string | null;
-  email?: string | null;
-  phone?: string | null;
+  name?: string | null;
+  contact_number?: string | null;
   license_number?: string | null;
-  license_expiry?: string | null;
+  license_expiry_date?: string | null;
   experience_years?: string | null;
-  assigned_bus_id?: string | null;
   hire_date?: string | null;
 }
 
@@ -39,15 +33,12 @@ interface ValidationErrors {
 })
 export class AddDriverComponent {
   form: AddDriverForm = {
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
+    name: '',
+    contact_number: '',
     license_number: '',
-    license_expiry: '',
+    license_expiry_date: '',
     experience_years: null,
-    is_active: true,
-    assigned_bus_id: '',
+    status: 'Active',
     hire_date: ''
   };
 
@@ -58,23 +49,18 @@ export class AddDriverComponent {
   constructor(private router: Router, private driverService: DriverService) {}
 
   // Validation methods
-  private validateName(name: string, fieldLabel: string): string | null {
-    if (!name || name.trim() === '') return `${fieldLabel} is required`;
-    if (name.trim().length < 2) return `${fieldLabel} must be at least 2 characters`;
+  private validateName(name: string): string | null {
+    if (!name || name.trim() === '') return 'Name is required';
+    if (name.trim().length < 2) return 'Name must be at least 2 characters';
     const pattern = /^[A-Za-z\s'-]{2,50}$/;
-    if (!pattern.test(name.trim())) return `${fieldLabel} can only contain letters, spaces, hyphens and apostrophes`;
+    if (!pattern.test(name.trim())) return 'Name can only contain letters, spaces, hyphens and apostrophes';
     return null;
   }
 
-  private validateEmail(email: string): string | null {
-    if (!email || email.trim() === '') return 'Email is required';
-    return this.isValidEmail(email) ? null : 'Invalid email format';
-  }
-
-  private validatePhone(phone: string): string | null {
-    if (!phone || phone.trim() === '') return 'Phone is required';
+  private validateContactNumber(phone: string): string | null {
+    if (!phone || phone.trim() === '') return 'Contact Number is required';
     const pattern = /^[+]?\d[\d\s-]{6,14}\d$/; // 8-16 digits incl. separators
-    if (!pattern.test(phone.trim())) return 'Invalid phone number';
+    if (!pattern.test(phone.trim())) return 'Invalid contact number';
     return null;
   }
 
@@ -85,8 +71,8 @@ export class AddDriverComponent {
     return null;
   }
 
-  private validateLicenseExpiry(dateStr: string): string | null {
-    if (!dateStr) return 'License Expiry is required';
+  private validateLicenseExpiryDate(dateStr: string): string | null {
+    if (!dateStr) return 'License Expiry Date is required';
     const today = new Date();
     const d = new Date(dateStr);
     // must be strictly in the future
@@ -102,13 +88,6 @@ export class AddDriverComponent {
     return null;
   }
 
-  private validateAssignedBusId(busId: string): string | null {
-    if (!busId) return null; // optional
-    const pattern = /^BUS\d{3,}$/i;
-    if (!pattern.test(busId.trim())) return 'Assigned Bus ID must look like BUS001';
-    return null;
-  }
-
   private validateHireDate(dateStr: string): string | null {
     if (!dateStr) return 'Hire Date is required';
     const today = new Date();
@@ -120,25 +99,19 @@ export class AddDriverComponent {
   }
 
   // Real-time handlers
-  onFirstNameChange(): void { this.validationErrors.first_name = this.validateName(this.form.first_name, 'First Name'); }
-  onLastNameChange(): void { this.validationErrors.last_name = this.validateName(this.form.last_name, 'Last Name'); }
-  onEmailChange(): void { this.validationErrors.email = this.validateEmail(this.form.email); }
-  onPhoneChange(): void { this.validationErrors.phone = this.validatePhone(this.form.phone); }
+  onNameChange(): void { this.validationErrors.name = this.validateName(this.form.name); }
+  onContactNumberChange(): void { this.validationErrors.contact_number = this.validateContactNumber(this.form.contact_number); }
   onLicenseNumberChange(): void { this.validationErrors.license_number = this.validateLicenseNumber(this.form.license_number); }
-  onLicenseExpiryChange(): void { this.validationErrors.license_expiry = this.validateLicenseExpiry(this.form.license_expiry); }
+  onLicenseExpiryDateChange(): void { this.validationErrors.license_expiry_date = this.validateLicenseExpiryDate(this.form.license_expiry_date); }
   onExperienceChange(): void { this.validationErrors.experience_years = this.validateExperience(this.form.experience_years); }
-  onAssignedBusIdChange(): void { this.validationErrors.assigned_bus_id = this.validateAssignedBusId(this.form.assigned_bus_id); }
   onHireDateChange(): void { this.validationErrors.hire_date = this.validateHireDate(this.form.hire_date); }
 
   isFormValid(): boolean {
-    return !this.validateName(this.form.first_name, 'First Name') &&
-           !this.validateName(this.form.last_name, 'Last Name') &&
-           !this.validateEmail(this.form.email) &&
-           !this.validatePhone(this.form.phone) &&
+    return !this.validateName(this.form.name) &&
+           !this.validateContactNumber(this.form.contact_number) &&
            !this.validateLicenseNumber(this.form.license_number) &&
-           !this.validateLicenseExpiry(this.form.license_expiry) &&
+           !this.validateLicenseExpiryDate(this.form.license_expiry_date) &&
            !this.validateExperience(this.form.experience_years) &&
-           !this.validateAssignedBusId(this.form.assigned_bus_id) &&
            !this.validateHireDate(this.form.hire_date);
   }
 
@@ -147,14 +120,11 @@ export class AddDriverComponent {
 
     // validate all
     this.validationErrors = {
-      first_name: this.validateName(this.form.first_name, 'First Name'),
-      last_name: this.validateName(this.form.last_name, 'Last Name'),
-      email: this.validateEmail(this.form.email),
-      phone: this.validatePhone(this.form.phone),
+      name: this.validateName(this.form.name),
+      contact_number: this.validateContactNumber(this.form.contact_number),
       license_number: this.validateLicenseNumber(this.form.license_number),
-      license_expiry: this.validateLicenseExpiry(this.form.license_expiry),
+      license_expiry_date: this.validateLicenseExpiryDate(this.form.license_expiry_date),
       experience_years: this.validateExperience(this.form.experience_years),
-      assigned_bus_id: this.validateAssignedBusId(this.form.assigned_bus_id),
       hire_date: this.validateHireDate(this.form.hire_date)
     };
 
@@ -164,16 +134,15 @@ export class AddDriverComponent {
 
     this.isSubmitting = true;
     const newDriver: Driver = {
-      driver_id: this.generateDriverId(),
-      first_name: this.form.first_name.trim(),
-      last_name: this.form.last_name.trim(),
-      email: this.form.email.trim(),
-      phone: this.form.phone.trim(),
-      license_number: this.form.license_number.trim().toUpperCase(),
-      license_expiry: this.form.license_expiry,
+      id: '', // Backend will generate
+      name: this.form.name.trim(),
+      contact_number: this.form.contact_number.trim(),
+      license_number: this.form.license_number.trim(),
+      license_expiry_date: this.form.license_expiry_date,
       experience_years: this.form.experience_years as number,
-      is_active: this.form.is_active,
-      assigned_bus_id: this.form.assigned_bus_id.trim(),
+      verification_status: 'Pending',
+      verification_notes: '',
+      status: this.form.status,
       hire_date: this.form.hire_date
     };
     this.driverService.addDriver(newDriver);
@@ -183,16 +152,6 @@ export class AddDriverComponent {
 
   cancel(): void {
     this.router.navigate(['/driver-management']);
-  }
-
-  isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  private generateDriverId(): string {
-    const next = (this.driverService.drivers.length + 1).toString().padStart(3, '0');
-    return `DRV${next}`;
   }
 
   goBack(): void {

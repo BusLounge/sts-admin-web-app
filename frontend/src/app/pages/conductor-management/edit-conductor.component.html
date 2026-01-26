@@ -1,89 +1,71 @@
-<div class="edit-conductor-page" *ngIf="conductor; else loading">
+<div class="edit-conductor-page" *ngIf="conductor as c">
   <nav class="back-nav" (click)="goBack()" aria-label="Back">
     <span class="arrow">‹</span>
     <span class="label">Back</span>
   </nav>
-
   <div class="page-header">
-    <h2>Edit Conductor</h2>
-    <p class="subtitle">Editing: {{ conductor.full_name }} ({{ conductor.conductor_id }})</p>
+    <h2>Edit Conductor Details</h2>
   </div>
 
-  <form class="conductor-form" #f="ngForm" (ngSubmit)="save()">
-    <div class="form-columns">
-      <!-- Left Column -->
-      <div class="form-column">
-        <div class="form-row">
-          <label>Full Name<span class="req">*</span></label>
-          <input type="text" [(ngModel)]="conductor.full_name" name="full_name" placeholder="e.g., Raj Kumar Sharma" required minlength="2"
-            #fullNameModel="ngModel" (input)="onFullNameChange()"
-            [class.error-input]="validationErrors.full_name && (fullNameModel.dirty || fullNameModel.touched || isFormSubmitted)" />
-          <small class="error" *ngIf="validationErrors.full_name && (fullNameModel.dirty || fullNameModel.touched || isFormSubmitted)">{{ validationErrors.full_name }}</small>
-        </div>
+  <form class="conductor-form" (ngSubmit)="save()">
+    <div class="form-row">
+      <label>Name<span class="req">*</span></label>
+      <input type="text" [(ngModel)]="c.name" name="name" required minlength="2"
+        #nameModel="ngModel" (input)="onNameChange()"
+        [class.error-input]="validationErrors.name && (nameModel.dirty || nameModel.touched || isFormSubmitted)" />
+      <small class="error" *ngIf="validationErrors.name && (nameModel.dirty || nameModel.touched || isFormSubmitted)">{{ validationErrors.name }}</small>
+    </div>
 
-        <div class="form-row">
-          <label>Phone Number<span class="req">*</span></label>
-          <input type="tel" [(ngModel)]="conductor.phone_number" name="phone_number" placeholder="e.g., 9841234567" required
-            #phoneModel="ngModel" (input)="onPhoneNumberChange()"
-            [class.error-input]="validationErrors.phone_number && (phoneModel.dirty || phoneModel.touched || isFormSubmitted)" />
-          <small class="error" *ngIf="validationErrors.phone_number && (phoneModel.dirty || phoneModel.touched || isFormSubmitted)">{{ validationErrors.phone_number }}</small>
-        </div>
+    <div class="form-row">
+      <label>Contact Number<span class="req">*</span></label>
+      <input type="tel" [(ngModel)]="c.contact_number" name="contact_number" required
+        #contactModel="ngModel" (input)="onContactNumberChange()"
+        [class.error-input]="validationErrors.contact_number && (contactModel.dirty || contactModel.touched || isFormSubmitted)" />
+      <small class="error" *ngIf="validationErrors.contact_number && (contactModel.dirty || contactModel.touched || isFormSubmitted)">{{ validationErrors.contact_number }}</small>
+    </div>
 
-        <div class="form-row">
-          <label>Status<span class="req">*</span></label>
-          <select [(ngModel)]="conductor.status" name="status" required>
-            <option value="Active">Active</option>
-            <option value="On Leave">On Leave</option>
-            <option value="Resigned">Resigned</option>
-          </select>
-        </div>
+    <div class="form-row">
+      <label>License Number<span class="req">*</span></label>
+      <input type="text" [(ngModel)]="c.license_number" name="license_number" required
+        #licenseModel="ngModel" (input)="onLicenseNumberChange()"
+        [class.error-input]="validationErrors.license_number && (licenseModel.dirty || licenseModel.touched || isFormSubmitted)" />
+      <small class="error" *ngIf="validationErrors.license_number && (licenseModel.dirty || licenseModel.touched || isFormSubmitted)">{{ validationErrors.license_number }}</small>
+    </div>
 
-        <div class="form-row">
-          <label>Assigned Bus ID</label>
-          <input type="text" [(ngModel)]="conductor.assigned_bus_id" name="assigned_bus_id" placeholder="e.g., BUS001"
-            #busIdModel="ngModel" (input)="onAssignedBusIdChange()"
-            [class.error-input]="validationErrors.assigned_bus_id && (busIdModel.dirty || busIdModel.touched || isFormSubmitted)" />
-          <small class="error" *ngIf="validationErrors.assigned_bus_id && (busIdModel.dirty || busIdModel.touched || isFormSubmitted)">{{ validationErrors.assigned_bus_id }}</small>
-        </div>
-      </div>
+    <div class="form-row">
+      <label>License Expiry<span class="req">*</span></label>
+      <input type="date" [(ngModel)]="c.license_expiry_date" name="license_expiry_date" required
+        #licenseExpiryModel="ngModel" (input)="onLicenseExpiryChange()"
+        [class.error-input]="validationErrors.license_expiry_date && (licenseExpiryModel.dirty || licenseExpiryModel.touched || isFormSubmitted)" />
+      <small class="error" *ngIf="validationErrors.license_expiry_date && (licenseExpiryModel.dirty || licenseExpiryModel.touched || isFormSubmitted)">{{ validationErrors.license_expiry_date }}</small>
+    </div>
 
-      <!-- Right Column -->
-      <div class="form-column">
-        <div class="form-row">
-          <label>NIC (National Identity Card)<span class="req">*</span></label>
-          <input type="text" [(ngModel)]="conductor.nic" name="nic" placeholder="e.g., 123456789V or 123456789012" required
-            #nicModel="ngModel" (input)="onNICChange()"
-            [class.error-input]="validationErrors.nic && (nicModel.dirty || nicModel.touched || isFormSubmitted)" />
-          <small class="error" *ngIf="validationErrors.nic && (nicModel.dirty || nicModel.touched || isFormSubmitted)">{{ validationErrors.nic }}</small>
-        </div>
+    <div class="form-row">
+      <label>Experience (Years)<span class="req">*</span></label>
+      <input type="number" [(ngModel)]="c.experience_years" name="experience_years" min="0" max="50" required
+        #experienceModel="ngModel" (input)="onExperienceChange()"
+        [class.error-input]="validationErrors.experience_years && (experienceModel.dirty || experienceModel.touched || isFormSubmitted)" />
+      <small class="error" *ngIf="validationErrors.experience_years && (experienceModel.dirty || experienceModel.touched || isFormSubmitted)">{{ validationErrors.experience_years }}</small>
+    </div>
 
-        <div class="form-row">
-          <label>Experience (Years)<span class="req">*</span></label>
-          <input type="number" [(ngModel)]="conductor.experience_years" name="experience_years" placeholder="e.g., 5" min="0" max="50" required
-            #experienceModel="ngModel" (input)="onExperienceChange()"
-            [class.error-input]="validationErrors.experience_years && (experienceModel.dirty || experienceModel.touched || isFormSubmitted)" />
-          <small class="error" *ngIf="validationErrors.experience_years && (experienceModel.dirty || experienceModel.touched || isFormSubmitted)">{{ validationErrors.experience_years }}</small>
-        </div>
+    <div class="form-row">
+      <label>Hire Date<span class="req">*</span></label>
+      <input type="date" [(ngModel)]="c.hire_date" name="hire_date" required
+        #hireDateModel="ngModel" (input)="onHireDateChange()"
+        [class.error-input]="validationErrors.hire_date && (hireDateModel.dirty || hireDateModel.touched || isFormSubmitted)" />
+      <small class="error" *ngIf="validationErrors.hire_date && (hireDateModel.dirty || hireDateModel.touched || isFormSubmitted)">{{ validationErrors.hire_date }}</small>
+    </div>
 
-        <div class="form-row">
-          <label>Hire Date<span class="req">*</span></label>
-          <input type="date" [(ngModel)]="conductor.hired_date" name="hired_date" required
-            #hireDateModel="ngModel" (input)="onHireDateChange()"
-            [class.error-input]="validationErrors.hired_date && (hireDateModel.dirty || hireDateModel.touched || isFormSubmitted)" />
-          <small class="error" *ngIf="validationErrors.hired_date && (hireDateModel.dirty || hireDateModel.touched || isFormSubmitted)">{{ validationErrors.hired_date }}</small>
-        </div>
-      </div>
+    <div class="form-row inline">
+      <label class="checkbox">
+        <input type="checkbox" [ngModel]="c.status.toLowerCase() === 'active'" (ngModelChange)="c.status = $event ? 'Active' : 'Inactive'" name="status" />
+        <span>Active</span>
+      </label>
     </div>
 
     <div class="form-actions">
       <button type="button" class="btn secondary" (click)="cancel()">Cancel</button>
-      <button type="submit" class="btn primary" [disabled]="isSubmitting || !isFormValid()">{{ isSubmitting ? 'Updating...' : 'Update' }}</button>
+      <button type="submit" class="btn primary" [disabled]="isSubmitting || !isFormValid()">{{ isSubmitting ? 'Saving...' : 'Save' }}</button>
     </div>
   </form>
 </div>
-
-<ng-template #loading>
-  <div class="loading-page">
-    <p>Loading conductor details...</p>
-  </div>
-</ng-template>

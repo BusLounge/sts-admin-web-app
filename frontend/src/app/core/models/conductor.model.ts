@@ -1,10 +1,12 @@
 export interface Conductor {
-    conductor_id: string; // Auto-generated UUID or auto-increment
-    full_name: string;
-    nic: string; // National Identity Card number
-    phone_number: string;
+    id: string;
+    name: string;
+    contact_number: string;
+    license_number: string;
+    license_expiry_date: string;
     experience_years: number;
-    status: 'Active' | 'On Leave' | 'Resigned';
-    assigned_bus_id: string; // BusNumber reference
-    hired_date: string;
+    verification_status: string;
+    verification_notes: string;
+    status: string;
+    hire_date: string;
 }

@@ -3,18 +3,19 @@ import autoTable from 'jspdf-autotable';
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { Router, RouterModule } from '@angular/router';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables } from 'chart.js';
 import { Lounge } from '../../core/models/lounge.model';
 import { LoungeService } from '../../core/services/lounge.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-lounges-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, BaseChartDirective, NotificationPanelComponent],
+  imports: [CommonModule, FormsModule, BaseChartDirective, NotificationPanelComponent, NavbarComponent, RouterModule],
   templateUrl: './lounges-management.component.html',
   styleUrls: ['./lounges-management.component.scss']
 })
@@ -28,7 +29,6 @@ export class LoungesManagementComponent implements OnInit {
   amenitiesCounts: { label: string; count: number }[] = [];
   servicesCounts: { label: string; count: number }[] = [];
 
-  sidebarOpen = true;
   currentPage = 'lounges';
 
   // Sorting properties
@@ -41,24 +41,25 @@ export class LoungesManagementComponent implements OnInit {
   selectedLounge: Lounge | null = null;
   lounge: Lounge = {
     lounge_id: '0',
-    owner: '',
-    name: '',
+    lounge_owner: '',
+    lounge_name: '',
+    lounge_contact: '',
     address: '',
-    phone: '',
     capacity: 0,
     price_per_hour: 0,
-    operating_hours: '',
-    amenities: [],
-    services: [],
-    images: [],
-    created_at: new Date().toISOString()
+    facilities: [],
+    marketplace: '',
+    verification: 'pending',
+    verification_note: '',
+    operational: true
   };
 
   selectedAmenities: string[] = [];
-  selectedServices: string[] = [];
+  selectedMarketplaceItems: string[] = [];
 
-  availableAmenities: string[] = ['WiFi', 'AC', 'TV', 'Charging Ports', 'Quiet Zone'];
-  availableServices: string[] = ['Food', 'Drinks', 'Shower'];
+  // Updated to match Supabase DB values (snake_case)
+  availableAmenities: string[] = ['wifi', 'waiting_area', 'ac', 'cafeteria', 'charging_ports', 'parking', 'restrooms', 'tv', 'quiet_zone'];
+  availableServices: string[] = ['Food', 'Drinks', 'Essentials', 'Other'];
 
   imagePreviews: string[] = [];
   private selectedFiles: File[] = [];
@@ -73,15 +74,15 @@ export class LoungesManagementComponent implements OnInit {
     doc.setFontSize(16);
     doc.text('Lounges History', 14, 16);
 
-    const tableHead = [['Lounge Name', 'Owner', 'Address', 'Phone', 'Capacity', 'Price/hr', 'Operating Hours']];
+    const tableHead = [['Lounge Name', 'Owner', 'Address', 'Lounge Contact', 'Capacity', 'Price/hr', 'Operational']];
     const tableBody = this.filteredLounges?.map((l: Lounge) => [
-      l.name,
-      l.owner,
+      l.lounge_name,
+      l.lounge_owner,
       l.address,
-      l.phone,
+      l.lounge_contact,
       String(l.capacity),
       `$${l.price_per_hour}`,
-      l.operating_hours
+      l.operational ? 'Open' : 'Closed'
     ]) ?? [];
 
     autoTable(doc, {
@@ -95,7 +96,7 @@ export class LoungesManagementComponent implements OnInit {
     doc.save('lounges-history.pdf');
   }
 
-  constructor(private router: Router, private loungeService: LoungeService, @Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(private router: Router, private loungeService: LoungeService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -117,7 +118,7 @@ export class LoungesManagementComponent implements OnInit {
   // New method to get data for Capacity vs Price chart
   getCapacityPriceData() {
     return this.lounges.map(lounge => ({
-      name: lounge.name,
+      name: lounge.lounge_name,
       capacity: lounge.capacity,
       price_per_hour: lounge.price_per_hour
     }));
@@ -127,20 +128,35 @@ export class LoungesManagementComponent implements OnInit {
   getFoodDrinksShowerData() {
     const servicesCounts = this.loungeService.getServicesCounts();
     const filtered = Object.entries(servicesCounts).filter(([label]) =>
-      ['Food', 'Drinks', 'Shower'].includes(label)
+      ['Food', 'Drinks', 'Shower', 'Essentials', 'Other'].includes(label)
     ).map(([label, count]) => ({ label, count }));
     return filtered;
   }
 
   // New method to get data for fixed Amenities chart (WiFi, AC, TV, Charging Ports, Quiet Zone)
   getFixedAmenitiesData() {
-    const fixedAmenities = ['WiFi', 'AC', 'TV', 'Charging Ports', 'Quiet Zone'];
+    // Use DB keys here
+    const fixedAmenities = ['wifi', 'ac', 'tv', 'charging_ports', 'quiet_zone'];
     const amenitiesCounts = this.loungeService.getAmenitiesCounts();
-    const filtered = fixedAmenities.map(label => ({
-      label,
-      count: amenitiesCounts[label] || 0
+    const filtered = fixedAmenities.map(key => ({
+      label: this.formatAmenity(key), // Display nice name
+      count: amenitiesCounts[key] || 0
     }));
     return filtered;
+  }
+
+  formatAmenity(amenity: string): string {
+    if (!amenity) return '';
+    // Special cases
+    if (amenity === 'wifi') return 'WiFi';
+    if (amenity === 'ac') return 'AC';
+    if (amenity === 'tv') return 'TV';
+    
+    // General snake_case to Title Case
+    return amenity
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   // New method to get data for Amenities & Services coverage chart
@@ -156,11 +172,19 @@ export class LoungesManagementComponent implements OnInit {
   onSearchChange(): void {
     const q = this.searchTerm.toLowerCase();
     this.filteredLounges = this.lounges.filter(l => {
-      const matchesSearch = !q || 
-        l.owner.toLowerCase().includes(q) ||
-        l.name.toLowerCase().includes(q) ||
+      const matchesSearch = !q ||
+        l.lounge_owner.toLowerCase().includes(q) ||
+        l.lounge_name.toLowerCase().includes(q) ||
         l.address.toLowerCase().includes(q) ||
-        l.phone.includes(q);
+        l.lounge_contact.toLowerCase().includes(q) ||
+        l.lounge_id.toLowerCase().includes(q) ||
+        l.capacity.toString().includes(q) ||
+        l.price_per_hour.toString().includes(q) ||
+        (l.facilities || []).join(' ').toLowerCase().includes(q) ||
+        l.marketplace.toLowerCase().includes(q) ||
+        l.verification.toLowerCase().includes(q) ||
+        (l.verification_note?.toLowerCase() || '').includes(q) ||
+        (l.operational ? 'open' : 'closed').includes(q);
       const matchesPrice = this.priceFilter === null || l.price_per_hour === this.priceFilter;
       return matchesSearch && matchesPrice;
     });
@@ -177,37 +201,56 @@ export class LoungesManagementComponent implements OnInit {
   private resetAddLoungeForm(): void {
     this.lounge = {
       lounge_id: '0',
-      owner: '',
-      name: '',
+      lounge_owner: '',
+      lounge_name: '',
+      lounge_contact: '',
       address: '',
-      phone: '',
       capacity: 0,
       price_per_hour: 0,
-      operating_hours: '',
-      amenities: [],
-      services: [],
-      images: [],
-      created_at: new Date().toISOString()
+      facilities: [],
+      marketplace: '',
+      verification: 'pending',
+      verification_note: '',
+      operational: true
     };
     this.selectedAmenities = [];
-    this.selectedServices = [];
+    this.selectedMarketplaceItems = [];
     this.imagePreviews = [];
     this.selectedFiles = [];
   }
 
   saveAddLounge(): void {
     if (this.modalMode === 'add') {
-      this.lounge.amenities = this.selectedAmenities;
-      this.lounge.services = this.selectedServices;
-      this.lounge.images = this.imagePreviews;
-      this.loungeService.add(this.lounge);
+      this.lounge.facilities = this.selectedAmenities;
+      this.lounge.marketplace = this.selectedMarketplaceItems.join(', ');
+      this.loungeService.add(this.lounge).subscribe({
+        next: () => {
+          console.log('✓ Lounge added successfully');
+          alert('Lounge added successfully');
+          this.loungeService.loadLounges(); // Reload lounges to refresh the list
+          this.showModal = false;
+        },
+        error: (err) => {
+          console.error('✗ Failed to add lounge:', err);
+          alert(`Failed to add lounge: ${err.error?.error || err.message || 'Unknown error'}`);
+        }
+      });
     } else if (this.modalMode === 'edit') {
-      this.lounge.amenities = this.selectedAmenities;
-      this.lounge.services = this.selectedServices;
-      this.lounge.images = this.imagePreviews;
-      this.loungeService.update(this.lounge);
+      this.lounge.facilities = this.selectedAmenities;
+      this.lounge.marketplace = this.selectedMarketplaceItems.join(', ');
+      this.loungeService.update(this.lounge).subscribe({
+        next: () => {
+          console.log('✓ Lounge updated successfully');
+          alert('Lounge updated successfully');
+          this.loungeService.loadLounges(); // Reload lounges to refresh the list
+          this.showModal = false;
+        },
+        error: (err) => {
+          console.error('✗ Failed to update lounge:', err);
+          alert(`Failed to update lounge: ${err.error?.error || err.message || 'Unknown error'}`);
+        }
+      });
     }
-    this.showModal = false;
   }
 
   cancelAddLounge(): void {
@@ -223,13 +266,22 @@ export class LoungesManagementComponent implements OnInit {
     }
   }
 
-  toggleService(service: string): void {
-    const index = this.selectedServices.indexOf(service);
+  toggleMarketplaceItem(item: string): void {
+    const index = this.selectedMarketplaceItems.indexOf(item);
     if (index > -1) {
-      this.selectedServices.splice(index, 1);
+      this.selectedMarketplaceItems.splice(index, 1);
     } else {
-      this.selectedServices.push(service);
+      this.selectedMarketplaceItems.push(item);
     }
+  }
+
+  toggleService(service: string): void {
+    // const index = this.selectedServices.indexOf(service);
+    // if (index > -1) {
+    //   this.selectedServices.splice(index, 1);
+    // } else {
+    //   this.selectedServices.push(service);
+    // }
   }
 
   onFileSelected(event: Event): void {
@@ -266,31 +318,39 @@ export class LoungesManagementComponent implements OnInit {
   view(l: Lounge): void {
     this.modalMode = 'view';
     this.lounge = { ...l };
-    this.selectedAmenities = [...l.amenities];
-    this.selectedServices = [...l.services];
-    this.imagePreviews = [...l.images];
+    this.selectedAmenities = [...l.facilities];
+    // this.selectedServices = [...l.services];
+    // this.imagePreviews = [...l.images];
     this.showModal = true;
   }
 
   update(l: Lounge): void {
     this.modalMode = 'edit';
     this.lounge = { ...l };
-    this.selectedAmenities = [...l.amenities];
-    this.selectedServices = [...l.services];
-    this.imagePreviews = [...l.images];
+    this.selectedAmenities = [...l.facilities];
+    // this.selectedServices = [...l.services];
+    // this.imagePreviews = [...l.images];
     this.showModal = true;
   }
 
   delete(l: Lounge): void {
-    const ok = confirm(`Delete ${l.name}?`);
-    if (ok) this.loungeService.delete(l.lounge_id);
+    const ok = confirm(`Delete ${l.lounge_name}?`);
+    if (ok) {
+      this.loungeService.delete(l.lounge_id).subscribe({
+        next: () => {
+          console.log(`${l.lounge_name} deleted`);
+          this.loungeService.loadLounges(); // Reload lounges to refresh the list
+        },
+        error: (err) => console.error('Failed to delete lounge', err)
+      });
+    }
   }
 
   refreshCharts(): void {
     const aCounts = this.loungeService.getAmenitiesCounts();
-    const sCounts = this.loungeService.getServicesCounts();
+    // const sCounts = this.loungeService.getServicesCounts();
     this.amenitiesCounts = Object.entries(aCounts).map(([label, count]) => ({ label, count }));
-    this.servicesCounts = Object.entries(sCounts).map(([label, count]) => ({ label, count }));
+    // this.servicesCounts = Object.entries(sCounts).map(([label, count]) => ({ label, count }));
   }
 
   updateBarCharts(): void {
@@ -349,9 +409,18 @@ export class LoungesManagementComponent implements OnInit {
   }
 
   totalLounges(): number { return this.lounges.length; }
-goUserProfile() {
-  this.router.navigate(['/user-profile']);
-}
+  showProfileMenu = false;
+
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_user');
+    this.router.navigate(['/login']);
+  }
   // Sorting functionality
   onSort(column: string): void {
     if (this.sortColumn === column) {
@@ -371,9 +440,25 @@ goUserProfile() {
       let bValue: any;
 
       switch (this.sortColumn) {
-        case 'name':
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
+        case 'lounge_id':
+          aValue = a.lounge_id.toLowerCase();
+          bValue = b.lounge_id.toLowerCase();
+          break;
+        case 'lounge_owner':
+          aValue = a.lounge_owner.toLowerCase();
+          bValue = b.lounge_owner.toLowerCase();
+          break;
+        case 'lounge_name':
+          aValue = a.lounge_name.toLowerCase();
+          bValue = b.lounge_name.toLowerCase();
+          break;
+        case 'lounge_contact':
+          aValue = a.lounge_contact.toLowerCase();
+          bValue = b.lounge_contact.toLowerCase();
+          break;
+        case 'address':
+          aValue = a.address.toLowerCase();
+          bValue = b.address.toLowerCase();
           break;
         case 'capacity':
           aValue = a.capacity;
@@ -383,9 +468,17 @@ goUserProfile() {
           aValue = a.price_per_hour;
           bValue = b.price_per_hour;
           break;
-        case 'operating_hours':
-          aValue = a.operating_hours.toLowerCase();
-          bValue = b.operating_hours.toLowerCase();
+        case 'verification':
+          aValue = a.verification.toLowerCase();
+          bValue = b.verification.toLowerCase();
+          break;
+        case 'verification_note':
+          aValue = a.verification_note.toLowerCase();
+          bValue = b.verification_note.toLowerCase();
+          break;
+        case 'operational':
+          aValue = a.operational;
+          bValue = b.operational;
           break;
         default:
           return 0;

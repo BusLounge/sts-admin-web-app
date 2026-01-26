@@ -1,27 +1,36 @@
-<div class="management-container">
-  <app-sidebar [sidebarOpen]="sidebarOpen" [currentPage]="currentPage" (toggle)="sidebarOpen = !sidebarOpen" (navigate)="navigateTo($event)" (logout)="logout()"></app-sidebar>
-
-  <div class="main-content" [class.sidebar-open]="sidebarOpen">
-    <div class="driver-page">
-    <div class="top-bar">
-      <nav class="quick-nav">
-        <span class="qn-root" (click)="goDashboard()">Dashboard</span>
-        <span class="qn-sep" aria-hidden="true">›</span>
-        <span class="qn-current">Driver Management</span>
-      </nav>
-      <div class="top-icons">
-        <button class="icon-btn notification-btn" (click)="toggleNotificationPanel()">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-          </svg>
-        </button>
-        <button class="icon-btn profile-btn" (click)="goUserProfile()">
+<div class="driver-container">
+  <div class="top-navigation-row">
+    <div class="app-branding">
+      <div class="logo-circle">
+        <i class="fas fa-user"></i>
+      </div>
+      <span class="app-name">BusLounge</span>
+    </div>
+    <app-navbar></app-navbar>
+    <div class="header-actions">
+      <button class="icon-btn notification-btn" (click)="toggleNotificationPanel()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+        <span *ngIf="notificationService.totalPendingCount > 0" class="notification-badge">{{ notificationService.totalPendingCount }}</span>
+      </button>
+      <div class="profile-dropdown-container">
+        <button class="icon-btn profile-btn" (click)="toggleProfileMenu()">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </button>
+        <div class="dropdown-menu" *ngIf="showProfileMenu">
+          <a routerLink="/settings" class="dropdown-item">
+            <i class="fas fa-cog"></i> Profile setting
+          </a>
+          <a (click)="logout()" class="dropdown-item">
+            <i class="fas fa-sign-out-alt"></i> Log out
+          </a>
+        </div>
       </div>
     </div>
+  </div>
     <div class="page-header">
       <div class="header-content">
         <h2>Driver Management</h2>
@@ -80,7 +89,7 @@
         </div>
         <div class="pie-chart">
           <div class="pie-container">
-            <div class="pie-slice" [style.--percentage]="getActivePercentage()"></div>
+            <div class="pie-slice" [style.background]="getDriverPieBackground()"></div>
             <div class="pie-labels">
               <div class="label active">
                 <span class="color-box active"></span>
@@ -137,42 +146,63 @@
     <table class="driver-table">
       <thead>
         <tr>
-          <th>Driver ID</th>
+          <th (click)="onSort('id')" style="cursor: pointer;" title="Click to sort">
+            Driver ID {{ getSortIcon('id') }}
+          </th>
           <th (click)="onSort('name')" style="cursor: pointer;" title="Click to sort">
-            Name {{ getSortIcon('name') }}
+            Driver Name {{ getSortIcon('name') }}
           </th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>License No.</th>
-          <th (click)="onSort('experience')" style="cursor: pointer;" title="Click to sort">
-            Experience {{ getSortIcon('experience') }}
+          <th>Contact Num</th>
+          <th>License Number</th>
+          <th (click)="onSort('license_expiry_date')" style="cursor: pointer;" title="Click to sort">
+            License Expire date {{ getSortIcon('license_expiry_date') }}
           </th>
-          <th>Status</th>
-          <th (click)="onSort('assigned_bus')" style="cursor: pointer;" title="Click to sort">
-            Assigned Bus {{ getSortIcon('assigned_bus') }}
+          <th (click)="onSort('experience_years')" style="cursor: pointer;" title="Click to sort">
+            Experience Yrs {{ getSortIcon('experience_years') }}
           </th>
-          <th>Actions</th>
+          <th (click)="onSort('hire_date')" style="cursor: pointer;" title="Click to sort">
+            Hire Date {{ getSortIcon('hire_date') }}
+          </th>
+          <th (click)="onSort('verification_status')" style="cursor: pointer;" title="Click to sort">
+            Verification {{ getSortIcon('verification_status') }}
+          </th>
+          <th>Verification Note</th>
+          <th (click)="onSort('status')" style="cursor: pointer;" title="Click to sort">
+            Status {{ getSortIcon('status') }}
+          </th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let driver of filteredDrivers">
-          <td>{{ driver.driver_id }}</td>
-          <td>{{ driver.first_name }} {{ driver.last_name }}</td>
-          <td>{{ driver.email }}</td>
-          <td>{{ formatPhone(driver.phone) }}</td>
+          <td>{{ driver.id }}</td>
+          <td>{{ driver.name }}</td>
+          <td>{{ formatPhone(driver.contact_number) }}</td>
           <td>{{ driver.license_number }}</td>
-          <td>{{ driver.experience_years }}yrs</td>
-          <td>{{ driver.is_active ? 'Active' : 'Inactive' }}</td>
-          <td>{{ driver.assigned_bus_id || 'Unassigned' }}</td>
+          <td>{{ driver.license_expiry_date | date:'shortDate' }}</td>
+          <td>{{ driver.experience_years }}</td>
+          <td>{{ driver.hire_date | date:'shortDate' }}</td>
+          <td>{{ driver.verification_status || 'Pending' }}</td>
+          <td>
+            <div *ngIf="driver.verification_status?.toLowerCase() === 'approved' || driver.verification_status?.toLowerCase() === 'verified'">
+              <div *ngIf="driver.verification_notes && driver.verification_notes.trim(); else noDocuments">
+                <a [href]="driver.verification_notes" target="_blank" class="document-link" title="Open document">
+                  <i class="fas fa-external-link-alt"></i> Document 1
+                </a>
+              </div>
+              <ng-template #noDocuments>
+                <span class="no-documents">No documents</span>
+              </ng-template>
+            </div>
+            <span *ngIf="driver.verification_status?.toLowerCase() === 'rejected'" class="no-documents">-</span>
+            <span *ngIf="driver.verification_status?.toLowerCase() === 'pending'" class="no-documents">Pending approval</span>
+          </td>
+          <td>{{ driver.status }}</td>
           <td class="actions-cell">
             <i class="fas fa-edit action-icon edit-icon" (click)="updateDriver(driver)" title="Update"></i>
-            <i class="fas {{ driver.is_active ? 'fa-toggle-on' : 'fa-toggle-off' }} action-icon toggle-icon" (click)="toggleActive(driver)" [title]="driver.is_active ? 'Deactivate' : 'Activate'"></i>
-          </td>
-        </tr>
+            
       </tbody>
     </table>
-    </div>
-  </div>
 
   <!-- Add/Edit Driver Modal -->
   <div class="add-driver-modal" *ngIf="showAddDriverModal" (click)="closeAddDriverModal()">
@@ -181,20 +211,14 @@
       <form (ngSubmit)="saveDriver()">
         <div class="form-grid">
           <div class="form-row">
-            <label>First Name</label>
-            <input type="text" [(ngModel)]="newDriver.first_name" name="first_name" required />
+            <label>Driver Name</label>
+            <input type="text" [(ngModel)]="newDriver.name" name="driverName" required />
           </div>
+          
+          
           <div class="form-row">
-            <label>Last Name</label>
-            <input type="text" [(ngModel)]="newDriver.last_name" name="last_name" required />
-          </div>
-          <div class="form-row">
-            <label>Email</label>
-            <input type="email" [(ngModel)]="newDriver.email" name="email" required />
-          </div>
-          <div class="form-row">
-            <label>Phone</label>
-            <input type="text" [(ngModel)]="newDriver.phone" name="phone" required />
+            <label>Contact Num</label>
+            <input type="text" [(ngModel)]="newDriver.contact_number" name="phone" required />
           </div>
           <div class="form-row">
             <label>License Number</label>
@@ -206,19 +230,23 @@
           </div>
           <div class="form-row">
             <label>License Expiry</label>
-            <input type="date" [(ngModel)]="newDriver.license_expiry" name="license_expiry" />
+            <input type="date" [(ngModel)]="newDriver.license_expiry_date" name="license_expiry_date" />
           </div>
-          <div class="form-row">
-            <label>Assigned Bus ID</label>
-            <input type="text" [(ngModel)]="newDriver.assigned_bus_id" name="assigned_bus_id" />
-          </div>
+          
           <div class="form-row">
             <label>Hire Date</label>
             <input type="date" [(ngModel)]="newDriver.hire_date" name="hire_date" />
           </div>
+          
+          <div class="form-row">
+            <label>Verification Note</label>
+            <textarea [(ngModel)]="newDriver.verification_notes" name="verification_notes" rows="3" placeholder="Enter verification notes..."></textarea>
+          </div>
           <div class="form-row">
             <label>Status</label>
-            <input type="checkbox" [(ngModel)]="newDriver.is_active" name="is_active" /> Active
+            <div style="display: flex; align-items: center; height: 38px;">
+              <input type="checkbox" [ngModel]="newDriver.status.toLowerCase() === 'active'" (ngModelChange)="newDriver.status = $event ? 'Active' : 'Inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
+            </div>
           </div>
         </div>
         <div class="form-actions">

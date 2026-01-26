@@ -6,12 +6,12 @@ import { ConductorService } from '../../core/services/conductor.service';
 import { Conductor } from '../../core/models/conductor.model';
 
 interface ValidationErrors {
-  full_name?: string | null;
-  nic?: string | null;
-  phone_number?: string | null;
+  name?: string | null;
+  contact_number?: string | null;
   experience_years?: string | null;
-  assigned_bus_id?: string | null;
-  hired_date?: string | null;
+  license_number?: string | null;
+  license_expiry_date?: string | null;
+  hire_date?: string | null;
 }
 
 @Component({
@@ -44,25 +44,18 @@ export class EditConductorComponent implements OnInit {
   }
 
   // Validation methods (same as add-conductor)
-  private validateFullName(name: string): string | null {
-    if (!name || name.trim() === '') return 'Full Name is required';
-    if (name.trim().length < 2) return 'Full Name must be at least 2 characters';
+  private validateName(name: string): string | null {
+    if (!name || name.trim() === '') return 'Name is required';
+    if (name.trim().length < 2) return 'Name must be at least 2 characters';
     const pattern = /^[A-Za-z\s'-]{2,100}$/;
-    if (!pattern.test(name.trim())) return 'Full Name can only contain letters, spaces, hyphens and apostrophes';
+    if (!pattern.test(name.trim())) return 'Name can only contain letters, spaces, hyphens and apostrophes';
     return null;
   }
 
-  private validateNIC(nic: string): string | null {
-    if (!nic || nic.trim() === '') return 'NIC is required';
-    const pattern = /^\d{9}[Vv]|\d{12}$/;
-    if (!pattern.test(nic.trim())) return 'NIC must be 9 digits + V or 12 digits';
-    return null;
-  }
-
-  private validatePhoneNumber(phone: string): string | null {
-    if (!phone || phone.trim() === '') return 'Phone Number is required';
+  private validateContactNumber(phone: string): string | null {
+    if (!phone || phone.trim() === '') return 'Contact Number is required';
     const pattern = /^\d{10}$/;
-    if (!pattern.test(phone.trim())) return 'Phone Number must be exactly 10 digits';
+    if (!pattern.test(phone.trim())) return 'Contact Number must be exactly 10 digits';
     return null;
   }
 
@@ -73,10 +66,16 @@ export class EditConductorComponent implements OnInit {
     return null;
   }
 
-  private validateAssignedBusId(busId: string): string | null {
-    if (!busId) return null;
-    const pattern = /^BUS\d{3,}$/i;
-    if (!pattern.test(busId.trim())) return 'Assigned Bus ID must look like BUS001';
+  private validateLicenseNumber(license: string): string | null {
+    if (!license || license.trim() === '') return 'License Number is required';
+    if (license.trim().length < 3) return 'License Number must be at least 3 characters';
+    return null;
+  }
+
+  private validateLicenseExpiryDate(dateStr: string): string | null {
+    if (!dateStr) return 'License Expire Date is required';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Invalid date';
     return null;
   }
 
@@ -90,21 +89,21 @@ export class EditConductorComponent implements OnInit {
   }
 
   // Real-time handlers
-  onFullNameChange(): void { if (this.conductor) this.validationErrors.full_name = this.validateFullName(this.conductor.full_name); }
-  onNICChange(): void { if (this.conductor) this.validationErrors.nic = this.validateNIC(this.conductor.nic); }
-  onPhoneNumberChange(): void { if (this.conductor) this.validationErrors.phone_number = this.validatePhoneNumber(this.conductor.phone_number); }
+  onNameChange(): void { if (this.conductor) this.validationErrors.name = this.validateName(this.conductor.name); }
+  onContactNumberChange(): void { if (this.conductor) this.validationErrors.contact_number = this.validateContactNumber(this.conductor.contact_number); }
   onExperienceChange(): void { if (this.conductor) this.validationErrors.experience_years = this.validateExperience(this.conductor.experience_years); }
-  onAssignedBusIdChange(): void { if (this.conductor) this.validationErrors.assigned_bus_id = this.validateAssignedBusId(this.conductor.assigned_bus_id); }
-  onHireDateChange(): void { if (this.conductor) this.validationErrors.hired_date = this.validateHireDate(this.conductor.hired_date); }
+  onLicenseNumberChange(): void { if (this.conductor) this.validationErrors.license_number = this.validateLicenseNumber(this.conductor.license_number); }
+  onLicenseExpiryChange(): void { if (this.conductor) this.validationErrors.license_expiry_date = this.validateLicenseExpiryDate(this.conductor.license_expiry_date); }
+  onHireDateChange(): void { if (this.conductor) this.validationErrors.hire_date = this.validateHireDate(this.conductor.hire_date); }
 
   isFormValid(): boolean {
     if (!this.conductor) return false;
-    return !this.validateFullName(this.conductor.full_name) &&
-           !this.validateNIC(this.conductor.nic) &&
-           !this.validatePhoneNumber(this.conductor.phone_number) &&
+    return !this.validateName(this.conductor.name) &&
+           !this.validateContactNumber(this.conductor.contact_number) &&
            !this.validateExperience(this.conductor.experience_years) &&
-           !this.validateAssignedBusId(this.conductor.assigned_bus_id) &&
-           !this.validateHireDate(this.conductor.hired_date);
+           !this.validateLicenseNumber(this.conductor.license_number) &&
+           !this.validateLicenseExpiryDate(this.conductor.license_expiry_date) &&
+           !this.validateHireDate(this.conductor.hire_date);
   }
 
   save(): void {
@@ -112,21 +111,32 @@ export class EditConductorComponent implements OnInit {
 
     this.isFormSubmitted = true;
     this.validationErrors = {
-      full_name: this.validateFullName(this.conductor.full_name),
-      nic: this.validateNIC(this.conductor.nic),
-      phone_number: this.validatePhoneNumber(this.conductor.phone_number),
+      name: this.validateName(this.conductor.name),
+      contact_number: this.validateContactNumber(this.conductor.contact_number),
       experience_years: this.validateExperience(this.conductor.experience_years),
-      assigned_bus_id: this.validateAssignedBusId(this.conductor.assigned_bus_id),
-      hired_date: this.validateHireDate(this.conductor.hired_date)
+      license_number: this.validateLicenseNumber(this.conductor.license_number),
+      license_expiry_date: this.validateLicenseExpiryDate(this.conductor.license_expiry_date),
+      hire_date: this.validateHireDate(this.conductor.hire_date)
     };
 
-    if (!this.isFormValid()) return;
+    if (!this.isFormValid()) {
+      alert('Please fill all required fields correctly');
+      return;
+    }
 
     this.isSubmitting = true;
-    this.conductor.nic = this.conductor.nic.trim().toUpperCase();
-    this.conductorService.updateConductor(this.conductor);
-    this.isSubmitting = false;
-    this.router.navigate(['/conductor-management']);
+    this.conductorService.updateConductor(this.conductor).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        alert('Successfully updated');
+        this.router.navigate(['/conductor-management']);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error('Error updating conductor', err);
+        alert('Failed to update conductor');
+      }
+    });
   }
 
   cancel(): void {

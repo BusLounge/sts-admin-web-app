@@ -6,22 +6,25 @@ import { ConductorService } from '../../core/services/conductor.service';
 import { Conductor } from '../../core/models/conductor.model';
 
 interface AddConductorForm {
-  full_name: string;
-  nic: string;
-  phone_number: string;
+  name: string;
+  contact_number: string;
   experience_years: number | null;
+  license_number: string;
+  license_expiry_date: string;
+  verification_status: 'Verified' | 'Pending' | 'Rejected';
+  verification_notes: string;
   status: 'Active' | 'On Leave' | 'Resigned';
-  assigned_bus_id: string;
-  hired_date: string;
+  hire_date: string;
 }
 
 interface ValidationErrors {
-  full_name?: string | null;
-  nic?: string | null;
-  phone_number?: string | null;
+  name?: string | null;
+  contact_number?: string | null;
   experience_years?: string | null;
-  assigned_bus_id?: string | null;
-  hired_date?: string | null;
+  license_number?: string | null;
+  license_expiry_date?: string | null;
+  verification_status?: string | null;
+  hire_date?: string | null;
 }
 
 @Component({
@@ -33,13 +36,15 @@ interface ValidationErrors {
 })
 export class AddConductorComponent {
   form: AddConductorForm = {
-    full_name: '',
-    nic: '',
-    phone_number: '',
+    name: '',
+    contact_number: '',
     experience_years: null,
+    license_number: '',
+    license_expiry_date: '',
+    verification_status: 'Pending',
+    verification_notes: '',
     status: 'Active',
-    assigned_bus_id: '',
-    hired_date: ''
+    hire_date: ''
   };
 
   isSubmitting = false;
@@ -49,25 +54,18 @@ export class AddConductorComponent {
   constructor(private router: Router, private conductorService: ConductorService) {}
 
   // Validation methods
-  private validateFullName(name: string): string | null {
-    if (!name || name.trim() === '') return 'Full Name is required';
-    if (name.trim().length < 2) return 'Full Name must be at least 2 characters';
+  private validateName(name: string): string | null {
+    if (!name || name.trim() === '') return 'Name is required';
+    if (name.trim().length < 2) return 'Name must be at least 2 characters';
     const pattern = /^[A-Za-z\s'-]{2,100}$/;
-    if (!pattern.test(name.trim())) return 'Full Name can only contain letters, spaces, hyphens and apostrophes';
+    if (!pattern.test(name.trim())) return 'Name can only contain letters, spaces, hyphens and apostrophes';
     return null;
   }
 
-  private validateNIC(nic: string): string | null {
-    if (!nic || nic.trim() === '') return 'NIC is required';
-    const pattern = /^\d{9}[Vv]|\d{12}$/; // 9 digits + V or 12 digits
-    if (!pattern.test(nic.trim())) return 'NIC must be 9 digits + V or 12 digits';
-    return null;
-  }
-
-  private validatePhoneNumber(phone: string): string | null {
-    if (!phone || phone.trim() === '') return 'Phone Number is required';
+  private validateContactNumber(phone: string): string | null {
+    if (!phone || phone.trim() === '') return 'Contact Number is required';
     const pattern = /^\d{10}$/; // Exactly 10 digits
-    if (!pattern.test(phone.trim())) return 'Phone Number must be exactly 10 digits';
+    if (!pattern.test(phone.trim())) return 'Contact Number must be exactly 10 digits';
     return null;
   }
 
@@ -78,10 +76,16 @@ export class AddConductorComponent {
     return null;
   }
 
-  private validateAssignedBusId(busId: string): string | null {
-    if (!busId) return null; // Optional field
-    const pattern = /^BUS\d{3,}$/i;
-    if (!pattern.test(busId.trim())) return 'Assigned Bus ID must look like BUS001';
+  private validateLicenseNumber(license: string): string | null {
+    if (!license || license.trim() === '') return 'License Number is required';
+    if (license.trim().length < 3) return 'License Number must be at least 3 characters';
+    return null;
+  }
+
+  private validateLicenseExpiryDate(dateStr: string): string | null {
+    if (!dateStr) return 'License Expire Date is required';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Invalid date';
     return null;
   }
 
@@ -95,20 +99,20 @@ export class AddConductorComponent {
   }
 
   // Real-time handlers
-  onFullNameChange(): void { this.validationErrors.full_name = this.validateFullName(this.form.full_name); }
-  onNICChange(): void { this.validationErrors.nic = this.validateNIC(this.form.nic); }
-  onPhoneNumberChange(): void { this.validationErrors.phone_number = this.validatePhoneNumber(this.form.phone_number); }
+  onNameChange(): void { this.validationErrors.name = this.validateName(this.form.name); }
+  onContactNumberChange(): void { this.validationErrors.contact_number = this.validateContactNumber(this.form.contact_number); }
   onExperienceChange(): void { this.validationErrors.experience_years = this.validateExperience(this.form.experience_years); }
-  onAssignedBusIdChange(): void { this.validationErrors.assigned_bus_id = this.validateAssignedBusId(this.form.assigned_bus_id); }
-  onHireDateChange(): void { this.validationErrors.hired_date = this.validateHireDate(this.form.hired_date); }
+  onLicenseNumberChange(): void { this.validationErrors.license_number = this.validateLicenseNumber(this.form.license_number); }
+  onLicenseExpiryChange(): void { this.validationErrors.license_expiry_date = this.validateLicenseExpiryDate(this.form.license_expiry_date); }
+  onHireDateChange(): void { this.validationErrors.hire_date = this.validateHireDate(this.form.hire_date); }
 
   isFormValid(): boolean {
-    return !this.validateFullName(this.form.full_name) &&
-           !this.validateNIC(this.form.nic) &&
-           !this.validatePhoneNumber(this.form.phone_number) &&
+    return !this.validateName(this.form.name) &&
+           !this.validateContactNumber(this.form.contact_number) &&
            !this.validateExperience(this.form.experience_years) &&
-           !this.validateAssignedBusId(this.form.assigned_bus_id) &&
-           !this.validateHireDate(this.form.hired_date);
+           !this.validateLicenseNumber(this.form.license_number) &&
+           !this.validateLicenseExpiryDate(this.form.license_expiry_date) &&
+           !this.validateHireDate(this.form.hire_date);
   }
 
   save(): void {
@@ -116,12 +120,12 @@ export class AddConductorComponent {
 
     // Validate all fields
     this.validationErrors = {
-      full_name: this.validateFullName(this.form.full_name),
-      nic: this.validateNIC(this.form.nic),
-      phone_number: this.validatePhoneNumber(this.form.phone_number),
+      name: this.validateName(this.form.name),
+      contact_number: this.validateContactNumber(this.form.contact_number),
       experience_years: this.validateExperience(this.form.experience_years),
-      assigned_bus_id: this.validateAssignedBusId(this.form.assigned_bus_id),
-      hired_date: this.validateHireDate(this.form.hired_date)
+      license_number: this.validateLicenseNumber(this.form.license_number),
+      license_expiry_date: this.validateLicenseExpiryDate(this.form.license_expiry_date),
+      hire_date: this.validateHireDate(this.form.hire_date)
     };
 
     if (!this.isFormValid()) {
@@ -130,14 +134,16 @@ export class AddConductorComponent {
 
     this.isSubmitting = true;
     const newConductor: Conductor = {
-      conductor_id: this.generateConductorId(),
-      full_name: this.form.full_name.trim(),
-      nic: this.form.nic.trim().toUpperCase(),
-      phone_number: this.form.phone_number.trim(),
+      id: '', // Backend will generate
+      name: this.form.name.trim(),
+      contact_number: this.form.contact_number.trim(),
       experience_years: this.form.experience_years as number,
+      license_number: this.form.license_number.trim(),
+      license_expiry_date: this.form.license_expiry_date,
+      verification_status: this.form.verification_status,
+      verification_notes: this.form.verification_notes.trim(),
       status: this.form.status,
-      assigned_bus_id: this.form.assigned_bus_id.trim(),
-      hired_date: this.form.hired_date
+      hire_date: this.form.hire_date
     };
 
     this.conductorService.addConductor(newConductor);
@@ -147,11 +153,6 @@ export class AddConductorComponent {
 
   cancel(): void {
     this.router.navigate(['/conductor-management']);
-  }
-
-  private generateConductorId(): string {
-    const next = (this.conductorService.conductors.length + 1).toString().padStart(3, '0');
-    return `CON${next}`;
   }
 
   goBack(): void {

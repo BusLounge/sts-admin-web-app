@@ -1,83 +1,65 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Conductor } from '../models/conductor.model';
 
 @Injectable({ providedIn: 'root' })
 export class ConductorService {
-  private readonly _conductors$ = new BehaviorSubject<Conductor[]>([
-    {
-      conductor_id: 'CON001',
-      full_name: 'Raj Kumar Sharma',
-      nic: '123456789012',
-      phone_number: '9841234567',
-      experience_years: 5,
-      status: 'Active',
-      assigned_bus_id: 'BUS001',
-      hired_date: '2020-01-15'
-    },
-    {
-      conductor_id: 'CON002',
-      full_name: 'Priya Devi',
-      nic: '987654321098',
-      phone_number: '9847654321',
-      experience_years: 3,
-      status: 'On Leave',
-      assigned_bus_id: 'BUS002',
-      hired_date: '2021-03-20'
-    },
-    {
-      conductor_id: 'CON003',
-      full_name: 'Amit Kumar',
-      nic: '456789123456',
-      phone_number: '9849876543',
-      experience_years: 8,
-      status: 'Active',
-      assigned_bus_id: 'BUS003',
-      hired_date: '2018-09-10'
-    },
-    {
-      conductor_id: 'CON004',
-      full_name: 'Sunita Thapa',
-      nic: '789123456789',
-      phone_number: '9851234567',
-      experience_years: 2,
-      status: 'Resigned',
-      assigned_bus_id: '',
-      hired_date: '2022-05-15'
-    }
-  ]);
+  private apiUrl = 'http://localhost:8083/api/conductors';
+  private readonly _conductors$ = new BehaviorSubject<Conductor[]>([]);
 
   readonly conductors$ = this._conductors$.asObservable();
+
+  constructor(private http: HttpClient) {
+    this.loadConductors();
+  }
+
+  loadConductors(): void {
+    this.http.get<Conductor[]>(this.apiUrl).subscribe({
+      next: (conductors) => this._conductors$.next(conductors),
+      error: (err) => console.error('Failed to load conductors', err)
+    });
+  }
 
   get conductors(): Conductor[] {
     return this._conductors$.getValue();
   }
 
-  addConductor(conductor: Omit<Conductor, 'conductor_id'>): void {
-    const newId = `CON${(this.conductors.length + 1).toString().padStart(3, '0')}`;
-    const newConductor: Conductor = { ...conductor, conductor_id: newId };
-    this._conductors$.next([...this.conductors, newConductor]);
+  addConductor(conductor: Conductor): Observable<Conductor> {
+    return this.http.post<Conductor>(this.apiUrl, conductor).pipe(
+      tap((newConductor) => {
+        this._conductors$.next([...this.conductors, newConductor]);
+      })
+    );
   }
 
-  updateConductor(updated: Conductor): void {
-    this._conductors$.next(this.conductors.map(c => (c.conductor_id === updated.conductor_id ? updated : c)));
+  updateConductor(updated: Conductor): Observable<Conductor> {
+    return this.http.put<Conductor>(`${this.apiUrl}/${updated.id}`, updated).pipe(
+      tap((updatedConductor) => {
+        this._conductors$.next(this.conductors.map(c => (c.id === updatedConductor.id ? updatedConductor : c)));
+      })
+    );
   }
 
-  deleteConductor(conductorId: string): void {
-    this._conductors$.next(this.conductors.filter(c => c.conductor_id !== conductorId));
+  deleteConductor(conductorId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${conductorId}`).pipe(
+      tap(() => {
+        this._conductors$.next(this.conductors.filter(c => c.id !== conductorId));
+      })
+    );
   }
 
   getById(conductorId: string): Conductor | undefined {
-    return this.conductors.find(c => c.conductor_id === conductorId);
+    return this.conductors.find(c => c.id === conductorId);
   }
 
   // Helper methods for status filtering
   getActiveConductors(): Conductor[] {
-    return this.conductors.filter(c => c.status === 'Active');
+    return this.conductors.filter(c => c.status.toLowerCase() === 'active');
   }
 
   getOnLeaveConductors(): Conductor[] {
-    return this.conductors.filter(c => c.status === 'On Leave');
+    return this.conductors.filter(c => c.status.toLowerCase() === 'on leave');
   }
 
   getResignedConductors(): Conductor[] {
