@@ -447,7 +447,8 @@ func (r *BusRepository) GetPendingBuses() ([]models.Bus, error) {
 			COALESCE(b.status, 'Inactive'),
 			COALESCE(rp.status::text, 'Pending') as verification_status,
 		COALESCE(NULLIF(bo.verification_status::text, ''), 'Pending') as owner_verification_status,
-			COALESCE(rp.verification_documents::text, '{}')
+			COALESCE(rp.verification_documents::text, '{}'),
+			COALESCE(b.created_at::text, '')
 		FROM buses b
 		LEFT JOIN bus_owners bo ON b.bus_owner_id = bo.id
 		LEFT JOIN route_permits rp ON b.permit_id = rp.id
@@ -488,6 +489,7 @@ func (r *BusRepository) GetPendingBuses() ([]models.Bus, error) {
 			&bus.VerificationStatus,
 			&bus.OwnerVerificationStatus,
 			&verificationDocsStr,
+			&bus.CreatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning bus row: %v", err)

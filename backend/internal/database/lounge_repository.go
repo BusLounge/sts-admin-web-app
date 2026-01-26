@@ -95,7 +95,7 @@ func (r *LoungeRepository) CreateLounge(l models.Lounge) error {
 		WHERE lo.id IS NULL
 		LIMIT 1
 	`).Scan(&userID)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("no available users found. Please create a user account first")
@@ -132,7 +132,7 @@ func (r *LoungeRepository) CreateLounge(l models.Lounge) error {
 	if err != nil {
 		return fmt.Errorf("error marshaling facilities: %v", err)
 	}
-	
+
 	_, err = tx.Exec(`
 		INSERT INTO lounges (
 			lounge_owner_id, lounge_name, contact_phone, address, capacity, price_1_hour, 
@@ -222,7 +222,8 @@ func (r *LoungeRepository) GetPendingLounges() ([]models.Lounge, error) {
 			COALESCE(lmc.name, ''),
 			COALESCE(l.status::text, 'Pending'),
 			COALESCE(l.verification_note, ''),
-			COALESCE(l.is_operational, true)
+			COALESCE(l.is_operational, true),
+			COALESCE(l.created_at::text, '')
 		FROM lounges l
 		LEFT JOIN lounge_owners lo ON l.lounge_owner_id = lo.id
 		LEFT JOIN lounge_marketplace_categories lmc ON l.marketplace_category_id = lmc.id
@@ -255,6 +256,7 @@ func (r *LoungeRepository) GetPendingLounges() ([]models.Lounge, error) {
 			&l.Verification,
 			&l.VerificationNote,
 			&l.Operational,
+			&l.CreatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning pending lounge: %v", err)

@@ -77,7 +77,8 @@ func (r *StaffRepository) GetPendingDrivers() ([]models.Driver, error) {
 			COALESCE(bs.verification_status::text, 'Pending'),
 			COALESCE(bs.verification_notes, ''),
 			COALESCE(bse.employment_status::text, 'Active'),
-			COALESCE(bse.hire_date::text, '')
+			COALESCE(bse.hire_date::text, ''),
+			COALESCE(bs.created_at::text, '')
 		FROM bus_staff bs
 		LEFT JOIN bus_staff_employment bse ON bs.id = bse.staff_id
 		WHERE bs.staff_type = 'driver' AND LOWER(bs.verification_status::text) = 'pending'
@@ -103,6 +104,7 @@ func (r *StaffRepository) GetPendingDrivers() ([]models.Driver, error) {
 			&d.VerificationNotes,
 			&d.Status,
 			&d.HireDate,
+			&d.CreatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning pending driver: %v", err)
@@ -200,7 +202,7 @@ func (r *StaffRepository) CreateDriver(d *models.Driver) error {
 		WHERE bs.id IS NULL
 		LIMIT 1
 	`).Scan(&userID)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("no available users found. Please create a user account first")
@@ -238,7 +240,7 @@ func (r *StaffRepository) CreateDriver(d *models.Driver) error {
 		ORDER BY id
 		LIMIT 1
 	`).Scan(&busOwnerID)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("no bus owners found. Please create a bus first")
@@ -379,7 +381,8 @@ func (r *StaffRepository) GetPendingConductors() ([]models.Conductor, error) {
 			COALESCE(bs.verification_status::text, 'Pending'),
 			COALESCE(bs.verification_notes, ''),
 			COALESCE(bse.employment_status::text, 'Active'),
-			COALESCE(bse.hire_date::text, '')
+			COALESCE(bse.hire_date::text, ''),
+			COALESCE(bs.created_at::text, '')
 		FROM bus_staff bs
 		LEFT JOIN bus_staff_employment bse ON bs.id = bse.staff_id
 		WHERE bs.staff_type = 'conductor' AND LOWER(bs.verification_status::text) = 'pending'
@@ -405,6 +408,7 @@ func (r *StaffRepository) GetPendingConductors() ([]models.Conductor, error) {
 			&c.VerificationNotes,
 			&c.Status,
 			&c.HireDate,
+			&c.CreatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning pending conductor: %v", err)
@@ -502,7 +506,7 @@ func (r *StaffRepository) CreateConductor(c *models.Conductor) error {
 		WHERE bs.id IS NULL
 		LIMIT 1
 	`).Scan(&userID)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("no available users found. Please create a user account first")
@@ -540,7 +544,7 @@ func (r *StaffRepository) CreateConductor(c *models.Conductor) error {
 		ORDER BY id
 		LIMIT 1
 	`).Scan(&busOwnerID)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("no bus owners found. Please create a bus first")

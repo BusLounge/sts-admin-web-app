@@ -94,6 +94,9 @@ func Init(cfg *config.Config) {
 		ALTER TABLE lounge_owners ADD COLUMN IF NOT EXISTS contact_number text;
 		ALTER TABLE lounge_owners ADD COLUMN IF NOT EXISTS nic text;
 
+		-- Add created_at to buses table if it doesn't exist
+		ALTER TABLE buses ADD COLUMN IF NOT EXISTS created_at timestamp with time zone default timezone('utc'::text, now());
+
 		-- Lounge Booking Tables
 		CREATE TABLE IF NOT EXISTS bookings (
 			bus_booking_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,

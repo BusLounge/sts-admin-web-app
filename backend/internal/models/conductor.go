@@ -11,4 +11,5 @@ type Conductor struct {
 	VerificationNotes  string `json:"verification_notes"`
 	Status             string `json:"status"` // from employment_status
 	HireDate           string `json:"hire_date"`
+	CreatedAt          string `json:"created_at,omitempty"`
 }

@@ -22,4 +22,5 @@ type Bus struct {
 	VerificationStatus        string         `json:"verification_status"`       // Route permit status
 	OwnerVerificationStatus   string         `json:"owner_verification_status"` // Bus owner verification status
 	VerificationDocuments     []string       `json:"verification_documents"`    // Array of document URLs/paths
+	CreatedAt                 string         `json:"created_at,omitempty"`
 }

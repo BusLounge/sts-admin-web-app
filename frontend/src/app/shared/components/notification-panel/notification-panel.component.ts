@@ -77,11 +77,12 @@ export class NotificationPanelComponent implements OnInit {
   }
 
   private mapBusToNotification(bus: BusNotification): Notification {
+    console.log('Bus notification data:', { id: bus.id, created_at: bus.created_at, bus_number: bus.bus_number });
     const timestamp = bus.created_at ? new Date(bus.created_at) : new Date();
     const formattedTime = this.formatDateTime(timestamp);
     return {
       id: bus.id,
-      icon: '🚌',
+      icon: 'fas fa-bus',
       title: 'New Bus Added Request',
       message: `A new bus registration request has been submitted: Bus No: ${bus.permit_number || bus.bus_number}, Route: ${bus.custom_route_name || 'Not specified'}. Awaiting approval.`,
       time: formattedTime,
@@ -92,11 +93,12 @@ export class NotificationPanelComponent implements OnInit {
   }
 
   private mapDriverToNotification(driver: DriverNotification): Notification {
+    console.log('Driver notification data:', { id: driver.id, created_at: driver.created_at, hire_date: driver.hire_date, name: driver.name });
     const timestamp = driver.created_at ? new Date(driver.created_at) : (driver.hire_date ? new Date(driver.hire_date) : new Date());
     const formattedTime = this.formatDateTime(timestamp);
     return {
       id: driver.id,
-      icon: '🚗',
+      icon: 'fas fa-user-tie',
       title: 'New Driver Added Request',
       message: `A new driver registration request has been submitted: ${driver.name}, License: ${driver.license_number}. Awaiting approval.`,
       time: formattedTime,
@@ -107,11 +109,12 @@ export class NotificationPanelComponent implements OnInit {
   }
 
   private mapConductorToNotification(conductor: ConductorNotification): Notification {
+    console.log('Conductor notification data:', { id: conductor.id, created_at: conductor.created_at, hire_date: conductor.hire_date, name: conductor.name });
     const timestamp = conductor.created_at ? new Date(conductor.created_at) : (conductor.hire_date ? new Date(conductor.hire_date) : new Date());
     const formattedTime = this.formatDateTime(timestamp);
     return {
       id: conductor.id,
-      icon: '👤',
+      icon: 'fas fa-user-secret',
       title: 'New Conductor Added Request',
       message: `A new conductor registration request has been submitted: ${conductor.name}, License: ${conductor.license_number}. Awaiting approval.`,
       time: formattedTime,
@@ -122,11 +125,12 @@ export class NotificationPanelComponent implements OnInit {
   }
 
   private mapLoungeToNotification(lounge: LoungeNotification): Notification {
+    console.log('Lounge notification data:', { id: lounge.lounge_id, created_at: lounge.created_at, lounge_name: lounge.lounge_name });
     const timestamp = lounge.created_at ? new Date(lounge.created_at) : new Date();
     const formattedTime = this.formatDateTime(timestamp);
     return {
       id: lounge.lounge_id,
-      icon: '🛋️',
+      icon: 'fas fa-couch',
       title: 'New Lounge Added Request',
       message: `A new lounge registration request has been submitted: ${lounge.lounge_name}, Owner: ${lounge.lounge_owner}. Awaiting approval.`,
       time: formattedTime,
@@ -137,11 +141,12 @@ export class NotificationPanelComponent implements OnInit {
   }
 
   private mapBusOwnerToNotification(busOwner: BusOwnerNotification): Notification {
+    console.log('BusOwner notification data:', { id: busOwner.id, created_at: busOwner.created_at, company_name: busOwner.company_name });
     const timestamp = new Date(busOwner.created_at);
     const formattedTime = this.formatDateTime(timestamp);
     return {
       id: busOwner.id,
-      icon: '👔',
+      icon: 'fas fa-building',
       title: 'New Bus Owner Request',
       message: `A new bus owner registration request has been submitted: ${busOwner.company_name}, Email: ${busOwner.business_email}. Awaiting approval.`,
       time: formattedTime,
@@ -152,14 +157,43 @@ export class NotificationPanelComponent implements OnInit {
   }
 
   private formatDateTime(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const notificationDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    const timeString = `${displayHours}:${displayMinutes} ${ampm}`;
+    
+    // Today - show time only
+    if (notificationDate.getTime() === today.getTime()) {
+      return `Today, ${timeString}`;
+    }
+    
+    // Yesterday
+    if (notificationDate.getTime() === yesterday.getTime()) {
+      return `Yesterday, ${timeString}`;
+    }
+    
+    // This year - show month and day
+    if (date.getFullYear() === now.getFullYear()) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const month = months[date.getMonth()];
+      const day = date.getDate();
+      return `${month} ${day}, ${timeString}`;
+    }
+    
+    // Older - show full date
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${month} ${day}, ${year} ${timeString}`;
   }
 
   onClose(): void {

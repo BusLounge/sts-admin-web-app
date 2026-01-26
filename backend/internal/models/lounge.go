@@ -16,4 +16,5 @@ type Lounge struct {
 	Verification     string   `json:"verification"`
 	VerificationNote string   `json:"verification_note"`
 	Operational      bool     `json:"operational"`
+	CreatedAt        string   `json:"created_at,omitempty"`
 }

@@ -12,7 +12,7 @@
     <div class="notification-list">
       <div class="notification-item" *ngFor="let notification of notifications" [attr.data-type]="notification.type">
         <div class="notification-icon">
-          <span class="icon">{{ notification.icon }}</span>
+          <i [class]="notification.icon"></i>
         </div>
         <div class="notification-content">
           <h4 class="notification-title">{{ notification.title }}</h4>
@@ -43,7 +43,7 @@
 
     <div class="modal-body" *ngIf="selectedNotification">
       <div class="notification-icon-large">
-        <span class="icon">{{ selectedNotification.icon }}</span>
+        <i [class]="selectedNotification.icon"></i>
       </div>
       <h4 class="notification-title">{{ selectedNotification.title }}</h4>
       <p class="notification-message">{{ selectedNotification.message }}</p>
