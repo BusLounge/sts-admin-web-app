@@ -199,9 +199,9 @@ func (r *LoungeBookingRepository) CreateLoungeBooking(lb models.LoungeBooking) e
 
 	query := `
 		INSERT INTO lounge_bookings (
-			bus_booking_id, lounge_name, pricing_type, number_of_guests,
+			bus_booking_id, lounge_name, scheduled_arrival, pricing_type, number_of_guests,
 			selected_amenities, booking_type, total_amount, payment_status, status
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id
 	`
 
@@ -209,6 +209,7 @@ func (r *LoungeBookingRepository) CreateLoungeBooking(lb models.LoungeBooking) e
 		query,
 		lb.BusBookingID,
 		lb.LoungeName,
+		lb.ScheduledArrival,
 		lb.PricingType,
 		lb.NumberOfGuests,
 		amenitiesJSON,

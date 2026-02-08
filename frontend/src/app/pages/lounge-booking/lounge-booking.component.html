@@ -222,11 +222,11 @@
               <div class="form-row">
                 <label>Booking Type</label>
                 <select [(ngModel)]="formBooking.booking_type" name="booking_type">
-                  <option value="">Select Type</option>
-                  <option value="Regular">Regular</option>
-                  <option value="VIP">VIP</option>
-                  <option value="Premium">Premium</option>
-                  <option value="Corporate">Corporate</option>
+                  
+                  <option value="Pre trip">Pre trip</option>
+                  <option value="post trip">Post trip</option>
+                  <option value="Standalone">Standalone</option>
+                  
                 </select>
               </div>
 
@@ -238,7 +238,7 @@
 
               <!-- Pricing Type -->
               <div class="form-row">
-                <label>Pricing Type</label>
+                <label>Duration</label>
                 <input type="text" [(ngModel)]="formBooking.pricing_type" name="pricing_type" required />
               </div>
 

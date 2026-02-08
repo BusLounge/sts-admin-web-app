@@ -111,6 +111,7 @@ func Init(cfg *config.Config) {
 			lounge_booking_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
 			bus_booking_id UUID REFERENCES bookings(bus_booking_id),
 			lounge_name TEXT NOT NULL,
+			scheduled_arrival TIMESTAMP WITH TIME ZONE,
 			pricing_type TEXT,
 			number_of_guests INT DEFAULT 1,
 			selected_amenities JSONB DEFAULT '[]'::jsonb,
@@ -121,6 +122,58 @@ func Init(cfg *config.Config) {
 			created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
 			updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 		);
+
+		-- Add scheduled_arrival column if missing
+		ALTER TABLE lounge_bookings ADD COLUMN IF NOT EXISTS scheduled_arrival TIMESTAMP WITH TIME ZONE;
+
+		-- Convert enum columns to TEXT if they exist
+		DO $$ 
+		BEGIN
+			-- Convert pricing_type from enum to TEXT
+			IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'lounge_booking_duration_type') THEN
+				ALTER TABLE lounge_bookings ALTER COLUMN pricing_type TYPE TEXT USING pricing_type::TEXT;
+				DROP TYPE lounge_booking_duration_type CASCADE;
+			END IF;
+			
+			-- Convert booking_type from enum to TEXT
+			IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'lounge_booking_type') THEN
+				ALTER TABLE lounge_bookings ALTER COLUMN booking_type TYPE TEXT USING booking_type::TEXT;
+				DROP TYPE lounge_booking_type CASCADE;
+			END IF;
+		END $$;
+
+		-- Make lounge_id nullable or drop it if it exists
+		DO $$ 
+		BEGIN
+			IF EXISTS (SELECT 1 FROM information_schema.columns 
+					   WHERE table_name = 'lounge_bookings' AND column_name = 'lounge_id') THEN
+				ALTER TABLE lounge_bookings ALTER COLUMN lounge_id DROP NOT NULL;
+			END IF;
+			
+			-- Make booking_reference nullable
+			IF EXISTS (SELECT 1 FROM information_schema.columns 
+					   WHERE table_name = 'lounge_bookings' AND column_name = 'booking_reference') THEN
+				ALTER TABLE lounge_bookings ALTER COLUMN booking_reference DROP NOT NULL;
+			END IF;
+			
+			-- Make user_id nullable
+			IF EXISTS (SELECT 1 FROM information_schema.columns 
+					   WHERE table_name = 'lounge_bookings' AND column_name = 'user_id') THEN
+				ALTER TABLE lounge_bookings ALTER COLUMN user_id DROP NOT NULL;
+			END IF;
+			
+			-- Drop the bus_link_check constraint if it exists
+			IF EXISTS (SELECT 1 FROM information_schema.table_constraints 
+					   WHERE table_name = 'lounge_bookings' AND constraint_name = 'lounge_bookings_bus_link_check') THEN
+				ALTER TABLE lounge_bookings DROP CONSTRAINT lounge_bookings_bus_link_check;
+			END IF;
+			
+			-- Drop the lounge_type_check constraint if it exists
+			IF EXISTS (SELECT 1 FROM information_schema.table_constraints 
+					   WHERE table_name = 'lounge_bookings' AND constraint_name = 'lounge_bookings_lounge_type_check') THEN
+				ALTER TABLE lounge_bookings DROP CONSTRAINT lounge_bookings_lounge_type_check;
+			END IF;
+		END $$;
 
 		CREATE TABLE IF NOT EXISTS lounge_booking_pre_orders (
 			pre_order_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
