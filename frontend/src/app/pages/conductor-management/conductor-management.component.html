@@ -61,13 +61,13 @@
             <div class="stat-title">Active</div>
           </div>
         </div>
-        <div class="stat-card on-leave-conductors">
+        <div class="stat-card inactive-conductors">
           <div class="stat-icon">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pause-circle"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>
           </div>
           <div class="stat-content">
-            <div class="stat-value">{{ getOnLeaveCount() }}</div>
-            <div class="stat-title">On Leave</div>
+            <div class="stat-value">{{ getInactiveCount() }}</div>
+            <div class="stat-title">Inactive</div>
           </div>
         </div>
         <div class="stat-card average-experience">
@@ -130,7 +130,7 @@
             <select class="filter-select" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
               <option value="All">All Status</option>
               <option value="Active">Active</option>
-              <option value="On Leave">On Leave</option>
+              <option value="Inactive">Inactive</option>
               <option value="Resigned">Resigned</option>
             </select>
           </div>

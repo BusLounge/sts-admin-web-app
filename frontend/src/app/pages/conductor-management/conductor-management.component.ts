@@ -146,7 +146,7 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   }
 
   toggleStatus(conductor: Conductor) {
-    const statusOptions: Array<string> = ['Active', 'On Leave', 'Resigned'];
+    const statusOptions: Array<string> = ['Active', 'Inactive', 'Resigned'];
     const currentIndex = statusOptions.indexOf(conductor.status);
     const newStatus = statusOptions[(currentIndex + 1) % statusOptions.length];
     
@@ -212,7 +212,7 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   // Stats helpers
   getTotalConductors(): number { return this.conductors.length; }
   getActiveCount(): number { return this.conductors.filter(c => c.status.toLowerCase() === 'active').length; }
-  getOnLeaveCount(): number { return this.conductors.filter(c => c.status.toLowerCase() === 'on leave').length; }
+  getInactiveCount(): number { return this.conductors.filter(c => c.status.toLowerCase() === 'inactive').length; }
   getResignedCount(): number { return this.conductors.filter(c => c.status.toLowerCase() === 'resigned').length; }
   getAverageExperience(): number {
     if (this.conductors.length === 0) return 0;
