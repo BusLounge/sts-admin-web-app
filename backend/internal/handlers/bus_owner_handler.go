@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"sts-backend/internal/models"
 	"sts-backend/internal/services"
@@ -11,6 +12,7 @@ import (
 func GetBusOwners(c *gin.Context) {
 	owners, err := services.GetAllBusOwners()
 	if err != nil {
+		fmt.Printf("ERROR in GetBusOwners: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -79,6 +81,7 @@ func UpdateBusOwner(c *gin.Context) {
 
 	err := services.UpdateBusOwner(&owner)
 	if err != nil {
+		fmt.Printf("ERROR in UpdateBusOwner: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

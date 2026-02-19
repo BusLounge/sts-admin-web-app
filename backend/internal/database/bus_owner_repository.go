@@ -11,7 +11,7 @@ func GetAllBusOwners() ([]models.BusOwner, error) {
 	query := `
 		SELECT 
 			id,
-			user_id,
+			COALESCE(user_id::text, '') as user_id,
 			COALESCE(company_name, '') as company_name,
 			COALESCE(license_number, '') as license_number,
 			COALESCE(contact_person, '') as contact_person,
@@ -95,7 +95,7 @@ func GetBusOwnerByID(id string) (*models.BusOwner, error) {
 	query := `
 		SELECT 
 			id,
-			user_id,
+			COALESCE(user_id::text, '') as user_id,
 			COALESCE(company_name, '') as company_name,
 			COALESCE(license_number, '') as license_number,
 			COALESCE(contact_person, '') as contact_person,
@@ -168,7 +168,7 @@ func GetPendingBusOwners() ([]models.BusOwner, error) {
 	query := `
 		SELECT 
 			id,
-			user_id,
+			COALESCE(user_id::text, '') as user_id,
 			COALESCE(company_name, '') as company_name,
 			COALESCE(license_number, '') as license_number,
 			COALESCE(contact_person, '') as contact_person,
@@ -299,7 +299,7 @@ func UpdateBusOwner(owner *models.BusOwner) error {
 			identity_or_incorporation_no = $4,
 			updated_at = now()
 		WHERE id = $5
-		RETURNING id, user_id, company_name, business_email, business_phone, 
+		RETURNING id, COALESCE(user_id::text, '') as user_id, company_name, business_email, business_phone, 
 			identity_or_incorporation_no, verification_status, 
 			COALESCE(license_number, '') as license_number,
 			COALESCE(contact_person, '') as contact_person,
