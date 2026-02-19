@@ -193,39 +193,15 @@ func (r *BusRepository) CreateBus(bus *models.Bus) error {
 	err = tx.QueryRow(`SELECT id FROM bus_owners WHERE identity_or_incorporation_no = $1`, bus.IdentifyOrIncorporationNo).Scan(&busOwnerID)
 
 	if err == sql.ErrNoRows {
-		// Owner doesn't exist, try to find a user that doesn't already have a bus_owner
-		var userID string
+		// Owner doesn't exist, create a new one without user_id
+		// user_id can be assigned later when the owner registers/logs in
 		err = tx.QueryRow(`
-			SELECT u.id FROM users u
-			LEFT JOIN bus_owners bo ON u.id = bo.user_id
-			WHERE bo.id IS NULL
-			LIMIT 1
-		`).Scan(&userID)
-
-		if err == sql.ErrNoRows {
-			// All users have bus_owners, create without user_id (set to NULL if allowed)
-			// Or we could create a new default user here
-			// For now, let's skip the user_id requirement
-			err = tx.QueryRow(`
-				INSERT INTO bus_owners (company_name, identity_or_incorporation_no, business_email, business_phone)
-				VALUES ($1, $2, $3, $4)
-				RETURNING id
-			`, bus.CompanyName, bus.IdentifyOrIncorporationNo, bus.BusinessEmail, bus.BusinessPhone).Scan(&busOwnerID)
-			if err != nil {
-				return fmt.Errorf("error creating bus owner: %v", err)
-			}
-		} else if err != nil {
-			return fmt.Errorf("error finding available user: %v", err)
-		} else {
-			// Found an available user, create bus_owner with user_id
-			err = tx.QueryRow(`
-				INSERT INTO bus_owners (user_id, company_name, identity_or_incorporation_no, business_email, business_phone)
-				VALUES ($1, $2, $3, $4, $5)
-				RETURNING id
-			`, userID, bus.CompanyName, bus.IdentifyOrIncorporationNo, bus.BusinessEmail, bus.BusinessPhone).Scan(&busOwnerID)
-			if err != nil {
-				return fmt.Errorf("error creating bus owner: %v", err)
-			}
+			INSERT INTO bus_owners (company_name, identity_or_incorporation_no, business_email, business_phone)
+			VALUES ($1, $2, $3, $4)
+			RETURNING id
+		`, bus.CompanyName, bus.IdentifyOrIncorporationNo, bus.BusinessEmail, bus.BusinessPhone).Scan(&busOwnerID)
+		if err != nil {
+			return fmt.Errorf("error creating bus owner: %v", err)
 		}
 	} else if err != nil {
 		return fmt.Errorf("error checking bus owner: %v", err)

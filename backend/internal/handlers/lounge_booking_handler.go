@@ -49,7 +49,7 @@ func CreateLoungeBooking(c *gin.Context) {
 		booking.Status = "pending"
 	}
 
-	if err := services.CreateLoungeBooking(booking); err != nil {
+	if err := services.CreateLoungeBooking(&booking); err != nil {
 		log.Printf("Error creating lounge booking: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -73,7 +73,7 @@ func UpdateLoungeBooking(c *gin.Context) {
 
 	booking.LoungeBookingID = id
 
-	if err := services.UpdateLoungeBooking(booking); err != nil {
+	if err := services.UpdateLoungeBooking(&booking); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -126,6 +126,12 @@ func Init(cfg *config.Config) {
 		-- Add scheduled_arrival column if missing
 		ALTER TABLE lounge_bookings ADD COLUMN IF NOT EXISTS scheduled_arrival TIMESTAMP WITH TIME ZONE;
 
+		-- Add missing columns for lounge bookings
+		ALTER TABLE lounge_bookings ADD COLUMN IF NOT EXISTS primary_guest_name TEXT;
+		ALTER TABLE lounge_bookings ADD COLUMN IF NOT EXISTS primary_guest_phone TEXT;
+		ALTER TABLE lounge_bookings ADD COLUMN IF NOT EXISTS booking_reference TEXT;
+		ALTER TABLE lounge_bookings ADD COLUMN IF NOT EXISTS master_booking_id UUID;
+
 		-- Convert enum columns to TEXT if they exist
 		DO $$ 
 		BEGIN
@@ -182,6 +188,30 @@ func Init(cfg *config.Config) {
 			quantity INT DEFAULT 1,
 			created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 		);
+
+		-- Make product_id nullable if it exists (for marketplace items without product reference)
+		DO $$ 
+		BEGIN
+			IF EXISTS (SELECT 1 FROM information_schema.columns 
+					   WHERE table_name = 'lounge_booking_pre_orders' AND column_name = 'product_id') THEN
+				ALTER TABLE lounge_booking_pre_orders ALTER COLUMN product_id DROP NOT NULL;
+			END IF;
+			
+			IF EXISTS (SELECT 1 FROM information_schema.columns 
+					   WHERE table_name = 'lounge_booking_pre_orders' AND column_name = 'product_type') THEN
+				ALTER TABLE lounge_booking_pre_orders ALTER COLUMN product_type DROP NOT NULL;
+			END IF;
+			
+			IF EXISTS (SELECT 1 FROM information_schema.columns 
+					   WHERE table_name = 'lounge_booking_pre_orders' AND column_name = 'unit_price') THEN
+				ALTER TABLE lounge_booking_pre_orders ALTER COLUMN unit_price DROP NOT NULL;
+			END IF;
+			
+			IF EXISTS (SELECT 1 FROM information_schema.columns 
+					   WHERE table_name = 'lounge_booking_pre_orders' AND column_name = 'total_price') THEN
+				ALTER TABLE lounge_booking_pre_orders ALTER COLUMN total_price DROP NOT NULL;
+			END IF;
+		END $$;
 
 		CREATE INDEX IF NOT EXISTS idx_lounge_bookings_bus_booking ON lounge_bookings(bus_booking_id);
 		CREATE INDEX IF NOT EXISTS idx_lounge_bookings_payment_status ON lounge_bookings(payment_status);

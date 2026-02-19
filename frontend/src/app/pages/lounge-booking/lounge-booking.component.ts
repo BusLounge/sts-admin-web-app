@@ -190,13 +190,18 @@ export class LoungeBookingComponent implements OnInit {
     this.isEditMode = false;
     this.formBooking = {
       lounge_name: '',
+      passenger_name: '',
+      passenger_phone: '',
+      booking_reference: 'LNG-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       scheduled_arrival: '',
-      pricing_type: '1 hour',
+      pricing_type: '1_hour',
       number_of_guests: 1,
       selected_amenities: [],
+      product_name: '',
+      booking_type: 'standalone',
       total_amount: 0,
       payment_status: 'pending',
-      status: 'confirmed'
+      status: 'pending'
     };
     this.showModal = true;
   }
@@ -227,7 +232,15 @@ export class LoungeBookingComponent implements OnInit {
 
   saveBooking() {
     if (this.isEditMode) {
-      this.svc.update(this.formBooking as LoungeBooking).subscribe({
+      // Convert datetime-local format back to ISO string
+      const bookingToUpdate = { 
+        ...this.formBooking,
+        scheduled_arrival: this.formBooking.scheduled_arrival 
+          ? new Date(this.formBooking.scheduled_arrival).toISOString()
+          : new Date().toISOString()
+      } as LoungeBooking;
+      
+      this.svc.update(bookingToUpdate).subscribe({
         next: () => {
           this.svc.loadBookings();
           this.closeModal();
@@ -238,6 +251,9 @@ export class LoungeBookingComponent implements OnInit {
       const newBooking = { 
         ...this.formBooking,
         bus_booking_id: null,
+        scheduled_arrival: this.formBooking.scheduled_arrival 
+          ? new Date(this.formBooking.scheduled_arrival).toISOString()
+          : new Date().toISOString(),
         created_at: new Date().toISOString()
       } as LoungeBooking;
       

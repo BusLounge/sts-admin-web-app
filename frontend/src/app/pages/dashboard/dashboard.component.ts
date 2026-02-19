@@ -53,7 +53,18 @@ export class DashboardComponent implements OnInit {
   loungeRevenueByLounge: { name: string; total: number }[] = [];
   busMonthlyRevenue: number[] = [];
   months: string[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  private colors: string[] = ['#4caf50', '#2196f3', '#ff9800', '#e91e63', '#9c27b0', '#00bcd4', '#8bc34a'];
+  private colors: string[] = [
+    '#0046FF', // Primary blue
+    '#10B981', // Emerald green
+    '#F59E0B', // Amber
+    '#EF4444', // Red
+    '#8B5CF6', // Violet
+    '#06B6D4', // Cyan
+    '#EC4899', // Pink
+    '#84CC16', // Lime
+    '#F97316', // Orange
+    '#6366F1'  // Indigo
+  ];
 
   passengerMonthlyCounts: number[] = [];
 
@@ -210,7 +221,10 @@ export class DashboardComponent implements OnInit {
     bookings.forEach(b => {
       map[b.lounge_name] = (map[b.lounge_name] || 0) + b.total_amount;
     });
-    return Object.entries(map).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total);
+    return Object.entries(map)
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10); // Limit to top 10 lounges
   }
 
   private computeBusesByRoute(buses: any[]): { label: string; count: number }[] {
@@ -302,10 +316,6 @@ export class DashboardComponent implements OnInit {
   }
 
   getColorForLounge(name: string): string {
-    if (name === 'Beta Premium Lounge') {
-      return '#0046FF';
-    }
-    
     const index = this.loungeRevenueByLounge.findIndex(item => item.name === name);
     return this.colors[index % this.colors.length];
   }

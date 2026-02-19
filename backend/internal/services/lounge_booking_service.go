@@ -15,12 +15,12 @@ func GetLoungeBookingByID(id string) (*models.LoungeBooking, error) {
 	return repo.GetLoungeBookingByID(id)
 }
 
-func CreateLoungeBooking(lb models.LoungeBooking) error {
+func CreateLoungeBooking(lb *models.LoungeBooking) error {
 	repo := database.NewLoungeBookingRepository(database.DB)
 	return repo.CreateLoungeBooking(lb)
 }
 
-func UpdateLoungeBooking(lb models.LoungeBooking) error {
+func UpdateLoungeBooking(lb *models.LoungeBooking) error {
 	repo := database.NewLoungeBookingRepository(database.DB)
 	return repo.UpdateLoungeBooking(lb)
 }

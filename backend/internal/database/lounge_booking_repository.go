@@ -20,7 +20,7 @@ func NewLoungeBookingRepository(db *sql.DB) *LoungeBookingRepository {
 func (r *LoungeBookingRepository) GetLoungeBookings() ([]models.LoungeBooking, error) {
 	query := `
 		SELECT 
-			lb.lounge_booking_id::text,
+			lb.id::text,
 			COALESCE(lb.bus_booking_id::text, ''),
 			COALESCE(lb.primary_guest_name, bk.passenger_name, ''),
 			COALESCE(lb.primary_guest_phone, bk.passenger_phone, ''),
@@ -37,11 +37,11 @@ func (r *LoungeBookingRepository) GetLoungeBookings() ([]models.LoungeBooking, e
 			COALESCE(lb.status::text, 'Pending'),
 			COALESCE(lb.created_at, NOW())
 		FROM lounge_bookings lb
-		LEFT JOIN bookings bk ON lb.master_booking_id = bk.id
+	LEFT JOIN bookings bk ON lb.master_booking_id = bk.id
 		LEFT JOIN LATERAL (
 			SELECT STRING_AGG(product_name, ', ') as product_names
 			FROM lounge_booking_pre_orders
-			WHERE lounge_booking_id = lb.lounge_booking_id
+			WHERE lounge_booking_id = lb.id
 		) lbp ON true
 		ORDER BY lb.created_at DESC
 	`
@@ -104,7 +104,7 @@ func (r *LoungeBookingRepository) GetLoungeBookings() ([]models.LoungeBooking, e
 func (r *LoungeBookingRepository) GetLoungeBookingByID(id string) (*models.LoungeBooking, error) {
 	query := `
 		SELECT 
-			lb.lounge_booking_id::text,
+			lb.id::text,
 			COALESCE(lb.bus_booking_id::text, ''),
 			COALESCE(lb.primary_guest_name, bk.passenger_name, ''),
 			COALESCE(lb.primary_guest_phone, bk.passenger_phone, ''),
@@ -121,13 +121,13 @@ func (r *LoungeBookingRepository) GetLoungeBookingByID(id string) (*models.Loung
 			COALESCE(lb.status::text, 'Pending'),
 			COALESCE(lb.created_at, NOW())
 		FROM lounge_bookings lb
-		LEFT JOIN bookings bk ON lb.master_booking_id = bk.id
+	LEFT JOIN bookings bk ON lb.master_booking_id = bk.id
 		LEFT JOIN LATERAL (
 			SELECT STRING_AGG(product_name, ', ') as product_names
 			FROM lounge_booking_pre_orders
-			WHERE lounge_booking_id = lb.lounge_booking_id
+			WHERE lounge_booking_id = lb.id
 		) lbp ON true
-		WHERE lb.lounge_booking_id = $1::uuid
+		WHERE lb.id = $1::uuid
 	`
 
 	var lb models.LoungeBooking
@@ -178,7 +178,7 @@ func (r *LoungeBookingRepository) GetLoungeBookingByID(id string) (*models.Loung
 }
 
 // CreateLoungeBooking creates a new lounge booking
-func (r *LoungeBookingRepository) CreateLoungeBooking(lb models.LoungeBooking) error {
+func (r *LoungeBookingRepository) CreateLoungeBooking(lb *models.LoungeBooking) error {
 	// Convert amenities to JSON
 	amenitiesJSON, err := json.Marshal(lb.SelectedAmenities)
 	if err != nil {
@@ -187,16 +187,18 @@ func (r *LoungeBookingRepository) CreateLoungeBooking(lb models.LoungeBooking) e
 
 	query := `
 		INSERT INTO lounge_bookings (
-			bus_booking_id, lounge_name, pricing_type, number_of_guests,
-			selected_amenities, booking_type, total_amount, payment_status, status
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		RETURNING lounge_booking_id
+			bus_booking_id, lounge_name, scheduled_arrival, pricing_type, number_of_guests,
+			selected_amenities, booking_type, total_amount, payment_status, status,
+			primary_guest_name, primary_guest_phone, booking_reference
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+		RETURNING id
 	`
 
 	err = r.db.QueryRow(
 		query,
 		lb.BusBookingID,
 		lb.LoungeName,
+		lb.ScheduledArrival,
 		lb.PricingType,
 		lb.NumberOfGuests,
 		amenitiesJSON,
@@ -204,6 +206,9 @@ func (r *LoungeBookingRepository) CreateLoungeBooking(lb models.LoungeBooking) e
 		lb.TotalAmount,
 		lb.PaymentStatus,
 		lb.Status,
+		lb.PassengerName,
+		lb.PassengerPhone,
+		lb.BookingReference,
 	).Scan(&lb.LoungeBookingID)
 
 	if err != nil {
@@ -211,10 +216,15 @@ func (r *LoungeBookingRepository) CreateLoungeBooking(lb models.LoungeBooking) e
 	}
 
 	// If product_name (marketplace) is provided, insert into lounge_booking_pre_orders
+	// Note: product_id, product_type, unit_price, and total_price are nullable now
 	if lb.ProductName != "" {
 		_, err = r.db.Exec(`
-			INSERT INTO lounge_booking_pre_orders (lounge_booking_id, product_name)
-			VALUES ($1, $2)
+			INSERT INTO lounge_booking_pre_orders (
+				lounge_booking_id, 
+				product_name, 
+				quantity
+			)
+			VALUES ($1, $2, 1)
 		`, lb.LoungeBookingID, lb.ProductName)
 		if err != nil {
 			return fmt.Errorf("error creating pre-order: %v", err)
@@ -225,7 +235,7 @@ func (r *LoungeBookingRepository) CreateLoungeBooking(lb models.LoungeBooking) e
 }
 
 // UpdateLoungeBooking updates an existing lounge booking
-func (r *LoungeBookingRepository) UpdateLoungeBooking(lb models.LoungeBooking) error {
+func (r *LoungeBookingRepository) UpdateLoungeBooking(lb *models.LoungeBooking) error {
 	// Convert amenities to JSON
 	amenitiesJSON, err := json.Marshal(lb.SelectedAmenities)
 	if err != nil {
@@ -235,19 +245,24 @@ func (r *LoungeBookingRepository) UpdateLoungeBooking(lb models.LoungeBooking) e
 	query := `
 		UPDATE lounge_bookings SET
 			lounge_name = $1,
-			pricing_type = $2,
-			number_of_guests = $3,
-			selected_amenities = $4,
-			booking_type = $5,
-			total_amount = $6,
-			payment_status = $7,
-			status = $8
-		WHERE lounge_booking_id = $9::uuid
+			scheduled_arrival = $2,
+			pricing_type = $3,
+			number_of_guests = $4,
+			selected_amenities = $5,
+			booking_type = $6,
+			total_amount = $7,
+			payment_status = $8,
+			status = $9,
+			primary_guest_name = $10,
+			primary_guest_phone = $11,
+			booking_reference = $12
+		WHERE id = $13::uuid
 	`
 
 	result, err := r.db.Exec(
 		query,
 		lb.LoungeName,
+		lb.ScheduledArrival,
 		lb.PricingType,
 		lb.NumberOfGuests,
 		amenitiesJSON,
@@ -255,6 +270,9 @@ func (r *LoungeBookingRepository) UpdateLoungeBooking(lb models.LoungeBooking) e
 		lb.TotalAmount,
 		lb.PaymentStatus,
 		lb.Status,
+		lb.PassengerName,
+		lb.PassengerPhone,
+		lb.BookingReference,
 		lb.LoungeBookingID,
 	)
 
@@ -270,10 +288,14 @@ func (r *LoungeBookingRepository) UpdateLoungeBooking(lb models.LoungeBooking) e
 	// Update or insert product_name in lounge_booking_pre_orders
 	if lb.ProductName != "" {
 		_, err = r.db.Exec(`
-			INSERT INTO lounge_booking_pre_orders (lounge_booking_id, product_name)
-			VALUES ($1, $2)
+			INSERT INTO lounge_booking_pre_orders (
+				lounge_booking_id, 
+				product_name, 
+				quantity
+			)
+			VALUES ($1, $2, 1)
 			ON CONFLICT (lounge_booking_id) 
-			DO UPDATE SET product_name = $2
+			DO UPDATE SET product_name = EXCLUDED.product_name
 		`, lb.LoungeBookingID, lb.ProductName)
 		if err != nil {
 			return fmt.Errorf("error updating pre-order: %v", err)
@@ -298,7 +320,7 @@ func (r *LoungeBookingRepository) UpdatePaymentStatus(id string, status string) 
 		return fmt.Errorf("invalid payment status: %s", status)
 	}
 
-	query := `UPDATE lounge_bookings SET payment_status = $1 WHERE lounge_booking_id = $2::uuid`
+	query := `UPDATE lounge_bookings SET payment_status = $1 WHERE id = $2::uuid`
 	result, err := r.db.Exec(query, status, id)
 	if err != nil {
 		return fmt.Errorf("error updating payment status: %v", err)
@@ -327,7 +349,7 @@ func (r *LoungeBookingRepository) UpdateBookingStatus(id string, status string) 
 		return fmt.Errorf("invalid booking status: %s", status)
 	}
 
-	query := `UPDATE lounge_bookings SET status = $1 WHERE lounge_booking_id = $2::uuid`
+	query := `UPDATE lounge_bookings SET status = $1 WHERE id = $2::uuid`
 	result, err := r.db.Exec(query, status, id)
 	if err != nil {
 		return fmt.Errorf("error updating booking status: %v", err)
@@ -350,7 +372,7 @@ func (r *LoungeBookingRepository) DeleteLoungeBooking(id string) error {
 	}
 
 	// Then delete the booking
-	query := `DELETE FROM lounge_bookings WHERE lounge_booking_id = $1::uuid`
+	query := `DELETE FROM lounge_bookings WHERE id = $1::uuid`
 	result, err := r.db.Exec(query, id)
 	if err != nil {
 		return fmt.Errorf("error deleting lounge booking: %v", err)
