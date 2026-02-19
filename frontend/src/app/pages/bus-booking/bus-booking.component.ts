@@ -27,11 +27,10 @@ export class BusBookingComponent implements OnInit {
     doc.text('Bus Booking History', 14, 16);
 
     const tableHead = [[
-      'Booking ID', 'Trip Schedule ID', 'BusID', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Route', 'Date & Time', 'Bus Type', 'Seat No', 'Total Fare', 'Payment Status', 'Booking Status'
+      'Booking ID', 'BusID', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Route', 'Date & Time', 'Bus Type', 'Seat No', 'Total Fare', 'Payment Status', 'Booking Status'
     ]];
     const tableBody = this.filtered.map(b => [
       b.booking_id,
-      b.scheduled_trip_id || '-',
       b.bus_number || '-',
       b.passenger_name,
       b.passenger_phone || '-',

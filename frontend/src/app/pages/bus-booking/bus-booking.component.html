@@ -99,9 +99,6 @@
           <div class="col" (click)="onSort('booking_id')" style="cursor: pointer;" title="Click to sort">
             Booking ID {{ getSortIcon('booking_id') }}
           </div>
-          <div class="col" (click)="onSort('scheduled_trip_id')" style="cursor: pointer;" title="Click to sort">
-            Trip Schedule ID {{ getSortIcon('scheduled_trip_id') }}
-          </div>
           <div class="col" (click)="onSort('bus_number')" style="cursor: pointer;" title="Click to sort">
             Bus Number {{ getSortIcon('bus_number') }}
           </div>
@@ -139,7 +136,6 @@
         </div>
         <div class="row" *ngFor="let b of filtered">
           <div class="col">{{ b.booking_id }}</div>
-          <div class="col">{{ b.scheduled_trip_id || '-' }}</div>
           <div class="col">{{ b.bus_number }}</div>
           <div class="col">{{ b.passenger_name }}</div>
           <div class="col">{{ b.passenger_phone || '-' }}</div>
@@ -185,12 +181,6 @@
       <div class="form-row" *ngIf="isEditMode">
         <label>Booking ID</label>
         <input [value]="selectedBooking.booking_id" readonly />
-      </div>
-
-      <!-- Trip Schedule ID -->
-      <div class="form-row" *ngIf="isEditMode">
-        <label>Trip Schedule ID</label>
-        <input type="text" [(ngModel)]="selectedBooking.scheduled_trip_id" name="scheduled_trip_id" placeholder="Optional" />
       </div>
 
       <!-- Bus ID -->

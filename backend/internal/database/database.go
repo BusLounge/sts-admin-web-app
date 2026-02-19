@@ -97,6 +97,27 @@ func Init(cfg *config.Config) {
 		-- Add created_at to buses table if it doesn't exist
 		ALTER TABLE buses ADD COLUMN IF NOT EXISTS created_at timestamp with time zone default timezone('utc'::text, now());
 
+		-- Make bus_owners.user_id nullable (can be assigned later)
+		DO $$ 
+		BEGIN
+			IF EXISTS (SELECT 1 FROM information_schema.columns 
+					   WHERE table_name = 'bus_owners' AND column_name = 'user_id') THEN
+				ALTER TABLE bus_owners ALTER COLUMN user_id DROP NOT NULL;
+			END IF;
+		END $$;
+
+		-- Update bus_staff_employment check constraint to include 'inactive'
+		DO $$ 
+		BEGIN
+			IF EXISTS (SELECT 1 FROM information_schema.table_constraints 
+					   WHERE table_name = 'bus_staff_employment' AND constraint_name = 'bus_staff_employment_employment_status_check') THEN
+				ALTER TABLE bus_staff_employment DROP CONSTRAINT bus_staff_employment_employment_status_check;
+			END IF;
+			
+			ALTER TABLE bus_staff_employment ADD CONSTRAINT bus_staff_employment_employment_status_check 
+				CHECK (employment_status IN ('pending', 'active', 'inactive', 'terminated', 'resigned', 'suspended'));
+		END $$;
+
 		-- Lounge Booking Tables
 		CREATE TABLE IF NOT EXISTS bookings (
 			bus_booking_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,

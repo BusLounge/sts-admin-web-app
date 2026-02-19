@@ -304,12 +304,12 @@ func (r *StaffRepository) UpdateDriver(d *models.Driver) error {
 				employment_status = $1,
 				hire_date = $2
 			WHERE staff_id = $3
-		`, d.Status, d.HireDate, d.ID)
+		`, strings.ToLower(d.Status), d.HireDate, d.ID)
 	} else {
 		_, err = tx.Exec(`
 			INSERT INTO bus_staff_employment (staff_id, employment_status, hire_date)
 			VALUES ($1, $2, $3)
-		`, d.ID, d.Status, d.HireDate)
+		`, d.ID, strings.ToLower(d.Status), d.HireDate)
 	}
 
 	if err != nil {
@@ -607,12 +607,12 @@ func (r *StaffRepository) UpdateConductor(c *models.Conductor) error {
 				employment_status = $1,
 				hire_date = $2
 			WHERE staff_id = $3
-		`, c.Status, c.HireDate, c.ID)
+		`, strings.ToLower(c.Status), c.HireDate, c.ID)
 	} else {
 		_, err = tx.Exec(`
 			INSERT INTO bus_staff_employment (staff_id, employment_status, hire_date)
 			VALUES ($1, $2, $3)
-		`, c.ID, c.Status, c.HireDate)
+		`, c.ID, strings.ToLower(c.Status), c.HireDate)
 	}
 
 	if err != nil {

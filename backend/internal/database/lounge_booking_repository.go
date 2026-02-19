@@ -285,20 +285,34 @@ func (r *LoungeBookingRepository) UpdateLoungeBooking(lb *models.LoungeBooking) 
 		return fmt.Errorf("lounge booking not found")
 	}
 
-	// Update or insert product_name in lounge_booking_pre_orders
+	// Update product_name in lounge_booking_pre_orders (delete old, insert new)
 	if lb.ProductName != "" {
-		_, err = r.db.Exec(`
-			INSERT INTO lounge_booking_pre_orders (
-				lounge_booking_id, 
-				product_name, 
-				quantity
-			)
-			VALUES ($1, $2, 1)
-			ON CONFLICT (lounge_booking_id) 
-			DO UPDATE SET product_name = EXCLUDED.product_name
-		`, lb.LoungeBookingID, lb.ProductName)
+		// First delete any existing pre-orders for this booking
+		_, err = r.db.Exec(
+			`DELETE FROM lounge_booking_pre_orders WHERE lounge_booking_id = $1::uuid`,
+			lb.LoungeBookingID,
+		)
 		if err != nil {
-			return fmt.Errorf("error updating pre-order: %v", err)
+			return fmt.Errorf("error deleting old pre-orders: %v", err)
+		}
+
+		// Then insert the new pre-order
+		_, err = r.db.Exec(
+			`INSERT INTO lounge_booking_pre_orders (lounge_booking_id, product_name, quantity) VALUES ($1::uuid, $2, 1)`,
+			lb.LoungeBookingID,
+			lb.ProductName,
+		)
+		if err != nil {
+			return fmt.Errorf("error inserting pre-order: %v", err)
+		}
+	} else {
+		// If no product_name, delete any existing pre-orders
+		_, err = r.db.Exec(
+			`DELETE FROM lounge_booking_pre_orders WHERE lounge_booking_id = $1::uuid`,
+			lb.LoungeBookingID,
+		)
+		if err != nil {
+			return fmt.Errorf("error deleting pre-orders: %v", err)
 		}
 	}
 
