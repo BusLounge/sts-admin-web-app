@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { BaseChartDirective } from 'ng2-charts';
@@ -66,8 +66,9 @@ export class BusManagementComponent implements OnInit {
   barChartData: any;
   barChartOptions: any;
   isBrowser: boolean;
+  private pendingEditBusId: string | null = null;
 
-  constructor(private router: Router, private busService: BusService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
+  constructor(private router: Router, private route: ActivatedRoute, private busService: BusService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -79,9 +80,37 @@ export class BusManagementComponent implements OnInit {
       console.log('Buses loaded in component:', buses);
       this.buses = buses;
       this.applyFilters();
+      this.tryOpenEditBusModalFromQuery();
       if (this.isBrowser) {
         this.updateBarChart();
       }
+    });
+
+    this.route.queryParams.subscribe(params => {
+      this.pendingEditBusId = params['editBusId'] || null;
+      this.tryOpenEditBusModalFromQuery();
+    });
+  }
+
+  private tryOpenEditBusModalFromQuery(): void {
+    if (!this.pendingEditBusId || this.showEditBusModal) {
+      return;
+    }
+
+    const busToEdit = this.buses.find(bus => bus.id === this.pendingEditBusId);
+    if (!busToEdit) {
+      return;
+    }
+
+    this.selectedBus = { ...busToEdit };
+    this.showEditBusModal = true;
+    this.pendingEditBusId = null;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editBusId: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
     });
   }
 

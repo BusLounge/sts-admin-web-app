@@ -110,17 +110,17 @@
           <thead>
             <tr>
               <th>BusD ID</th>
-              <th>Company ID</th>
-              <th>Contact Num ID</th>
-              <th>permitNum ID</th>
-              <th>Regnum ID</th>
-              <th>Type ID</th>
-              <th>Seats ID</th>
-              <th>Route ID</th>
-              <th>Approved fare ID</th>
-              <th>status ID</th>
-              <th>Owner Verification ID</th>
-              <th>Permit Verify (Route Permit Status) ID</th>
+              <th>Company </th>
+              <th>Contact Num </th>
+              <th>permitNum </th>
+              <th>Regnum </th>
+              <th>Type </th>
+              <th>Seats </th>
+              <th>Route </th>
+              <th>Approved fare</th>
+              <th>status </th>
+              <th>Owner Verification </th>
+              <th>Permit Verify (Route Permit Status) </th>
               <th>Documents</th>
               <th>Action</th>
             </tr>
@@ -259,26 +259,26 @@
         <table class="bus-table" *ngIf="searchType === 'Bus booking' && searchResults.length > 0">
           <thead>
             <tr>
-              <th>Booking ID ID</th>
-              <th>Trip Schedule ID ID</th>
-              <th>Bus Number ID</th>
-              <th>Passenger Name ID</th>
-              <th>Passenger Phone ID</th>
-              <th>Ref NUM ID</th>
-              <th>Route ID</th>
-              <th>Date & Time ID</th>
-              <th>Bus Type ID</th>
-              <th>Seat No ID</th>
-              <th>Total Fare ID</th>
-              <th>Payment Status ID</th>
-              <th>Booking Status ID</th>
+              <th>Booking ID</th>
+              
+              <th>Bus Number </th>
+              <th>Passenger Name </th>
+              <th>Passenger Phone </th>
+              <th>Ref NUM </th>
+              <th>Route </th>
+              <th>Date & Time </th>
+              <th>Bus Type </th>
+              <th>Seat No </th>
+              <th>Total Fare </th>
+              <th>Payment Status </th>
+              <th>Booking Status </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let booking of searchResults">
               <td>{{ booking.booking_id }}</td>
-              <td>{{ booking.scheduled_trip_id }}</td>
+              
               <td>{{ booking.bus_number }}</td>
               <td>{{ booking.passenger_name }}</td>
               <td>{{ booking.passenger_phone }}</td>
@@ -479,7 +479,7 @@
           <div class="form-row">
             <label>Status</label>
             <div style="display: flex; align-items: center; height: 38px;">
-              <input type="checkbox" [ngModel]="newEntity.status?.toLowerCase() === 'active'" (ngModelChange)="newEntity.status = $event ? 'Active' : 'Inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
+              <input type="checkbox" [ngModel]="newEntity.status?.toLowerCase() === 'active'" (ngModelChange)="newEntity.status = $event ? 'active' : 'inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
             </div>
           </div>
         </div>
@@ -526,7 +526,7 @@
           <div class="form-row">
             <label>Status</label>
             <div style="display: flex; align-items: center; height: 38px;">
-              <input type="checkbox" [ngModel]="newEntity.status?.toLowerCase() === 'active'" (ngModelChange)="newEntity.status = $event ? 'Active' : 'Inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
+              <input type="checkbox" [ngModel]="newEntity.status?.toLowerCase() === 'active'" (ngModelChange)="newEntity.status = $event ? 'active' : 'inactive'" name="status" style="width: auto; margin-right: 8px;" /> Active
             </div>
           </div>
         </div>
@@ -590,7 +590,44 @@
               <option [ngValue]="false">Closed</option>
             </select>
           </div>
+          <div class="form-row full-width">
+            <label>Verification Note</label>
+            <textarea [(ngModel)]="newEntity.verification_note" name="verification_note" rows="3" placeholder="Enter verification notes..."></textarea>
+          </div>
         </div>
+
+        <!-- Amenities -->
+        <div class="form-row full-width">
+          <label>Amenities</label>
+          <div class="checkbox-grid">
+            <div *ngFor="let amenity of availableAmenities" class="checkbox-item">
+              <input
+                type="checkbox"
+                [checked]="selectedAmenities.includes(amenity)"
+                (change)="toggleAmenity(amenity)"
+                id="amenity-{{amenity}}"
+              />
+              <label for="amenity-{{amenity}}">{{ formatAmenity(amenity) }}</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Marketplace Category -->
+        <div class="form-row full-width">
+          <label>Marketplace Category</label>
+          <div class="checkbox-grid">
+            <div *ngFor="let cat of availableServices" class="checkbox-item">
+              <input
+                type="checkbox"
+                [checked]="selectedMarketplaceItems.includes(cat)"
+                (change)="toggleMarketplaceItem(cat)"
+                id="cat-{{cat}}"
+              />
+              <label for="cat-{{cat}}">{{ cat }}</label>
+            </div>
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="button" (click)="closeAddModal()">Cancel</button>
           <button type="submit">Save</button>
@@ -602,22 +639,32 @@
     <div *ngIf="searchType === 'Bus booking'">
       <h2>Add Bus Booking</h2>
       <form (ngSubmit)="saveNewEntity()" class="form-grid">
+        
+        <!-- Passenger Name -->
         <div class="form-row">
           <label>Passenger Name</label>
           <input type="text" [(ngModel)]="newEntity.passenger_name" name="passenger_name" required />
         </div>
+
+        <!-- Passenger Phone -->
         <div class="form-row">
           <label>Passenger Phone</label>
           <input type="text" [(ngModel)]="newEntity.passenger_phone" name="passenger_phone" />
         </div>
+
+        <!-- Route -->
         <div class="form-row">
           <label>Route</label>
           <input type="text" [(ngModel)]="newEntity.route" name="route" required />
         </div>
+
+        <!-- Date & Time -->
         <div class="form-row">
           <label>Date & Time</label>
           <input type="datetime-local" [(ngModel)]="newEntity.departure_datetime" name="departure_datetime" required />
         </div>
+
+        <!-- Bus Type -->
         <div class="form-row">
           <label>Bus Type</label>
           <select [(ngModel)]="newEntity.bus_type" name="bus_type">
@@ -626,14 +673,19 @@
             <option value="luxury">Luxury</option>
           </select>
         </div>
+
+        <!-- Seat No -->
         <div class="form-row">
           <label>Seat No (comma separated)</label>
-          <input type="text" [(ngModel)]="newEntity.seat_number" name="seat_number" required />
+          <input type="text" [(ngModel)]="formSeatNumbers" name="formSeatNumbers" required />
         </div>
+
+        <!-- Total Fare -->
         <div class="form-row">
           <label>Total Fare</label>
           <input type="number" [(ngModel)]="newEntity.total_fare" name="total_fare" required min="0" step="0.01" />
         </div>
+
         <div class="form-actions full-width">
           <button type="button" (click)="closeAddModal()">Cancel</button>
           <button type="submit">Save</button>
@@ -670,10 +722,9 @@
             <label>Booking Type</label>
             <select [(ngModel)]="newEntity.booking_type" name="booking_type">
               <option value="">Select Type</option>
-              <option value="Regular">Regular</option>
-              <option value="VIP">VIP</option>
-              <option value="Premium">Premium</option>
-              <option value="Corporate">Corporate</option>
+               <option value="Pre trip">Pre trip</option>
+                  <option value="post trip">Post trip</option>
+                  <option value="Standalone">Standalone</option>
             </select>
           </div>
           <div class="form-row">
