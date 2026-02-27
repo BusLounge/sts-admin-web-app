@@ -48,6 +48,15 @@ func main() {
 	// API Routes
 	api := r.Group("/api")
 	{
+		// Admin authentication routes
+		adminAuth := api.Group("/admin/auth")
+		{
+			adminAuth.POST("/login", handlers.AdminLogin)
+			adminAuth.POST("/logout", handlers.AdminLogout)
+			adminAuth.POST("/refresh", handlers.RefreshAccessToken)
+			adminAuth.GET("/profile", handlers.AdminProfile)
+		}
+
 		// Lounge routes
 		api.GET("/lounges", handlers.GetLounges)
 		api.GET("/lounges/pending", handlers.GetPendingLounges)

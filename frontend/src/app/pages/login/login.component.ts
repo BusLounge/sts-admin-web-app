@@ -30,13 +30,6 @@ export class LoginComponent {
   ) {}
 
   onLogin() {
-    // TEMPORARY: Navigate directly to dashboard for development
-    console.log('Temporarily navigating to dashboard for development.');
-    this.router.navigate(['/dashboard']);
-
-    // Uncomment below code for actual login logic
-
-    /*
     if (!this.username || !this.password) {
       this.errorMessage = 'Please enter both email and password';
       return;
@@ -46,7 +39,6 @@ export class LoginComponent {
     this.errorMessage = '';
 
     console.log('Attempting login with:', this.username);
-    console.log('API URL:', 'https://a9a9815d-fed9-4f0e-bf6f-706f789df0f3-dev.e1-us-east-azure.choreoapis.dev/default/backend/v1.0/api/v1/admin/auth/login');
 
     // Set a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
@@ -112,7 +104,6 @@ export class LoginComponent {
         }
       }
     });
-    */
   }
 
   goBack() {
