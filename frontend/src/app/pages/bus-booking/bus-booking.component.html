@@ -266,7 +266,7 @@
 
       <div class="form-actions full-width">
         <button type="button" (click)="closeEditModal()">Cancel</button>
-        <button type="submit">Save</button>
+        <button type="submit" [disabled]="!isBusBookingFormValid()">Save</button>
       </div>
     </form>
   </div>

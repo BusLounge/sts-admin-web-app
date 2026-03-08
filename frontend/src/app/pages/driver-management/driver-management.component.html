@@ -251,7 +251,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeAddDriverModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isDriverFormValid()">Save</button>
         </div>
       </form>
     </div>

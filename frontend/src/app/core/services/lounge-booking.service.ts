@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { tap, switchMap } from 'rxjs/operators';
 import { LoungeBooking } from '../models/lounge-booking.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -11,38 +12,50 @@ export class LoungeBookingService {
   private apiUrl = `${environment.apiUrl}/lounge-bookings`;
 
   constructor(private http: HttpClient) {
-    this.loadBookings();
+    this.loadBookings().subscribe();
   }
 
   get bookings(): LoungeBooking[] { 
     return this._bookings$.getValue(); 
   }
 
-  loadBookings(): void {
-    this.http.get<LoungeBooking[]>(this.apiUrl).subscribe({
-      next: (data) => this._bookings$.next(data),
-      error: (err) => console.error('Error loading lounge bookings:', err)
-    });
+  loadBookings(): Observable<LoungeBooking[]> {
+    return this.http.get<LoungeBooking[]>(this.apiUrl).pipe(
+      tap(data => {
+        console.log('Loaded lounge bookings:', data.length);
+        this._bookings$.next(data);
+      })
+    );
   }
 
   add(b: LoungeBooking): Observable<any> {
-    return this.http.post(this.apiUrl, b);
+    return this.http.post(this.apiUrl, b).pipe(
+      switchMap(() => this.loadBookings())
+    );
   }
 
   update(b: LoungeBooking): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${b.lounge_booking_id}`, b);
+    return this.http.put(`${this.apiUrl}/${b.lounge_booking_id}`, b).pipe(
+      switchMap(() => this.loadBookings())
+    );
   }
 
   updatePaymentStatus(id: string, status: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}/payment-status`, { status });
+    return this.http.patch(`${this.apiUrl}/${id}/payment-status`, { status }).pipe(
+      switchMap(() => this.loadBookings())
+    );
   }
 
   updateBookingStatus(id: string, status: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}/booking-status`, { status });
+    return this.http.patch(`${this.apiUrl}/${id}/booking-status`, { status }).pipe(
+      switchMap(() => this.loadBookings())
+    );
   }
 
   delete(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.delete(`${this.apiUrl}/${id}`).pipe(
+      switchMap(() => this.loadBookings())
+    );
   }
 
   getById(id: string): Observable<LoungeBooking> {

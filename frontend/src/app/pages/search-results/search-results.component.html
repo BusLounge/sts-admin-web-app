@@ -83,7 +83,7 @@
             <input 
               type="text" 
               [(ngModel)]="searchCriteria[attr]" 
-              [placeholder]="'Enter ' + attr"
+              [placeholder]="attr === 'Date' && searchType === 'Lounge booking' ? 'e.g., 2024-01-15 or YYYY-MM-DD' : 'Enter ' + attr"
               class="search-input">
           </div>
         </div>
@@ -201,6 +201,7 @@
               <th>License Number</th>
               <th>License Expiry</th>
               <th>Experience Yrs</th>
+              <th>Hire Date</th>
               <th>Verification</th>
               <th>Status</th>
               <th>Action</th>
@@ -214,6 +215,7 @@
               <td>{{ driver.license_number }}</td>
               <td>{{ driver.license_expiry_date }}</td>
               <td>{{ driver.experience_years }}</td>
+              <td>{{ driver.hire_date }}</td>
               <td>{{ driver.verification_status }}</td>
               <td>{{ driver.status }}</td>
               <td>
@@ -233,6 +235,7 @@
               <th>License Number</th>
               <th>License Expiry</th>
               <th>Experience Yrs</th>
+              <th>Hire Date</th>
               <th>Verification</th>
               <th>Status</th>
               <th>Action</th>
@@ -246,6 +249,7 @@
               <td>{{ conductor.license_number }}</td>
               <td>{{ conductor.license_expiry_date }}</td>
               <td>{{ conductor.experience_years }}</td>
+              <td>{{ conductor.hire_date }}</td>
               <td>{{ conductor.verification_status }}</td>
               <td>{{ conductor.status }}</td>
               <td>
@@ -308,7 +312,7 @@
               <th>Lounge Name</th>
               <th>Market place</th>
               <th>Booking Type</th>
-              <th>Date and Time</th>
+              <th>Date</th>
               <th>Duration</th>
               <th>No of Guests</th>
               <th>Additional features</th>
@@ -327,7 +331,7 @@
               <td>{{ b.lounge_name }}</td>
               <td>{{ b.product_name || '-' }}</td>
               <td>{{ b.booking_type || '-' }}</td>
-              <td>{{ b.scheduled_arrival | date:'medium' }}</td>
+              <td>{{ b.scheduled_arrival | date:'yyyy-MM-dd' }}</td>
               <td>{{ b.pricing_type }}</td>
               <td>{{ b.number_of_guests }}</td>
               <td>{{ b.selected_amenities?.join(', ') || '-' }}</td>
@@ -438,7 +442,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeAddModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -485,7 +489,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeAddModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -532,7 +536,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeAddModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -630,7 +634,7 @@
 
         <div class="form-actions">
           <button type="button" (click)="closeAddModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -759,7 +763,7 @@
         </div>
         <div class="form-actions full-width">
           <button type="button" (click)="closeAddModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -847,7 +851,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeEditModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -897,7 +901,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeEditModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -944,7 +948,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeEditModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -1009,7 +1013,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeEditModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -1100,7 +1104,7 @@
 
         <div class="form-actions full-width">
           <button type="button" (click)="closeEditModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>
@@ -1204,7 +1208,7 @@
         </div>
         <div class="form-actions full-width">
           <button type="button" (click)="closeEditModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isFormValid()">Save</button>
         </div>
       </form>
     </div>

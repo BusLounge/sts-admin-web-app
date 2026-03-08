@@ -102,4 +102,19 @@ export class AdminAuthService {
   getCurrentAdmin(): AdminUser | null {
     return this.currentAdminSubject.value;
   }
+
+  requestPasswordReset(email: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/forgot-password`, { email });
+  }
+
+  verifyResetToken(token: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/verify-reset-token`, { token });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/reset-password`, {
+      token,
+      new_password: newPassword
+    });
+  }
 }

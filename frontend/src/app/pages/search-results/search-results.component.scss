@@ -692,9 +692,16 @@
         &[type="submit"] {
           background: var(--color-buttns-light);
           color: white;
+
+          &:disabled {
+            background: #9ca3af;
+            color: #d1d5db;
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
         }
 
-        &:hover {
+        &:hover:not(:disabled) {
           opacity: 0.9;
         }
       }

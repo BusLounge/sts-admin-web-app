@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"net/http"
+	"sts-backend/internal/config"
+	"sts-backend/internal/services"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +11,16 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// Global email service
+var emailService *services.EmailService
+var appConfig *config.Config
+
+// InitAuthHandlers initializes the auth handlers with required services
+func InitAuthHandlers(cfg *config.Config) {
+	appConfig = cfg
+	emailService = services.NewEmailService(cfg)
+}
 
 // Hardcoded admin credentials (in production, use environment variables or secure config)
 var predefinedAdmins = map[string]Admin{
@@ -62,6 +74,16 @@ type AdminUser struct {
 
 // JWT Secret - In production, use environment variable
 var jwtSecret = []byte("your-secret-key-change-in-production")
+
+// Password reset token storage (in-memory - in production use Redis or database)
+type PasswordResetToken struct {
+	Email     string
+	Token     string
+	ExpiresAt time.Time
+	Used      bool
+}
+
+var passwordResetTokens = make(map[string]*PasswordResetToken)
 
 // AdminLogin handles admin login with predefined credentials
 func AdminLogin(c *gin.Context) {
@@ -249,4 +271,190 @@ func RefreshAccessToken(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+// RequestPasswordReset initiates password reset process
+func RequestPasswordReset(c *gin.Context) {
+	var req struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid email format",
+		})
+		return
+	}
+
+	// Check if admin exists
+	admin, exists := predefinedAdmins[req.Email]
+	if !exists {
+		// Don't reveal if email exists or not (security best practice)
+		c.JSON(http.StatusOK, gin.H{
+			"message": "If the email exists, a password reset link has been sent",
+		})
+		return
+	}
+
+	// Check if admin is active
+	if !admin.IsActive {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "If the email exists, a password reset link has been sent",
+		})
+		return
+	}
+
+	// Generate reset token (6-digit code for simplicity)
+	resetToken := generateResetToken()
+
+	// Store reset token (expires in 15 minutes)
+	passwordResetTokens[resetToken] = &PasswordResetToken{
+		Email:     req.Email,
+		Token:     resetToken,
+		ExpiresAt: time.Now().Add(15 * time.Minute),
+		Used:      false,
+	}
+
+	// Send password reset email
+	if emailService != nil {
+		err := emailService.SendPasswordResetEmail(req.Email, resetToken)
+		if err != nil {
+			// Log error but don't reveal to user
+			println("Error sending email:", err.Error())
+			c.JSON(http.StatusOK, gin.H{
+				"message": "If the email exists, a password reset link has been sent",
+			})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Password reset code has been sent to your email. Please check your inbox.",
+	})
+}
+
+// VerifyResetToken verifies if a reset token is valid
+func VerifyResetToken(c *gin.Context) {
+	var req struct {
+		Token string `json:"token" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	resetToken, exists := passwordResetTokens[req.Token]
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid or expired reset token",
+		})
+		return
+	}
+
+	// Check if token is expired
+	if time.Now().After(resetToken.ExpiresAt) {
+		delete(passwordResetTokens, req.Token)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Reset token has expired",
+		})
+		return
+	}
+
+	// Check if token was already used
+	if resetToken.Used {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Reset token has already been used",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"valid": true,
+		"email": resetToken.Email,
+	})
+}
+
+// ResetPassword resets the admin password using a valid token
+func ResetPassword(c *gin.Context) {
+	var req struct {
+		Token       string `json:"token" binding:"required"`
+		NewPassword string `json:"new_password" binding:"required,min=8"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format. Password must be at least 8 characters",
+		})
+		return
+	}
+
+	resetToken, exists := passwordResetTokens[req.Token]
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid or expired reset token",
+		})
+		return
+	}
+
+	// Check if token is expired
+	if time.Now().After(resetToken.ExpiresAt) {
+		delete(passwordResetTokens, req.Token)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Reset token has expired",
+		})
+		return
+	}
+
+	// Check if token was already used
+	if resetToken.Used {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Reset token has already been used",
+		})
+		return
+	}
+
+	// Get admin
+	admin, exists := predefinedAdmins[resetToken.Email]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Admin not found",
+		})
+		return
+	}
+
+	// Hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to process new password",
+		})
+		return
+	}
+
+	// Update password
+	admin.Password = string(hashedPassword)
+	admin.UpdatedAt = time.Now()
+	predefinedAdmins[resetToken.Email] = admin
+
+	// Mark token as used
+	resetToken.Used = true
+
+	// Clean up used token after a delay
+	go func() {
+		time.Sleep(5 * time.Minute)
+		delete(passwordResetTokens, req.Token)
+	}()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Password has been reset successfully",
+	})
+}
+
+// generateResetToken generates a 6-digit reset code
+func generateResetToken() string {
+	// Generate random 6-digit code
+	return uuid.New().String()[:8] // Using first 8 chars of UUID for simplicity
 }

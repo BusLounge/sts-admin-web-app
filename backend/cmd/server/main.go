@@ -2,9 +2,11 @@ package main
 
 import (
 	"log"
+	"time"
 	"sts-backend/internal/config"
 	"sts-backend/internal/database"
 	"sts-backend/internal/handlers"
+	"sts-backend/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +15,12 @@ func main() {
 	cfg := config.LoadConfig()
 	database.Init(cfg)
 
+	// Initialize auth handlers with email service
+	handlers.InitAuthHandlers(cfg)
+	
+	// Initialize complaint service with escalation support
+	services.InitComplaintService(database.DB, cfg)
+
 	// Test Database connection
 	err := database.DB.Ping()
 	if err != nil {
@@ -20,6 +28,11 @@ func main() {
 	} else {
 		log.Println("Database Connection Check: Successfully connected!")
 	}
+
+	// Initialize escalation scheduler (runs every hour)
+	escalationScheduler := services.NewEscalationScheduler(database.DB, cfg, 1*time.Hour)
+	escalationScheduler.Start()
+	log.Println("✅ Complaint escalation scheduler started (runs every 1 hour)")
 
 	r := gin.Default()
 
@@ -55,6 +68,11 @@ func main() {
 			adminAuth.POST("/logout", handlers.AdminLogout)
 			adminAuth.POST("/refresh", handlers.RefreshAccessToken)
 			adminAuth.GET("/profile", handlers.AdminProfile)
+			
+			// Password reset routes
+			adminAuth.POST("/forgot-password", handlers.RequestPasswordReset)
+			adminAuth.POST("/verify-reset-token", handlers.VerifyResetToken)
+			adminAuth.POST("/reset-password", handlers.ResetPassword)
 		}
 
 		// Lounge routes
@@ -118,6 +136,28 @@ func main() {
 		api.PATCH("/lounge-bookings/:id/payment-status", handlers.UpdateLoungeBookingPaymentStatus)
 		api.PATCH("/lounge-bookings/:id/booking-status", handlers.UpdateLoungeBookingStatus)
 		api.DELETE("/lounge-bookings/:id", handlers.DeleteLoungeBooking)
+
+		// Complaint routes
+		api.GET("/complaints", handlers.GetComplaints)
+		api.GET("/complaints/:id", handlers.GetComplaintById)
+		api.PUT("/complaints/:id/status", handlers.UpdateComplaintStatus)
+		api.POST("/complaints/:id/escalate", handlers.ManualEscalateComplaint)
+		api.GET("/complaints/:id/escalation", handlers.GetComplaintEscalation)
+
+		// Initialize escalation service for complaint handlers
+		escalationSvc := services.NewEscalationService(database.DB, cfg)
+		handlers.SetEscalationService(escalationSvc)
+
+		// Escalation routes
+		escalationHandler := handlers.NewEscalationHandler(database.DB, cfg)
+		api.GET("/escalation/config", escalationHandler.GetEscalationConfig)
+		api.GET("/escalation/config/:category", escalationHandler.GetEscalationConfigForCategory)
+		api.GET("/escalation/complaint/:id", escalationHandler.GetComplaintEscalation)
+		api.GET("/escalation/complaint/:id/history", escalationHandler.GetEscalationHistory)
+		api.POST("/escalation/complaint/:id/escalate", escalationHandler.EscalateComplaint)
+		api.POST("/escalation/complaint/:id/assign", escalationHandler.AssignComplaint)
+		api.POST("/escalation/complaint/:id/initialize", escalationHandler.InitializeComplaintEscalation)
+		api.GET("/escalation/stats", escalationHandler.GetEscalationStats)
 	}
 
 	log.Printf("Server starting on port %s", cfg.Port)

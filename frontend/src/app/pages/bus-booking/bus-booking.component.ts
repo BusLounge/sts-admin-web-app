@@ -406,10 +406,32 @@ export class BusBookingComponent implements OnInit {
     this.selectedBooking = null;
   }
 
+  // Validate bus booking form - all required fields must be filled except booking_reference
+  isBusBookingFormValid(): boolean {
+    if (!this.selectedBooking) return false;
+    
+    return !!(
+      this.selectedBooking.passenger_name?.trim() &&
+      this.selectedBooking.route?.trim() &&
+      this.selectedBooking.departure_datetime &&
+      this.formSeatNumbers?.trim() &&
+      this.selectedBooking.total_fare !== null &&
+      this.selectedBooking.total_fare !== undefined &&
+      this.selectedBooking.total_fare >= 0 &&
+      this.selectedBooking.bus_type
+    );
+  }
+
   saveBooking(): void {
     console.log('saveBooking called, selectedBooking:', this.selectedBooking);
     if (!this.selectedBooking) {
       console.log('No selected booking, returning');
+      return;
+    }
+    
+    // Validate all required fields
+    if (!this.isBusBookingFormValid()) {
+      alert('Please fill all required fields before saving.');
       return;
     }
     
@@ -426,6 +448,7 @@ export class BusBookingComponent implements OnInit {
         next: (result) => {
           console.log('✓ Update complete, data reloaded:', result);
           this.closeEditModal();
+          alert('Bus booking updated successfully!');
         },
         error: (err) => {
           console.error('✗ Error updating booking:', err);
@@ -438,6 +461,7 @@ export class BusBookingComponent implements OnInit {
         next: (result) => {
           console.log('✓ Add complete, data reloaded:', result);
           this.closeEditModal();
+          alert('Bus booking added successfully!');
         },
         error: (err) => {
           console.error('✗ Error saving booking:', err);

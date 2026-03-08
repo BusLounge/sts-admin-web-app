@@ -143,18 +143,35 @@ export class LoginComponent {
     this.resetErrorMessage = '';
     this.resetSuccessMessage = '';
 
-    // Simulate password reset process
-    setTimeout(() => {
-      this.isResetLoading = false;
-      
-      // For demo purposes, always show success
-      // In real app, you would call your backend API
-      this.resetSuccessMessage = `Password reset link has been sent to ${this.resetEmail}. Please check your email and follow the instructions to reset your password.`;
-      
-      // Auto-close modal after 3 seconds
-      setTimeout(() => {
-        this.closeForgotPasswordModal();
-      }, 3000);
-    }, 2000);
+    // Call backend API for password reset
+    this.adminAuthService.requestPasswordReset(this.resetEmail).subscribe({
+      next: (response: any) => {
+        this.isResetLoading = false;
+        this.resetSuccessMessage = response.message || 'Password reset code has been sent to your email. Please check your email for the reset code.';
+        
+        // In development, show the reset token
+        if (response.reset_token) {
+          console.log('🔑 Reset Token (DEV ONLY):', response.reset_token);
+          this.resetSuccessMessage += ` (Dev Token: ${response.reset_token})`;
+        }
+        
+        // Auto-close modal after 5 seconds
+        setTimeout(() => {
+          this.closeForgotPasswordModal();
+        }, 5000);
+      },
+      error: (error) => {
+        this.isResetLoading = false;
+        console.error('❌ Password reset request failed:', error);
+        
+        if (error.error?.error) {
+          this.resetErrorMessage = error.error.error;
+        } else if (error.status === 0) {
+          this.resetErrorMessage = 'Cannot connect to server. Please check your connection.';
+        } else {
+          this.resetErrorMessage = 'Failed to send reset email. Please try again.';
+        }
+      }
+    });
   }
 }

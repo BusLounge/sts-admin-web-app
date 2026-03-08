@@ -11,6 +11,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { NotificationService } from '../../core/services/notification.service';
+import { ComplaintService } from '../../core/services/complaint.service';
+import { Complaint } from '../../core/models/complaint.model';
 
 @Component({
   selector: 'app-complaint-management',
@@ -37,30 +39,37 @@ export class ComplaintManagementComponent implements OnInit {
   showProfileMenu = false;
   
   stats = [
-    { title: 'Total Complaints', count: 20, icon: 'pi pi-users', color: 'blue' },
-    { title: 'Pending Complaints', count: 2, icon: 'pi pi-clock', color: 'indigo' },
-    { title: 'Inprogress Complaints', count: 8, icon: 'pi pi-check-circle', color: 'purple' },
-    { title: 'Resolved Complaints', count: 10, icon: 'pi pi-check', color: 'green' }
+    { title: 'Total Complaints', count: 0, icon: 'pi pi-users', color: 'blue' },
+    { title: 'Pending Complaints', count: 0, icon: 'pi pi-clock', color: 'indigo' },
+    { title: 'Inprogress Complaints', count: 0, icon: 'pi pi-check-circle', color: 'purple' },
+    { title: 'Resolved Complaints', count: 0, icon: 'pi pi-check', color: 'green' }
   ];
 
-  complaints: any[] = [];
-  filteredComplaints: any[] = [];
+  complaints: Complaint[] = [];
+  filteredComplaints: Complaint[] = [];
 
   displayViewModal: boolean = false;
   displayEditModal: boolean = false;
+  displayEscalationModal: boolean = false;
   selectedComplaint: any = {};
   solutionText: string = '';
+  escalationInfo: any = null;
+  isEscalating: boolean = false;
 
-  constructor(private router: Router, public notificationService: NotificationService) {}
+  constructor(
+    private router: Router, 
+    public notificationService: NotificationService,
+    private complaintService: ComplaintService
+  ) {}
 
   ngOnInit() {
     this.loadComplaints();
-    this.filterComplaints();
   }
 
   viewComplaint(complaint: any) {
     this.selectedComplaint = { ...complaint };
     this.solutionText = ''; 
+    this.loadEscalationInfo(complaint.id);
     this.displayViewModal = true;
   }
 
@@ -81,155 +90,52 @@ export class ComplaintManagementComponent implements OnInit {
 
   saveComplaint() {
     console.log('Saving complaint:', this.selectedComplaint);
+    // Update complaint with activity notes
+    if (this.selectedComplaint.id && this.selectedComplaint.activity) {
+      this.complaintService.updateComplaintStatus(
+        this.selectedComplaint.id, 
+        'in_progress', 
+        undefined, 
+        this.selectedComplaint.activity
+      ).subscribe({
+        next: () => {
+          console.log('Complaint updated successfully');
+          this.loadComplaints();
+        },
+        error: (err) => console.error('Error updating complaint:', err)
+      });
+    }
     this.closeEditModal();
   }
 
   sendSolution() {
     console.log('Sending solution for:', this.selectedComplaint.id, this.solutionText);
+    if (this.selectedComplaint.id && this.solutionText) {
+      this.complaintService.updateComplaintStatus(
+        this.selectedComplaint.id, 
+        'resolved', 
+        undefined, 
+        this.solutionText
+      ).subscribe({
+        next: () => {
+          console.log('Solution sent successfully');
+          this.loadComplaints();
+        },
+        error: (err) => console.error('Error sending solution:', err)
+      });
+    }
     this.closeViewModal();
   }
 
   loadComplaints() {
-    // Mock data based on the image
-    this.complaints = [
-      {
-        id: 'C0001',
-        role: 'Passenger',
-        name: 'Piyadasa gamage',
-        contact: '0771234567',
-        category: 'Service Issue',
-        message: 'Unprofessional behavior',
-        media: 'Empty',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Customer Service',
-        resolvedBy: '',
-        activity: '"Reassigned to Finance/Ticketing"',
-        status: 'Pending',
-        action: ''
+    this.complaintService.loadComplaints().subscribe({
+      next: (complaints) => {
+        this.complaints = complaints;
+        this.filterComplaints();
+        this.updateStats();
       },
-      {
-        id: 'C0001',
-        role: 'Passenger',
-        name: 'Rishara Gamage',
-        contact: '0771234567',
-        category: 'Service Issue',
-        message: 'Poor customer support',
-        media: 'Empty',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Customer Service',
-        resolvedBy: '',
-        activity: '"Escalated to CS Manager"',
-        status: 'Escalated',
-        action: ''
-      },
-      {
-        id: 'C0001',
-        role: 'Passenger',
-        name: 'Kamal gamage',
-        contact: '0771234567',
-        category: 'Operations & Scheduling',
-        message: 'Unexpected waiting time',
-        media: 'Empty',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Operations Team',
-        resolvedBy: 'Mr. Nirmal',
-        activity: '',
-        status: 'Resolved',
-        action: ''
-      },
-      {
-        id: 'C0001',
-        role: 'Passenger',
-        name: 'Sunil gamage',
-        contact: '0771234567',
-        category: 'Ticketing & Fare',
-        message: 'Overcharging',
-        media: 'Empty',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Finance/Ticketing',
-        resolvedBy: '',
-        activity: '"Escalated to Finance Manager"',
-        status: 'In progress',
-        action: ''
-      },
-      {
-        id: 'C0001',
-        role: 'Passenger',
-        name: 'Sunimal gamage',
-        contact: '0771234567',
-        category: 'Vehicle & Facility',
-        message: 'Broken seats',
-        media: 'Image',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Maintenance/Company',
-        resolvedBy: 'Mr. Sumal',
-        activity: '',
-        status: 'Resolved',
-        action: ''
-      },
-      // Driver Complaints
-      {
-        id: 'C0001',
-        role: 'Driver',
-        name: 'Piyadasa gamage',
-        contact: '0771234567',
-        category: 'Vehicle & Facility',
-        message: 'Brake problems in Bus',
-        media: 'Empty',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Maintenance/Company',
-        resolvedBy: '',
-        activity: '"Reassigned to Finance/Ticketing"',
-        status: 'Pending',
-        action: ''
-      },
-      {
-        id: 'C0001',
-        role: 'Driver',
-        name: 'Rishara Gamage',
-        contact: '0771234567',
-        category: 'Ticketing & Fare',
-        message: 'Late salary',
-        media: 'Empty',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Finance/Ticketing',
-        resolvedBy: '',
-        activity: '"Escalated to CS Manager"',
-        status: 'Escalated',
-        action: ''
-      },
-      // Conductor Complaints
-      {
-        id: 'C0001',
-        role: 'Conductor',
-        name: 'Piyadasa gamage',
-        contact: '0771234567',
-        category: 'Vehicle & Facility',
-        message: 'Brake problems in Bus',
-        media: 'Empty',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Maintenance/Company',
-        resolvedBy: '',
-        activity: '"Reassigned to Finance/Ticketing"',
-        status: 'Pending',
-        action: ''
-      },
-      {
-        id: 'C0001',
-        role: 'Conductor',
-        name: 'Rishara Gamage',
-        contact: '0771234567',
-        category: 'Ticketing & Fare',
-        message: 'Late salary',
-        media: 'Empty',
-        dateTime: '2025-11-26 08:30',
-        assignedTeam: 'Finance/Ticketing',
-        resolvedBy: '',
-        activity: '"Escalated to CS Manager"',
-        status: 'Escalated',
-        action: ''
-      }
-    ];
+      error: (err) => console.error('Error loading complaints:', err)
+    });
   }
 
   setActiveTab(tab: string) {
@@ -245,6 +151,20 @@ export class ComplaintManagementComponent implements OnInit {
       const role = this.activeTab.endsWith('s') ? this.activeTab.slice(0, -1) : this.activeTab;
       this.filteredComplaints = this.complaints.filter(c => c.role.includes(role) || (role === 'Bus Owner' && c.role === 'Bus Owner') || (role === 'Lounge owner' && c.role === 'Lounge owner'));
     }
+  }
+
+  updateStats() {
+    const total = this.complaints.length;
+    const pending = this.complaints.filter(c => c.status.toLowerCase() === 'pending').length;
+    const inProgress = this.complaints.filter(c => c.status.toLowerCase() === 'in progress').length;
+    const resolved = this.complaints.filter(c => c.status.toLowerCase() === 'resolved').length;
+
+    this.stats = [
+      { title: 'Total Complaints', count: total, icon: 'pi pi-users', color: 'blue' },
+      { title: 'Pending Complaints', count: pending, icon: 'pi pi-clock', color: 'indigo' },
+      { title: 'Inprogress Complaints', count: inProgress, icon: 'pi pi-check-circle', color: 'purple' },
+      { title: 'Resolved Complaints', count: resolved, icon: 'pi pi-check', color: 'green' }
+    ];
   }
 
   getComplaintsByRole(role: string) {
@@ -280,5 +200,53 @@ export class ComplaintManagementComponent implements OnInit {
 
   goUserProfile() {
     this.router.navigate(['/user-profile']);
+  }
+
+  loadEscalationInfo(complaintId: string) {
+    this.complaintService.getComplaintEscalation(complaintId).subscribe({
+      next: (data) => {
+        this.escalationInfo = data;
+        console.log('Escalation info loaded:', data);
+      },
+      error: (err) => {
+        console.error('Error loading escalation info:', err);
+        this.escalationInfo = null;
+      }
+    });
+  }
+
+  escalateComplaint(complaintId: string) {
+    if (confirm('Are you sure you want to escalate this complaint to the next level?')) {
+      this.isEscalating = true;
+      this.complaintService.manualEscalateComplaint(complaintId, 'admin').subscribe({
+        next: (response) => {
+          console.log('Complaint escalated successfully:', response);
+          alert('Complaint escalated successfully! SMS notification sent to the next level team.');
+          this.loadEscalationInfo(complaintId);
+          this.loadComplaints();
+          this.isEscalating = false;
+        },
+        error: (err) => {
+          console.error('Error escalating complaint:', err);
+          alert('Failed to escalate complaint. Please try again.');
+          this.isEscalating = false;
+        }
+      });
+    }
+  }
+
+  getEscalationBadgeClass(level: number): string {
+    switch(level) {
+      case 1: return 'level-1';
+      case 2: return 'level-2';
+      case 3: return 'level-3';
+      default: return '';
+    }
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleString();
   }
 }
