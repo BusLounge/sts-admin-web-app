@@ -268,6 +268,25 @@
         <textarea pInputTextarea [value]="selectedComplaint.message" readonly rows="2" class="readonly-input"></textarea>
       </div>
       
+      <!-- Escalation Information -->
+      <div class="form-group full-width" *ngIf="escalationInfo">
+        <label>Escalation Status</label>
+        <div class="escalation-info-box">
+          <div class="escalation-header">
+            <span class="escalation-badge" [ngClass]="getEscalationBadgeClass(escalationInfo.current_level)">
+              Level {{escalationInfo.current_level}}
+            </span>
+            <span class="escalation-team">{{escalationInfo.current_team}}</span>
+          </div>
+          <div class="escalation-details" *ngIf="escalationInfo.next_escalation_due">
+            <small><strong>Next escalation:</strong> {{formatDate(escalationInfo.next_escalation_due)}}</small>
+          </div>
+          <div class="escalation-details" *ngIf="escalationInfo.last_escalated_at">
+            <small><strong>Last escalated:</strong> {{formatDate(escalationInfo.last_escalated_at)}}</small>
+          </div>
+        </div>
+      </div>
+      
       <div class="form-group full-width">
         <label>Solution</label>
         <textarea pInputTextarea [(ngModel)]="solutionText" rows="3" placeholder="Type solution here..."></textarea>
@@ -276,6 +295,12 @@
 
     <ng-template pTemplate="footer">
       <div class="dialog-footer">
+        <button pButton label="Escalate to Next Level" 
+                class="p-button-warning" 
+                (click)="escalateComplaint(selectedComplaint.id)"
+                [disabled]="isEscalating || selectedComplaint.status === 'Resolved'">
+          <i class="pi pi-arrow-up"></i>
+        </button>
         <button pButton label="Send Solution" class="p-button-primary" (click)="sendSolution()"></button>
         <button pButton label="Cancel" class="p-button-secondary" (click)="closeViewModal()"></button>
       </div>

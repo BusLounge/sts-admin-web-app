@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, switchMap } from 'rxjs';
 import { Lounge } from '../models/lounge.model';
 import { environment } from '../../../environments/environment';
 
@@ -11,33 +11,35 @@ export class LoungeService {
   private apiUrl = `${environment.apiUrl}/lounges`;
 
   constructor(private http: HttpClient) {
-    this.loadLounges();
+    this.loadLounges().subscribe();
   }
 
   get lounges(): Lounge[] { return this._lounges$.getValue(); }
 
-  loadLounges(): void {
-    this.http.get<Lounge[]>(this.apiUrl).subscribe({
-      next: (data) => this._lounges$.next(data || []),
-      error: (err) => console.error('Failed to load lounges', err)
-    });
+  loadLounges(): Observable<Lounge[]> {
+    return this.http.get<Lounge[]>(this.apiUrl).pipe(
+      tap(data => {
+        console.log('Loaded lounges:', data.length);
+        this._lounges$.next(data || []);
+      })
+    );
   }
 
   add(l: Lounge): Observable<any> {
     return this.http.post(this.apiUrl, l).pipe(
-      tap(() => this.loadLounges())
+      switchMap(() => this.loadLounges())
     );
   }
 
   update(updated: Lounge): Observable<any> {
     return this.http.put(`${this.apiUrl}/${updated.lounge_id}`, updated).pipe(
-      tap(() => this.loadLounges())
+      switchMap(() => this.loadLounges())
     );
   }
 
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`).pipe(
-      tap(() => this.loadLounges())
+      switchMap(() => this.loadLounges())
     );
   }
 

@@ -260,7 +260,7 @@
 
       <div class="form-actions">
         <button type="button" (click)="cancelAddLounge()">{{ modalMode === 'add' || modalMode === 'edit' ? 'Cancel' : 'Close' }}</button>
-        <button type="submit" *ngIf="modalMode === 'add' || modalMode === 'edit'">Save</button>
+        <button type="submit" *ngIf="modalMode === 'add' || modalMode === 'edit'" [disabled]="!isLoungeFormValid()">Save</button>
       </div>
     </form>
   </div>

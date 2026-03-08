@@ -219,16 +219,37 @@ export class LoungesManagementComponent implements OnInit {
     this.selectedFiles = [];
   }
 
+  // Validate lounge form - all required fields must be filled
+  isLoungeFormValid(): boolean {
+    return !!(
+      this.lounge.lounge_owner?.trim() &&
+      this.lounge.owner_nic?.trim() &&
+      this.lounge.owner_email?.trim() &&
+      this.lounge.owner_contact?.trim() &&
+      this.lounge.lounge_name?.trim() &&
+      this.lounge.lounge_contact?.trim() &&
+      this.lounge.address?.trim() &&
+      this.lounge.capacity > 0 &&
+      this.lounge.price_per_hour >= 0
+    );
+  }
+
   saveAddLounge(): void {
+    // Validate all required fields
+    if (!this.isLoungeFormValid()) {
+      alert('Please fill all required fields before saving.');
+      return;
+    }
+
     if (this.modalMode === 'add') {
       this.lounge.facilities = this.selectedAmenities;
       this.lounge.marketplace = this.selectedMarketplaceItems.join(', ');
       this.loungeService.add(this.lounge).subscribe({
         next: () => {
           console.log('✓ Lounge added successfully');
-          alert('Lounge added successfully');
-          this.loungeService.loadLounges(); // Reload lounges to refresh the list
+          // No need to call loadLounges() - the service already does this via tap operator
           this.showModal = false;
+          alert('Lounge added successfully');
         },
         error: (err) => {
           console.error('✗ Failed to add lounge:', err);
@@ -241,9 +262,9 @@ export class LoungesManagementComponent implements OnInit {
       this.loungeService.update(this.lounge).subscribe({
         next: () => {
           console.log('✓ Lounge updated successfully');
-          alert('Lounge updated successfully');
-          this.loungeService.loadLounges(); // Reload lounges to refresh the list
+          // No need to call loadLounges() - the service already does this via tap operator
           this.showModal = false;
+          alert('Lounge updated successfully');
         },
         error: (err) => {
           console.error('✗ Failed to update lounge:', err);

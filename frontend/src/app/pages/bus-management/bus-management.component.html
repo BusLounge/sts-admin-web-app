@@ -297,7 +297,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeAddBusModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isBusFormValid()">Save</button>
         </div>
       </form>
     </div>

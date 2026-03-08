@@ -156,32 +156,26 @@ export class BusManagementComponent implements OnInit {
     };
   }
 
+  // Validate bus form - all required fields must be filled
+  isBusFormValid(): boolean {
+    return !!(
+      this.newBus.bus_number?.trim() &&
+      this.newBus.company_name?.trim() &&
+      this.newBus.identify_or_incorporation_no?.trim() &&
+      this.newBus.business_email?.trim() &&
+      this.newBus.business_phone?.trim() &&
+      this.newBus.permit_number?.trim() &&
+      this.newBus.license_plate?.trim() &&
+      this.newBus.custom_route_name?.trim() &&
+      this.newBus.total_seats > 0 &&
+      this.newBus.fare_per_seat >= 0
+    );
+  }
+
   saveBus() {
-    // Check each required field
-    const requiredFields = [
-      { name: 'bus_number', value: this.newBus.bus_number },
-      { name: 'company_name', value: this.newBus.company_name },
-      { name: 'identify_or_incorporation_no', value: this.newBus.identify_or_incorporation_no },
-      { name: 'business_email', value: this.newBus.business_email },
-      { name: 'business_phone', value: this.newBus.business_phone },
-      { name: 'permit_number', value: this.newBus.permit_number },
-      { name: 'license_plate', value: this.newBus.license_plate },
-      { name: 'custom_route_name', value: this.newBus.custom_route_name }
-    ];
-    
-    const missingFields = requiredFields.filter(f => !f.value);
-    if (missingFields.length > 0) {
-      alert(`Please fill all required fields: ${missingFields.map(f => f.name).join(', ')}`);
-      return;
-    }
-    
-    if (this.newBus.total_seats <= 0) {
-      alert('Seats must be greater than 0');
-      return;
-    }
-    
-    if (this.newBus.fare_per_seat < 0) {
-      alert('Fare must be 0 or greater');
+    // Validate all required fields
+    if (!this.isBusFormValid()) {
+      alert('Please fill all required fields before saving.');
       return;
     }
     
@@ -212,9 +206,9 @@ export class BusManagementComponent implements OnInit {
     this.busService.addBus(busData).subscribe({
       next: (response) => {
         console.log('✓ Bus added successfully:', response);
-        alert('Successfully added');
-        this.busService.loadBuses(); // Reload buses to refresh the list
+        // No need to call loadBuses() - the service already updates the local state via tap operator
         this.closeAddBusModal();
+        alert('Bus added successfully!');
       },
       error: (err) => {
         console.error('✗ Failed to add bus:', err);

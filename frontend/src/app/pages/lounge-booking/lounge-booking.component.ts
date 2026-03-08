@@ -230,7 +230,30 @@ export class LoungeBookingComponent implements OnInit {
     this.showModal = false;
   }
 
+  // Validate lounge booking form - all required fields must be filled except booking_reference and product_name
+  isLoungeBookingFormValid(): boolean {
+    return !!(
+      this.formBooking.passenger_name?.trim() &&
+      this.formBooking.passenger_phone?.trim() &&
+      this.formBooking.lounge_name?.trim() &&
+      this.formBooking.scheduled_arrival &&
+      this.formBooking.pricing_type?.trim() &&
+      this.formBooking.number_of_guests !== null &&
+      this.formBooking.number_of_guests !== undefined &&
+      this.formBooking.number_of_guests > 0 &&
+      this.formBooking.total_amount !== null &&
+      this.formBooking.total_amount !== undefined &&
+      this.formBooking.total_amount >= 0
+    );
+  }
+
   saveBooking() {
+    // Validate all required fields
+    if (!this.isLoungeBookingFormValid()) {
+      alert('Please fill all required fields before saving.');
+      return;
+    }
+
     if (this.isEditMode) {
       // Convert datetime-local format back to ISO string
       const bookingToUpdate = { 
@@ -242,10 +265,14 @@ export class LoungeBookingComponent implements OnInit {
       
       this.svc.update(bookingToUpdate).subscribe({
         next: () => {
-          this.svc.loadBookings();
+          console.log('✓ Lounge booking updated successfully');
           this.closeModal();
+          alert('Lounge booking updated successfully!');
         },
-        error: (err) => console.error('Error updating booking:', err)
+        error: (err) => {
+          console.error('✗ Error updating booking:', err);
+          alert('Error updating booking: ' + (err.error?.error || err.message || 'Unknown error'));
+        }
       });
     } else {
       const newBooking = { 
@@ -259,10 +286,14 @@ export class LoungeBookingComponent implements OnInit {
       
       this.svc.add(newBooking).subscribe({
         next: () => {
-          this.svc.loadBookings();
+          console.log('✓ Lounge booking added successfully');
           this.closeModal();
+          alert('Lounge booking added successfully!');
         },
-        error: (err) => console.error('Error creating booking:', err)
+        error: (err) => {
+          console.error('✗ Error creating booking:', err);
+          alert('Error creating booking: ' + (err.error?.error || err.message || 'Unknown error'));
+        }
       });
     }
   }

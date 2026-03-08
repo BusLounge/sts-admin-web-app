@@ -47,7 +47,7 @@ export class SearchResultsComponent implements OnInit {
     Lounge: ['Lounge Name', 'Owner', 'Contact', 'Address', 'Price per hour', 'Capacity', 'Operation', 'Verification'],
     Driver: ['Name', 'Contact', 'License Num', 'License Expire date', 'Experience', 'Hire date', 'Verification', 'Status'],
     Conductor: ['Name', 'Contact', 'License Num', 'Experience', 'Hire date', 'Verification', 'Status'],
-    'Lounge booking': ['Passenger Name', 'Passenger Phone', 'Ref NUM', 'Lounge Name', 'Market place', 'Booking Type', 'Date and Time', 'Duration', 'No of Guests', 'Total Amount', 'Payment Status', 'Booking Status'],
+    'Lounge booking': ['Passenger Name', 'Passenger Phone', 'Ref NUM', 'Lounge Name', 'Market place', 'Booking Type', 'Date', 'Duration', 'No of Guests', 'Total Amount', 'Payment Status', 'Booking Status'],
     'Bus booking': ['Bus Number', 'Passenger Name', 'Passenger Phone', 'Ref NUM', 'Route', 'Date & Time', 'Bus Type', 'Seat No', 'Total Fare', 'Payment Status', 'Booking Status']
   };
 
@@ -70,8 +70,9 @@ export class SearchResultsComponent implements OnInit {
       if (criteriaStr) {
         this.searchCriteria = JSON.parse(criteriaStr);
         this.selectedAttributes = Object.keys(this.searchCriteria).filter(key => this.searchCriteria[key]);
-        this.performSearch();
       }
+      // Always load results for the selected type
+      this.performSearch();
     });
   }
 
@@ -121,11 +122,14 @@ export class SearchResultsComponent implements OnInit {
           case 'Contact':
             return bus.business_phone?.toLowerCase().includes(searchValue);
           case 'No of Seat':
-            return bus.total_seats?.toString().includes(searchValue);
+            return bus.total_seats?.toString() === searchValue;
           case 'Approved fare':
-            return bus.fare_per_seat?.toString().includes(searchValue);
+            return bus.fare_per_seat?.toString() === searchValue;
           case 'Type':
-            return bus.bus_type?.toLowerCase().includes(searchValue);
+            // Normalize both search value and bus type to match variations (semi-luxury, semi_luxury, etc.)
+            const normalizedSearchValue = searchValue.replace(/[-_]/g, '');
+            const normalizedBusType = bus.bus_type?.toLowerCase().replace(/[-_]/g, '');
+            return normalizedBusType?.includes(normalizedSearchValue);
           case 'Status':
             return bus.status?.toLowerCase().includes(searchValue);
           default:
@@ -152,9 +156,9 @@ export class SearchResultsComponent implements OnInit {
           case 'Address':
             return lounge.address?.toLowerCase().includes(searchValue);
           case 'Price per hour':
-            return lounge.price_per_hour?.toString().includes(searchValue);
+            return lounge.price_per_hour?.toString() === searchValue;
           case 'Capacity':
-            return lounge.capacity?.toString().includes(searchValue);
+            return lounge.capacity?.toString() === searchValue;
           case 'Operation':
             const status = typeof lounge.operational === 'string' ? lounge.operational : (lounge.operational ? 'open' : 'closed');
             return status.toLowerCase().includes(searchValue);
@@ -184,13 +188,13 @@ export class SearchResultsComponent implements OnInit {
           case 'License Expire date':
             return driver.license_expiry_date?.toLowerCase().includes(searchValue);
           case 'Experience':
-            return driver.experience_years?.toString().includes(searchValue);
+            return driver.experience_years?.toString() === searchValue;
           case 'Hire date':
             return driver.hire_date?.toLowerCase().includes(searchValue);
           case 'Verification':
             return driver.verification_status?.toLowerCase().includes(searchValue);
           case 'Status':
-            return driver.status?.toLowerCase().includes(searchValue);
+            return driver.status?.toLowerCase() === searchValue;
           default:
             return true;
         }
@@ -213,13 +217,13 @@ export class SearchResultsComponent implements OnInit {
           case 'License Num':
             return conductor.license_number?.toLowerCase().includes(searchValue);
           case 'Experience':
-            return conductor.experience_years?.toString().includes(searchValue);
+            return conductor.experience_years?.toString() === searchValue;
           case 'Hire date':
             return conductor.hire_date?.toLowerCase().includes(searchValue);
           case 'Verification':
             return conductor.verification_status?.toLowerCase().includes(searchValue);
           case 'Status':
-            return conductor.status?.toLowerCase().includes(searchValue);
+            return conductor.status?.toLowerCase() === searchValue;
           default:
             return true;
         }
@@ -248,11 +252,14 @@ export class SearchResultsComponent implements OnInit {
           case 'Date & Time':
             return booking.departure_datetime?.toLowerCase().includes(searchValue);
           case 'Bus Type':
-            return booking.bus_type?.toLowerCase().includes(searchValue);
+            // Normalize both search value and bus type to match variations (semi-luxury, semi_luxury, etc.)
+            const normalizedSearchValue = searchValue.replace(/[-_]/g, '');
+            const normalizedBusType = booking.bus_type?.toLowerCase().replace(/[-_]/g, '');
+            return normalizedBusType?.includes(normalizedSearchValue);
           case 'Seat No':
             return booking.seat_number?.toLowerCase().includes(searchValue);
           case 'Total Fare':
-            return booking.total_fare?.toString().includes(searchValue);
+            return booking.total_fare?.toString() === searchValue;
           case 'Payment Status':
             return booking.payment_status?.toLowerCase().includes(searchValue);
           case 'Booking Status':
@@ -284,14 +291,16 @@ export class SearchResultsComponent implements OnInit {
             return booking.product_name?.toLowerCase().includes(searchValue);
           case 'Booking Type':
             return booking.booking_type?.toLowerCase().includes(searchValue);
-          case 'Date and Time':
-            return booking.scheduled_arrival?.toLowerCase().includes(searchValue);
+          case 'Date':
+            // Extract date only (YYYY-MM-DD format) from scheduled_arrival for comparison
+            const bookingDate = booking.scheduled_arrival ? booking.scheduled_arrival.split('T')[0] : '';
+            return bookingDate.toLowerCase().includes(searchValue);
           case 'Duration':
             return booking.pricing_type?.toLowerCase().includes(searchValue);
           case 'No of Guests':
-            return booking.number_of_guests?.toString().includes(searchValue);
+            return booking.number_of_guests?.toString() === searchValue;
           case 'Total Amount':
-            return booking.total_amount?.toString().includes(searchValue);
+            return booking.total_amount?.toString() === searchValue;
           case 'Payment Status':
             return booking.payment_status?.toLowerCase().includes(searchValue);
           case 'Booking Status':
@@ -320,6 +329,8 @@ export class SearchResultsComponent implements OnInit {
     this.selectedAttributes = [];
     this.searchCriteria = {};
     this.searchResults = [];
+    // Automatically load all results for the selected type
+    this.performSearch();
   }
 
   toggleAttribute(attribute: string) {
@@ -463,7 +474,121 @@ export class SearchResultsComponent implements OnInit {
     this.selectedEntity = null;
   }
 
+  // Validation methods for forms
+  isFormValid(): boolean {
+    switch (this.searchType) {
+      case 'Bus':
+        return this.isBusFormValid();
+      case 'Driver':
+        return this.isDriverFormValid();
+      case 'Conductor':
+        return this.isConductorFormValid();
+      case 'Lounge':
+        return this.isLoungeFormValid();
+      case 'Bus booking':
+        return this.isBusBookingFormValid();
+      case 'Lounge booking':
+        return this.isLoungeBookingFormValid();
+      default:
+        return false;
+    }
+  }
+
+  isBusFormValid(): boolean {
+    const entity = this.modalMode === 'add' ? this.newEntity : this.selectedEntity;
+    return !!(
+      entity.bus_number?.trim() &&
+      entity.company_name?.trim() &&
+      entity.identify_or_incorporation_no?.trim() &&
+      entity.business_email?.trim() &&
+      entity.business_phone?.trim() &&
+      entity.permit_number?.trim() &&
+      entity.license_plate?.trim() &&
+      entity.custom_route_name?.trim() &&
+      entity.total_seats > 0 &&
+      entity.fare_per_seat >= 0
+    );
+  }
+
+  isDriverFormValid(): boolean {
+    const entity = this.modalMode === 'add' ? this.newEntity : this.selectedEntity;
+    return !!(
+      entity.name?.trim() &&
+      entity.contact_number?.trim() &&
+      entity.license_number?.trim() &&
+      entity.license_expiry_date &&
+      entity.experience_years !== null &&
+      entity.experience_years !== undefined &&
+      entity.hire_date
+    );
+  }
+
+  isConductorFormValid(): boolean {
+    const entity = this.modalMode === 'add' ? this.newEntity : this.selectedEntity;
+    return !!(
+      entity.name?.trim() &&
+      entity.contact_number?.trim() &&
+      entity.license_number?.trim() &&
+      entity.license_expiry_date &&
+      entity.experience_years !== null &&
+      entity.experience_years !== undefined &&
+      entity.hire_date
+    );
+  }
+
+  isLoungeFormValid(): boolean {
+    const entity = this.modalMode === 'add' ? this.newEntity : this.selectedEntity;
+    return !!(
+      entity.lounge_owner?.trim() &&
+      entity.owner_nic?.trim() &&
+      entity.owner_email?.trim() &&
+      entity.owner_contact?.trim() &&
+      entity.lounge_name?.trim() &&
+      entity.lounge_contact?.trim() &&
+      entity.address?.trim() &&
+      entity.capacity > 0 &&
+      entity.price_per_hour >= 0
+    );
+  }
+
+  isBusBookingFormValid(): boolean {
+    const entity = this.modalMode === 'add' ? this.newEntity : this.selectedEntity;
+    return !!(
+      entity.passenger_name?.trim() &&
+      entity.route?.trim() &&
+      entity.departure_datetime &&
+      this.formSeatNumbers?.trim() &&
+      entity.total_fare !== null &&
+      entity.total_fare !== undefined &&
+      entity.total_fare >= 0 &&
+      entity.bus_type
+    );
+  }
+
+  isLoungeBookingFormValid(): boolean {
+    const entity = this.modalMode === 'add' ? this.newEntity : this.selectedEntity;
+    return !!(
+      entity.passenger_name?.trim() &&
+      entity.passenger_phone?.trim() &&
+      entity.lounge_name?.trim() &&
+      entity.scheduled_arrival &&
+      entity.pricing_type?.trim() &&
+      entity.number_of_guests !== null &&
+      entity.number_of_guests !== undefined &&
+      entity.number_of_guests > 0 &&
+      entity.total_amount !== null &&
+      entity.total_amount !== undefined &&
+      entity.total_amount >= 0
+    );
+  }
+
   saveEdit() {
+    // Validate all required fields
+    if (!this.isFormValid()) {
+      alert('Please fill all required fields before saving.');
+      return;
+    }
+
     switch (this.searchType) {
       case 'Bus':
         if (this.editBusDocuments) {
@@ -471,62 +596,79 @@ export class SearchResultsComponent implements OnInit {
         }
         this.busService.updateBus(this.selectedEntity).subscribe({
           next: () => {
+            alert('Bus updated successfully!');
             this.closeEditModal();
-            this.busService.loadBuses();
             setTimeout(() => this.performSearch(), 300);
           },
-          error: (err: any) => console.error('Error updating bus:', err)
+          error: (err: any) => {
+            console.error('Error updating bus:', err);
+            alert('Error updating bus: ' + (err.error?.error || err.message || 'Unknown error'));
+          }
         });
         break;
       case 'Driver':
         this.driverService.updateDriver(this.selectedEntity).subscribe({
           next: () => {
+            alert('Driver updated successfully!');
             this.closeEditModal();
-            this.driverService.loadDrivers();
             setTimeout(() => this.performSearch(), 300);
           },
-          error: (err: any) => console.error('Error updating driver:', err)
+          error: (err: any) => {
+            console.error('Error updating driver:', err);
+            alert('Error updating driver: ' + (err.error?.error || err.message || 'Unknown error'));
+          }
         });
         break;
       case 'Conductor':
         this.conductorService.updateConductor(this.selectedEntity).subscribe({
           next: () => {
+            alert('Conductor updated successfully!');
             this.closeEditModal();
-            this.conductorService.loadConductors();
             setTimeout(() => this.performSearch(), 300);
           },
-          error: (err: any) => console.error('Error updating conductor:', err)
+          error: (err: any) => {
+            console.error('Error updating conductor:', err);
+            alert('Error updating conductor: ' + (err.error?.error || err.message || 'Unknown error'));
+          }
         });
         break;
       case 'Lounge':
         this.loungeService.update(this.selectedEntity).subscribe({
           next: () => {
+            alert('Lounge updated successfully!');
             this.closeEditModal();
-            this.loungeService.loadLounges();
             setTimeout(() => this.performSearch(), 300);
           },
-          error: (err: any) => console.error('Error updating lounge:', err)
+          error: (err: any) => {
+            console.error('Error updating lounge:', err);
+            alert('Error updating lounge: ' + (err.error?.error || err.message || 'Unknown error'));
+          }
         });
         break;
       case 'Bus booking':
         this.busBookingService.update(this.selectedEntity).subscribe({
           next: () => {
+            alert('Bus booking updated successfully!');
             this.closeEditModal();
-            this.busBookingService.loadBookings().subscribe(() => {
-              this.performSearch();
-            });
+            setTimeout(() => this.performSearch(), 500);
           },
-          error: (err: any) => console.error('Error updating bus booking:', err)
+          error: (err: any) => {
+            console.error('Error updating bus booking:', err);
+            alert('Error updating bus booking: ' + (err.error?.error || err.message || 'Unknown error'));
+          }
         });
         break;
       case 'Lounge booking':
         this.loungeBookingService.update(this.selectedEntity).subscribe({
           next: () => {
+            alert('Lounge booking updated successfully!');
             this.closeEditModal();
-            this.loungeBookingService.loadBookings();
-            setTimeout(() => this.performSearch(), 300);
+            setTimeout(() => this.performSearch(), 500);
           },
-          error: (err: any) => console.error('Error updating lounge booking:', err)
+          error: (err: any) => {
+            console.error('Error updating lounge booking:', err);
+            alert('Error updating lounge booking: ' + (err.error?.error || err.message || 'Unknown error'));
+          }
         });
         break;
     }
@@ -691,6 +833,12 @@ export class SearchResultsComponent implements OnInit {
   }
 
   saveNewEntity() {
+    // Validate all required fields
+    if (!this.isFormValid()) {
+      alert('Please fill all required fields before saving.');
+      return;
+    }
+
     switch (this.searchType) {
       case 'Bus':
         // Transform documents string to verification_documents array
@@ -704,10 +852,9 @@ export class SearchResultsComponent implements OnInit {
         
         this.busService.addBus(busData).subscribe({
           next: () => {
-            alert('Bus added successfully');
+            alert('Bus added successfully!');
             this.closeAddModal();
-            this.busService.loadBuses();
-            setTimeout(() => this.performSearch(), 300);
+            setTimeout(() => this.performSearch(), 500);
           },
           error: (err) => {
             console.error('Error adding bus:', err);
@@ -718,10 +865,9 @@ export class SearchResultsComponent implements OnInit {
       case 'Driver':
         this.driverService.addDriver(this.newEntity).subscribe({
           next: () => {
-            alert('Driver added successfully');
+            alert('Driver added successfully!');
             this.closeAddModal();
-            this.driverService.loadDrivers();
-            setTimeout(() => this.performSearch(), 300);
+            setTimeout(() => this.performSearch(), 500);
           },
           error: (err) => {
             console.error('Error adding driver:', err);
@@ -732,10 +878,9 @@ export class SearchResultsComponent implements OnInit {
       case 'Conductor':
         this.conductorService.addConductor(this.newEntity).subscribe({
           next: () => {
-            alert('Conductor added successfully');
+            alert('Conductor added successfully!');
             this.closeAddModal();
-            this.conductorService.loadConductors();
-            setTimeout(() => this.performSearch(), 300);
+            setTimeout(() => this.performSearch(), 500);
           },
           error: (err) => {
             console.error('Error adding conductor:', err);
@@ -750,10 +895,9 @@ export class SearchResultsComponent implements OnInit {
         
         this.loungeService.add(this.newEntity).subscribe({
           next: () => {
-            alert('Lounge added successfully');
+            alert('Lounge added successfully!');
             this.closeAddModal();
-            this.loungeService.loadLounges();
-            setTimeout(() => this.performSearch(), 300);
+            setTimeout(() => this.performSearch(), 500);
           },
           error: (err: any) => {
             console.error('Error adding lounge:', err);
@@ -769,11 +913,9 @@ export class SearchResultsComponent implements OnInit {
         
         this.busBookingService.add(this.newEntity).subscribe({
           next: () => {
-            alert('Bus booking added successfully');
+            alert('Bus booking added successfully!');
             this.closeAddModal();
-            this.busBookingService.loadBookings().subscribe(() => {
-              this.performSearch();
-            });
+            setTimeout(() => this.performSearch(), 500);
           },
           error: (err: any) => {
             console.error('Error adding bus booking:', err);
@@ -784,10 +926,9 @@ export class SearchResultsComponent implements OnInit {
       case 'Lounge booking':
         this.loungeBookingService.add(this.newEntity).subscribe({
           next: () => {
-            alert('Lounge booking added successfully');
+            alert('Lounge booking added successfully!');
             this.closeAddModal();
-            this.loungeBookingService.loadBookings();
-            setTimeout(() => this.performSearch(), 300);
+            setTimeout(() => this.performSearch(), 500);
           },
           error: (err: any) => {
             console.error('Error adding lounge booking:', err);

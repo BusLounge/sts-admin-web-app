@@ -100,6 +100,18 @@ export class DriverManagementComponent implements OnInit {
     };
   }
 
+  // Validate driver form - all required fields must be filled
+  isDriverFormValid(): boolean {
+    return !!(
+      this.newDriver.name?.trim() &&
+      this.newDriver.contact_number?.trim() &&
+      this.newDriver.license_number?.trim() &&
+      this.newDriver.experience_years >= 0 &&
+      this.newDriver.license_expiry_date &&
+      this.newDriver.hire_date
+    );
+  }
+
   saveDriver() {
     // Trim all text fields
     this.newDriver.name = this.newDriver.name?.trim() || '';

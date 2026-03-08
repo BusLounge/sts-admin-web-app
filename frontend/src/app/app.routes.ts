@@ -27,6 +27,7 @@ import { SettingsComponent } from './pages/settings/settings.component';
 import { ComplaintManagementComponent } from './pages/complaint-management/complaint-management.component';
 import { FeedbackManagementComponent } from './pages/feedback-management/feedback-management.component';
 import { SearchResultsComponent } from './pages/search-results/search-results.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -59,5 +60,6 @@ export const routes: Routes = [
   { path: 'seat-layouts', component: SeatLayoutsComponent },
   { path: 'notification-details', component: NotificationDetailsComponent },
   { path: 'search-results', component: SearchResultsComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   { path: '**', redirectTo: '' }
 ];

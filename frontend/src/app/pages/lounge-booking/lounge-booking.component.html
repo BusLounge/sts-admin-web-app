@@ -291,7 +291,7 @@
 
             <div class="form-actions full-width">
               <button type="button" (click)="closeModal()">Cancel</button>
-              <button type="submit">Save</button>
+              <button type="submit" [disabled]="!isLoungeBookingFormValid()">Save</button>
             </div>
           </form>
         </div>

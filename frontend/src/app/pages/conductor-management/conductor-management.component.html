@@ -254,7 +254,7 @@
         </div>
         <div class="form-actions">
           <button type="button" (click)="closeAddConductorModal()">Cancel</button>
-          <button type="submit">Save</button>
+          <button type="submit" [disabled]="!isConductorFormValid()">Save</button>
         </div>
       </form>
     </div>

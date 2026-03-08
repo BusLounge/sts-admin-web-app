@@ -487,7 +487,7 @@ export class DashboardComponent implements OnInit {
           case 'Verification':
             return driver.verification_status?.toLowerCase().includes(searchValue);
           case 'Status':
-            return driver.status?.toLowerCase().includes(searchValue);
+            return driver.status?.toLowerCase() === searchValue;
           default:
             return true;
         }
@@ -516,7 +516,7 @@ export class DashboardComponent implements OnInit {
           case 'Verification':
             return conductor.verification_status?.toLowerCase().includes(searchValue);
           case 'Status':
-            return conductor.status?.toLowerCase().includes(searchValue);
+            return conductor.status?.toLowerCase() === searchValue;
           default:
             return true;
         }

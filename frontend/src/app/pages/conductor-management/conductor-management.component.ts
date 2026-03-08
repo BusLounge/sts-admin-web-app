@@ -93,7 +93,25 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
     };
   }
 
+  // Validate conductor form - all required fields must be filled
+  isConductorFormValid(): boolean {
+    return !!(
+      this.newConductor.name?.trim() &&
+      this.newConductor.contact_number?.trim() &&
+      this.newConductor.license_number?.trim() &&
+      this.newConductor.experience_years >= 0 &&
+      this.newConductor.license_expiry_date &&
+      this.newConductor.hire_date
+    );
+  }
+
   saveConductor() {
+    // Validate all required fields
+    if (!this.isConductorFormValid()) {
+      alert('Please fill all required fields before saving.');
+      return;
+    }
+
     if (this.newConductor.name && this.newConductor.contact_number) {
       this.conductorService.addConductor({
         name: this.newConductor.name,
