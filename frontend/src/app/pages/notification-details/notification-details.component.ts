@@ -4,15 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
-import { NotificationService, BusNotification } from '../../core/services/notification.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { BusService } from '../../core/services/bus.service';
 import { DriverService } from '../../core/services/driver.service';
 import { ConductorService } from '../../core/services/conductor.service';
 import { LoungeService } from '../../core/services/lounge.service';
+import { BusOwnerService } from '../../core/services/bus-owner.service';
 
 interface NotificationDetails {
   id: string;
-  type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking';
+  type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking' | 'bus-owner' | 'lounge-owner';
   title: string;
   message: string;
   time: string;
@@ -50,12 +51,13 @@ export class NotificationDetailsComponent implements OnInit {
     private busService: BusService,
     private driverService: DriverService,
     private conductorService: ConductorService,
-    private loungeService: LoungeService
+    private loungeService: LoungeService,
+    private busOwnerService: BusOwnerService
   ) {}
 
   ngOnInit() {
     const id = this.route.snapshot.queryParamMap.get('id');
-    const type = this.route.snapshot.queryParamMap.get('type') as 'bus' | 'driver' | 'conductor' | 'lounge' | null;
+    const type = this.route.snapshot.queryParamMap.get('type') as 'bus' | 'driver' | 'conductor' | 'lounge' | 'bus-owner' | 'lounge-owner' | null;
     
     const navigation = this.router.getCurrentNavigation();
     const data = navigation?.extras?.state?.['data'] || history.state?.data;
@@ -88,6 +90,12 @@ export class NotificationDetailsComponent implements OnInit {
         break;
       case 'lounge':
         this.mapLoungeDataToNotification(data);
+        break;
+      case 'bus-owner':
+        this.mapBusOwnerDataToNotification(data);
+        break;
+      case 'lounge-owner':
+        this.mapLoungeOwnerDataToNotification(data);
         break;
     }
   }
@@ -179,6 +187,42 @@ export class NotificationDetailsComponent implements OnInit {
     };
   }
 
+  mapBusOwnerDataToNotification(busOwner: any) {
+    this.notification = {
+      id: busOwner.id,
+      type: 'bus-owner',
+      title: 'New Bus Owner Added Request',
+      message: `A new bus owner registration request has been submitted: ${busOwner.company_name || 'Unknown'}`,
+      time: this.getTimeAgo(new Date()),
+      formData: {
+        'Company Name': busOwner.company_name || 'N/A',
+        'Business Email': busOwner.business_email || 'N/A',
+        'Business Phone': busOwner.business_phone || 'N/A',
+        'NIC/Incorporation Number': busOwner.identity_or_incorporation_no || 'N/A',
+        'Verification Status': busOwner.verification_status || 'pending'
+      }
+    };
+  }
+
+  mapLoungeOwnerDataToNotification(loungeOwner: any) {
+    this.notification = {
+      id: loungeOwner.id,
+      type: 'lounge-owner',
+      title: 'New Lounge Owner Added Request',
+      message: `A new lounge owner registration request has been submitted: ${loungeOwner.manager_full_name || 'Unknown'}`,
+      time: this.getTimeAgo(new Date()),
+      formData: {
+        'Manager Name': loungeOwner.manager_full_name || 'N/A',
+        'Email': loungeOwner.email || 'N/A',
+        'Contact Number': loungeOwner.contact_number || 'N/A',
+        'NIC': loungeOwner.nic || 'N/A',
+        'Business Name': loungeOwner.business_name || 'N/A',
+        'Business License': loungeOwner.business_license || 'N/A',
+        'Verification Status': loungeOwner.verification_status || 'pending'
+      }
+    };
+  }
+
   loadDetails(id: string, type: string) {
     switch (type) {
       case 'bus':
@@ -202,6 +246,18 @@ export class NotificationDetailsComponent implements OnInit {
       case 'lounge':
         this.notificationService.getLoungeById(id).subscribe({
           next: (lounge) => this.mapLoungeDataToNotification(lounge),
+          error: (err) => this.handleError(err)
+        });
+        break;
+      case 'bus-owner':
+        this.notificationService.getBusOwnerById(id).subscribe({
+          next: (busOwner) => this.mapBusOwnerDataToNotification(busOwner),
+          error: (err) => this.handleError(err)
+        });
+        break;
+      case 'lounge-owner':
+        this.notificationService.getLoungeOwnerById(id).subscribe({
+          next: (loungeOwner) => this.mapLoungeOwnerDataToNotification(loungeOwner),
           error: (err) => this.handleError(err)
         });
         break;
@@ -294,6 +350,16 @@ export class NotificationDetailsComponent implements OnInit {
           this.successModalTitle = 'New Lounge added Successfully!!!';
           this.successModalMessage = `The request to add a new lounge has been approved.\nThe lounge is now active in the system\nand ready for booking.\nThank you.`;
           break;
+        case 'bus-owner':
+          approveObservable = this.notificationService.approveBusOwner(this.busId, { verification_documents: this.adminDocuments.trim() });
+          this.successModalTitle = 'New Bus Owner added Successfully!!!';
+          this.successModalMessage = `The request to add a new bus owner has been approved.\nThe bus owner is now verified in the system\nand ready to manage buses.\nThank you.`;
+          break;
+        case 'lounge-owner':
+          approveObservable = this.notificationService.approveLoungeOwner(this.busId, { verification_notes: this.adminDocuments.trim() });
+          this.successModalTitle = 'New Lounge Owner added Successfully!!!';
+          this.successModalMessage = `The request to add a new lounge owner has been approved.\nThe lounge owner is now verified in the system\nand ready to manage lounges.\nThank you.`;
+          break;
         default:
           return;
       }
@@ -312,6 +378,12 @@ export class NotificationDetailsComponent implements OnInit {
               this.conductorService.loadConductors();
               break;
             case 'lounge':
+              this.loungeService.loadLounges();
+              break;
+            case 'bus-owner':
+              this.busOwnerService.loadBusOwners();
+              break;
+            case 'lounge-owner':
               this.loungeService.loadLounges();
               break;
           }
@@ -346,6 +418,12 @@ export class NotificationDetailsComponent implements OnInit {
           this.router.navigate(['/conductor-management']);
           break;
         case 'lounge':
+          this.router.navigate(['/lounges-management']);
+          break;
+        case 'bus-owner':
+          this.router.navigate(['/bus-owners']);
+          break;
+        case 'lounge-owner':
           this.router.navigate(['/lounges-management']);
           break;
         default:
@@ -402,6 +480,26 @@ export class NotificationDetailsComponent implements OnInit {
             'System could not process the lounge addition.'
           ];
           break;
+        case 'bus-owner':
+          this.cancelModalTitle = 'New Bus Owner Addition Request Cancelled';
+          this.cancelModalMessage = `The request to add a new bus owner has been cancelled.\nThe bus owner has not been added to the system.\nThank you.`;
+          this.cancellationReasons = [
+            'Business details were missing or incorrect.',
+            'A bus owner with the same details already exists.',
+            'The request was not approved by the authorities.',
+            'System could not process the bus owner addition.'
+          ];
+          break;
+        case 'lounge-owner':
+          this.cancelModalTitle = 'New Lounge Owner Addition Request Cancelled';
+          this.cancelModalMessage = `The request to add a new lounge owner has been cancelled.\nThe lounge owner has not been added to the system.\nThank you.`;
+          this.cancellationReasons = [
+            'Manager details were missing or incorrect.',
+            'A lounge owner with the same details already exists.',
+            'The request was not approved by the authorities.',
+            'System could not process the lounge owner addition.'
+          ];
+          break;
         default:
           this.cancelModalTitle = 'Request Cancelled';
           this.cancelModalMessage = `The request has been cancelled.\nThank you.`;
@@ -442,6 +540,12 @@ export class NotificationDetailsComponent implements OnInit {
         case 'lounge':
           rejectObservable = this.notificationService.rejectLounge(this.busId);
           break;
+        case 'bus-owner':
+          rejectObservable = this.notificationService.rejectBusOwner(this.busId, { verification_documents: this.otherReasonText.trim() });
+          break;
+        case 'lounge-owner':
+          rejectObservable = this.notificationService.rejectLoungeOwner(this.busId, { verification_notes: this.otherReasonText.trim() });
+          break;
         default:
           return;
       }
@@ -465,6 +569,12 @@ export class NotificationDetailsComponent implements OnInit {
               this.router.navigate(['/conductor-management']);
               break;
             case 'lounge':
+              this.router.navigate(['/lounges-management']);
+              break;
+            case 'bus-owner':
+              this.router.navigate(['/bus-owners']);
+              break;
+            case 'lounge-owner':
               this.router.navigate(['/lounges-management']);
               break;
             default:

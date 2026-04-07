@@ -3,6 +3,7 @@ package services
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 	"sts-backend/internal/config"
 	"sts-backend/internal/database"
@@ -14,6 +15,23 @@ var (
 	escalationServiceInstance *EscalationService
 	db                        *sql.DB
 )
+
+type ComplaintAdminContext struct {
+	AdminID  string
+	Role     string
+	AppScope string
+}
+
+func getExpectedDriverComplaintTeam(role string) string {
+	switch strings.ToLower(strings.TrimSpace(role)) {
+	case "admin":
+		return "driver_supervisor"
+	case "supervisor":
+		return "driver_admin"
+	default:
+		return ""
+	}
+}
 
 // InitComplaintService initializes the complaint service with escalation support
 func InitComplaintService(database *sql.DB, cfg *config.Config) {
@@ -27,6 +45,63 @@ func GetComplaintsByRole(role string) ([]models.ComplaintResponse, error) {
 		return nil, err
 	}
 	return transformComplaints(complaints), nil
+}
+
+func GetComplaintsForAdmin(ctx ComplaintAdminContext) ([]models.ComplaintResponse, error) {
+	role := strings.ToLower(strings.TrimSpace(ctx.Role))
+	scope := strings.ToLower(strings.TrimSpace(ctx.AppScope))
+
+	if role == "super_admin" {
+		complaints, err := database.GetAllComplaints()
+		if err != nil {
+			return nil, err
+		}
+		return transformComplaints(complaints), nil
+	}
+
+	if scope == "driver" && (role == "admin" || role == "supervisor") {
+		complaints, err := database.GetComplaintsForAdmin(ctx.AdminID, ctx.Role, ctx.AppScope)
+		if err != nil {
+			return nil, err
+		}
+		return transformComplaints(complaints), nil
+	}
+
+	complaints, err := database.GetComplaintsForAdmin(ctx.AdminID, ctx.Role, ctx.AppScope)
+	if err != nil {
+		return nil, err
+	}
+
+	return transformComplaints(complaints), nil
+}
+
+func GetComplaintsForAdminPaginated(ctx ComplaintAdminContext, reporterRole string, page, pageSize int) (models.ComplaintListResponse, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	offset := (page - 1) * pageSize
+	complaints, total, err := database.GetComplaintsForAdminPaginated(ctx.AdminID, ctx.Role, ctx.AppScope, reporterRole, pageSize, offset)
+	if err != nil {
+		return models.ComplaintListResponse{}, err
+	}
+
+	responses := transformComplaints(complaints)
+	totalPages := 0
+	if total > 0 {
+		totalPages = (total + pageSize - 1) / pageSize
+	}
+
+	return models.ComplaintListResponse{
+		Data:       responses,
+		Page:       page,
+		PageSize:   pageSize,
+		Total:      total,
+		TotalPages: totalPages,
+	}, nil
 }
 
 func GetAllComplaints() ([]models.ComplaintResponse, error) {
@@ -45,44 +120,77 @@ func GetComplaintByID(id string) (*models.ComplaintResponse, error) {
 	if complaint == nil {
 		return nil, nil
 	}
-	
+
 	response := transformComplaint(*complaint)
 	return &response, nil
 }
 
-func UpdateComplaintStatus(id string, status string, resolvedByID *string, resolutionNotes *string) error {
-	return database.UpdateComplaintStatus(id, status, resolvedByID, resolutionNotes)
+func GetComplaintByIDForAdmin(id string, ctx ComplaintAdminContext) (*models.ComplaintResponse, error) {
+	complaint, err := database.GetComplaintByIDForAdmin(id, ctx.AdminID, ctx.Role)
+	if err != nil {
+		return nil, err
+	}
+	if complaint == nil {
+		return nil, nil
+	}
+
+	response := transformComplaint(*complaint)
+
+	return &response, nil
+}
+
+func UpdateComplaintStatus(id string, status string, resolvedByID string, resolutionNotes *string) error {
+	var resolver *string
+	if status == "resolved" || status == "closed" {
+		resolver = &resolvedByID
+	}
+	return database.UpdateComplaintStatus(id, status, resolver, resolutionNotes)
 }
 
 // Helper function to transform complaints to response format
 func transformComplaints(complaints []models.Complaint) []models.ComplaintResponse {
+	escalations := map[string]*models.ComplaintEscalation{}
+	if escalationServiceInstance != nil && len(complaints) > 0 {
+		ids := make([]string, 0, len(complaints))
+		for _, complaint := range complaints {
+			ids = append(ids, complaint.ID)
+		}
+
+		if loadedEscalations, err := escalationServiceInstance.GetComplaintEscalations(ids); err == nil {
+			escalations = loadedEscalations
+		} else {
+			log.Printf("warning: failed to batch-load complaint escalations: %v", err)
+		}
+	}
+
 	responses := make([]models.ComplaintResponse, 0, len(complaints))
 	for _, c := range complaints {
-		responses = append(responses, transformComplaint(c))
+		responses = append(responses, transformComplaintWithEscalation(c, escalations[c.ID], false))
 	}
 	return responses
 }
 
 func transformComplaint(c models.Complaint) models.ComplaintResponse {
+	return transformComplaintWithEscalation(c, nil, true)
+}
+
+func transformComplaintWithEscalation(c models.Complaint, escalation *models.ComplaintEscalation, allowInitialization bool) models.ComplaintResponse {
 	category := formatCategory(c.IssueType)
-	
-	// Get or initialize escalation
-	var escalation *models.ComplaintEscalation
-	if escalationServiceInstance != nil {
+
+	// Only detail endpoints perform direct escalation lookup/initialization.
+	// List endpoints rely on preloaded batch escalation data to avoid N+1 queries.
+	if escalationServiceInstance != nil && escalation == nil && allowInitialization {
 		escalation, _ = escalationServiceInstance.GetComplaintEscalation(c.ID)
-		
-		// Auto-initialize escalation if not exists and complaint is not resolved/closed
-		if escalation == nil && c.Status != "resolved" && c.Status != "closed" {
-			err := escalationServiceInstance.InitializeEscalation(c.ID, category)
-			if err == nil {
+		if allowInitialization && escalation == nil && c.Status != "resolved" && c.Status != "closed" {
+			if err := escalationServiceInstance.InitializeEscalation(c.ID, category); err == nil {
 				escalation, _ = escalationServiceInstance.GetComplaintEscalation(c.ID)
 			}
 		}
 	}
-	
+
 	// Get assigned team from escalation or fallback to mapping
 	assignedTeam := getAssignedTeamFromEscalation(escalation, category, c.IssueType)
-	
+
 	response := models.ComplaintResponse{
 		ID:              c.ID,
 		Role:            capitalizeRole(c.ReporterRole),
@@ -123,8 +231,22 @@ func capitalizeRole(role string) string {
 }
 
 func formatCategory(issueType string) string {
-	// Use consistent category mapping
-	return MapIssuetypeToCategory(issueType)
+	switch issueType {
+	case "bus_delay":
+		return "Bus Delay"
+	case "maintenance_issue":
+		return "Maintenance Issue"
+	case "flat_wheel":
+		return "Flat Wheel"
+	case "passenger_complaint":
+		return "Passenger Complaint"
+	case "safety_concern":
+		return "Safety Concern"
+	case "equipment_malfunction":
+		return "Equipment Malfunction"
+	default:
+		return strings.Title(strings.ReplaceAll(issueType, "_", " "))
+	}
 }
 
 func getMediaDisplay(imageURL *string) string {
@@ -147,13 +269,13 @@ func getAssignedTeamFromEscalation(escalation *models.ComplaintEscalation, categ
 	if escalation != nil && escalation.CurrentTeam != "" {
 		return escalation.CurrentTeam
 	}
-	
+
 	// Get team from escalation config (Level 1 by default)
 	assignment := config.GetAssignmentForCategory(category, 1)
 	if assignment != nil {
 		return assignment.TeamName
 	}
-	
+
 	// Fallback to old mapping if config not found
 	switch issueType {
 	case "bus_delay":
@@ -203,19 +325,9 @@ func formatStatus(status string) string {
 // MapIssuetypeToCategory maps issue_type to escalation category
 func MapIssuetypeToCategory(issueType string) string {
 	switch issueType {
-	case "bus_delay":
-		return "Operations & Scheduling"
-	case "maintenance_issue", "flat_wheel", "equipment_malfunction":
-		return "Vehicle & Facility"
-	case "passenger_complaint":
-		return "Service Issue"
-	case "safety_concern":
-		return "Safety & Security"
+	case "bus_delay", "maintenance_issue", "flat_wheel", "passenger_complaint", "safety_concern", "equipment_malfunction":
+		return issueType
 	default:
-		// Try to format unknown types nicely
-		if issueType != "" {
-			return strings.Title(strings.ReplaceAll(issueType, "_", " "))
-		}
 		return "Other"
 	}
 }

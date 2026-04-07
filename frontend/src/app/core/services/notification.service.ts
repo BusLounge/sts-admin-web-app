@@ -69,6 +69,21 @@ export interface LoungeNotification {
   created_at?: string;
 }
 
+export interface LoungeOwnerNotification {
+  id: string;
+  user_id: string;
+  manager_full_name: string;
+  email: string;
+  contact_number: string;
+  nic: string;
+  business_name: string;
+  business_license: string;
+  verification_status: string;
+  verification_notes: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface BusOwnerNotification {
   id: string;
   user_id: string;
@@ -82,7 +97,13 @@ export interface BusOwnerNotification {
   updated_at: string;
 }
 
-export type AllNotifications = BusNotification | DriverNotification | ConductorNotification | LoungeNotification | BusOwnerNotification;
+export type AllNotifications =
+  | BusNotification
+  | DriverNotification
+  | ConductorNotification
+  | LoungeNotification
+  | BusOwnerNotification
+  | LoungeOwnerNotification;
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -92,12 +113,14 @@ export class NotificationService {
   private readonly _pendingConductors$ = new BehaviorSubject<ConductorNotification[]>([]);
   private readonly _pendingLounges$ = new BehaviorSubject<LoungeNotification[]>([]);
   private readonly _pendingBusOwners$ = new BehaviorSubject<BusOwnerNotification[]>([]);
+  private readonly _pendingLoungeOwners$ = new BehaviorSubject<LoungeOwnerNotification[]>([]);
 
   readonly pendingBuses$ = this._pendingBuses$.asObservable();
   readonly pendingDrivers$ = this._pendingDrivers$.asObservable();
   readonly pendingConductors$ = this._pendingConductors$.asObservable();
   readonly pendingLounges$ = this._pendingLounges$.asObservable();
   readonly pendingBusOwners$ = this._pendingBusOwners$.asObservable();
+  readonly pendingLoungeOwners$ = this._pendingLoungeOwners$.asObservable();
 
   constructor(private http: HttpClient) {
     this.loadAllPendingNotifications();
@@ -108,7 +131,8 @@ export class NotificationService {
            this._pendingDrivers$.getValue().length +
            this._pendingConductors$.getValue().length +
            this._pendingLounges$.getValue().length +
-           this._pendingBusOwners$.getValue().length;
+           this._pendingBusOwners$.getValue().length +
+           this._pendingLoungeOwners$.getValue().length;
   }
 
   loadAllPendingNotifications(): void {
@@ -117,7 +141,8 @@ export class NotificationService {
       drivers: this.http.get<DriverNotification[]>(`${this.apiUrl}/drivers/pending`),
       conductors: this.http.get<ConductorNotification[]>(`${this.apiUrl}/conductors/pending`),
       lounges: this.http.get<LoungeNotification[]>(`${this.apiUrl}/lounges/pending`),
-      busOwners: this.http.get<BusOwnerNotification[]>(`${this.apiUrl}/bus-owners/pending`)
+      busOwners: this.http.get<BusOwnerNotification[]>(`${this.apiUrl}/bus-owners/pending`),
+      loungeOwners: this.http.get<LoungeOwnerNotification[]>(`${this.apiUrl}/lounge-owners/pending`)
     }).subscribe({
       next: (data) => {
         this._pendingBuses$.next(data.buses);
@@ -125,12 +150,14 @@ export class NotificationService {
         this._pendingConductors$.next(data.conductors);
         this._pendingLounges$.next(data.lounges);
         this._pendingBusOwners$.next(data.busOwners);
+        this._pendingLoungeOwners$.next(data.loungeOwners);
         console.log('Loaded pending notifications:', {
           buses: data.buses.length,
           drivers: data.drivers.length,
           conductors: data.conductors.length,
           lounges: data.lounges.length,
-          busOwners: data.busOwners.length
+          busOwners: data.busOwners.length,
+          loungeOwners: data.loungeOwners.length
         });
       },
       error: (err) => console.error('Error loading pending notifications:', err)
@@ -230,5 +257,24 @@ export class NotificationService {
 
   getBusOwnerById(busOwnerId: string): Observable<BusOwnerNotification> {
     return this.http.get<BusOwnerNotification>(`${this.apiUrl}/bus-owners/${busOwnerId}`);
+  }
+
+  // Lounge Owner methods
+  approveLoungeOwner(loungeOwnerId: string, data?: any): Observable<any> {
+    const requestBody = { verification_status: 'approved', ...data };
+    return this.http.put(`${this.apiUrl}/lounge-owners/${loungeOwnerId}/verify`, requestBody).pipe(
+      tap(() => this.loadAllPendingNotifications())
+    );
+  }
+
+  rejectLoungeOwner(loungeOwnerId: string, data?: any): Observable<any> {
+    const requestBody = { verification_status: 'rejected', ...data };
+    return this.http.put(`${this.apiUrl}/lounge-owners/${loungeOwnerId}/verify`, requestBody).pipe(
+      tap(() => this.loadAllPendingNotifications())
+    );
+  }
+
+  getLoungeOwnerById(loungeOwnerId: string): Observable<LoungeOwnerNotification> {
+    return this.http.get<LoungeOwnerNotification>(`${this.apiUrl}/lounge-owners/${loungeOwnerId}`);
   }
 }

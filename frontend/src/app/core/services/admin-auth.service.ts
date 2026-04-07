@@ -103,6 +103,21 @@ export class AdminAuthService {
     return this.currentAdminSubject.value;
   }
 
+  private normalizeRole(role?: string): string {
+    return (role || '').toLowerCase().trim().replace(/[-\s]+/g, '_');
+  }
+
+  isSuperAdmin(): boolean {
+    const admin = this.getCurrentAdmin();
+    return this.normalizeRole(admin?.role) === 'super_admin';
+  }
+
+  isAdmin(): boolean {
+    const admin = this.getCurrentAdmin();
+    const role = this.normalizeRole(admin?.role);
+    return role === 'admin' || role === 'super_admin';
+  }
+
   requestPasswordReset(email: string): Observable<any> {
     return this.http.post(`${this.API_URL}/forgot-password`, { email });
   }

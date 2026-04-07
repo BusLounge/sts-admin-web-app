@@ -46,7 +46,7 @@
       </div>
       
       <ul class="settings-menu">
-        <li *ngFor="let item of menuItems" 
+        <li *ngFor="let item of filteredMenuItems" 
             [class.active]="activeSection === item"
             (click)="setActiveSection(item)">
           {{ item }}
@@ -137,6 +137,7 @@
                 <th>Email</th>
                 <th>Last Activity</th>
                 <th>Role</th>
+                <th>App Scope</th>
                 <th>Permissions</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -151,6 +152,7 @@
                 <td>{{user.email}}</td>
                 <td>{{user.lastActivity}}</td>
                 <td>{{user.role}}</td>
+                <td>{{user.appScope || '-'}}</td>
                 <td>{{user.permissions}}</td>
                 <td><span class="status-active">{{user.status}}</span></td>
                 <td>
@@ -203,19 +205,34 @@
             <div class="form-grid-3">
               <div class="form-group">
                 <label>Role</label>
-                <input type="text" pInputText [(ngModel)]="selectedUser.role" />
+                <select [(ngModel)]="newUser.role" (ngModelChange)="onNewUserRoleChange()">
+                  <option *ngFor="let role of roleOptions" [ngValue]="role.value">{{ role.label }}</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="newUser.role !== 'super_admin'">
+                <label>App Scope</label>
+                <select [(ngModel)]="newUser.appScope" (ngModelChange)="onNewUserAppScopeChange()">
+                  <option *ngFor="let app of appScopeOptions" [ngValue]="app.value">{{ app.label }}</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="newUser.role === 'admin'">
+                <label>Supervisor</label>
+                <select [(ngModel)]="newUser.supervisorId">
+                  <option [ngValue]="''">Select Supervisor</option>
+                  <option *ngFor="let supervisor of availableSupervisors" [ngValue]="supervisor.value">{{ supervisor.label }}</option>
+                </select>
               </div>
               <div class="form-group account-status-group">
                 <div class="status-header">
                   <label>Account Status:</label>
                   <label class="switch">
-                    <input type="checkbox" [(ngModel)]="selectedUser.isActive" />
+                    <input type="checkbox" checked="true" disabled="true" />
                     <span class="slider"></span>
                   </label>
                 </div>
                 <div class="status-text-display">
-                  <span [ngClass]="selectedUser.isActive ? 'status-label-active' : 'status-label-inactive'">
-                    {{ selectedUser.isActive ? 'User is Active' : 'User is Inactive' }}
+                  <span class="status-label-active">
+                    User is Active
                   </span>
                 </div>
               </div>
@@ -297,7 +314,22 @@
             <div class="form-grid-3">
               <div class="form-group">
                 <label>Role</label>
-                <input type="text" pInputText [(ngModel)]="selectedUser.role" />
+                <select [(ngModel)]="selectedUser.roleValue">
+                  <option *ngFor="let role of roleOptions" [ngValue]="role.value">{{ role.label }}</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="selectedUser.roleValue !== 'super_admin'">
+                <label>App Scope</label>
+                <select [(ngModel)]="selectedUser.appScope">
+                  <option *ngFor="let app of appScopeOptions" [ngValue]="app.value">{{ app.label }}</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="selectedUser.roleValue === 'admin'">
+                <label>Supervisor</label>
+                <select [(ngModel)]="selectedUser.supervisorId">
+                  <option [ngValue]="''">Select Supervisor</option>
+                  <option *ngFor="let supervisor of supervisorOptions" [ngValue]="supervisor.value">{{ supervisor.label }}</option>
+                </select>
               </div>
               <div class="form-group account-status-group">
                 <div class="status-header">
@@ -392,6 +424,14 @@
               <div class="form-group">
                 <label>Role</label>
                 <input type="text" pInputText [ngModel]="selectedUser.role" [disabled]="true" />
+              </div>
+              <div class="form-group" *ngIf="selectedUser.roleValue !== 'super_admin'">
+                <label>App Scope</label>
+                <input type="text" pInputText [ngModel]="selectedUser.appScope" [disabled]="true" />
+              </div>
+              <div class="form-group" *ngIf="selectedUser.roleValue === 'admin'">
+                <label>Supervisor ID</label>
+                <input type="text" pInputText [ngModel]="selectedUser.supervisorId" [disabled]="true" />
               </div>
               <div class="form-group account-status-group">
                 <div class="status-header">
@@ -517,17 +557,6 @@
               </div>
               <label class="switch">
                 <input type="checkbox" [(ngModel)]="notificationSettings.complaintsNotification">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Feedbacks</h4>
-                <p>This Notifications come from Feedback module in system</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.feedbacks">
                 <span class="slider"></span>
               </label>
             </div>

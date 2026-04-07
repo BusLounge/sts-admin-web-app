@@ -191,6 +191,38 @@
               <span class="value">{{ selectedNotification.data.verification_status }}</span>
             </div>
           </ng-container>
+
+          <!-- Lounge Owner Details -->
+          <ng-container *ngIf="selectedNotification.type === 'lounge-owner'">
+            <div class="detail-item">
+              <span class="label">Manager Name:</span>
+              <span class="value">{{ selectedNotification.data.manager_full_name }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Email:</span>
+              <span class="value">{{ selectedNotification.data.email }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Contact Number:</span>
+              <span class="value">{{ selectedNotification.data.contact_number }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">NIC:</span>
+              <span class="value">{{ selectedNotification.data.nic }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Business Name:</span>
+              <span class="value">{{ selectedNotification.data.business_name }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Business License:</span>
+              <span class="value">{{ selectedNotification.data.business_license }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Verification Status:</span>
+              <span class="value">{{ selectedNotification.data.verification_status }}</span>
+            </div>
+          </ng-container>
         </div>
       </div>
 
