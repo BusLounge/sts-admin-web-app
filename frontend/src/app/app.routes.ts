@@ -25,7 +25,7 @@ import { NotificationDetailsComponent } from './pages/notification-details/notif
 import { SeatLayoutsComponent } from './pages/seat-layouts/seat-layouts.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { ComplaintManagementComponent } from './pages/complaint-management/complaint-management.component';
-import { FeedbackManagementComponent } from './pages/feedback-management/feedback-management.component';
+import { AssignedComplaintsComponent } from './pages/assigned-complaints/assigned-complaints.component';
 import { SearchResultsComponent } from './pages/search-results/search-results.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 
@@ -36,7 +36,7 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
   { path: 'settings', component: SettingsComponent },
   { path: 'complaints', component: ComplaintManagementComponent },
-  { path: 'feedback', component: FeedbackManagementComponent },
+  { path: 'complaints/assigned', component: AssignedComplaintsComponent },
   { path: 'bus-management', component: BusManagementComponent },
   { path: 'bus-owners', component: BusOwnersComponent },
   { path: 'bus-management/edit/:id', component: EditBusComponent },

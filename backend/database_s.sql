@@ -59,8 +59,32 @@ CREATE TABLE public.admin_users (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   created_by uuid,
+  function_permissions jsonb NOT NULL DEFAULT '[]'::jsonb,
+  role text NOT NULL DEFAULT 'admin'::text CHECK (role = ANY (ARRAY['super_admin'::text, 'supervisor'::text, 'admin'::text])),
+  app_scope text CHECK ((app_scope = ANY (ARRAY['bus'::text, 'driver'::text, 'lounges'::text, 'passenger'::text])) OR app_scope IS NULL),
+  supervisor_id uuid,
   CONSTRAINT admin_users_pkey PRIMARY KEY (id),
-  CONSTRAINT admin_users_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.admin_users(id)
+  CONSTRAINT admin_users_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.admin_users(id),
+  CONSTRAINT admin_users_supervisor_id_fkey FOREIGN KEY (supervisor_id) REFERENCES public.admin_users(id)
+);
+CREATE TABLE public.advertisement_calculation (
+  traffic_level text NOT NULL,
+  cost_per_second numeric NOT NULL CHECK (cost_per_second >= 0::numeric),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT advertisement_calculation_pkey PRIMARY KEY (traffic_level)
+);
+CREATE TABLE public.advertisement_cost_aggregates (
+  advertisement_id text NOT NULL,
+  advertisement_name text NOT NULL,
+  traffic_level text NOT NULL,
+  cost_date date NOT NULL,
+  play_count integer NOT NULL DEFAULT 0,
+  total_seconds integer NOT NULL DEFAULT 0,
+  total_cost numeric NOT NULL DEFAULT 0,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT advertisement_cost_aggregates_pkey PRIMARY KEY (advertisement_id, traffic_level, cost_date),
+  CONSTRAINT fk_ad_cost_agg_traffic_level FOREIGN KEY (traffic_level) REFERENCES public.advertisement_calculation(traffic_level)
 );
 CREATE TABLE public.advertisement_groups (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -70,6 +94,17 @@ CREATE TABLE public.advertisement_groups (
   created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT advertisement_groups_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.advertisement_playback_logs (
+  id bigint NOT NULL DEFAULT nextval('advertisement_playback_logs_id_seq'::regclass),
+  advertisement_id text NOT NULL,
+  advertisement_name text NOT NULL,
+  traffic_level text NOT NULL,
+  duration_seconds integer NOT NULL CHECK (duration_seconds > 0),
+  played_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT advertisement_playback_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT fk_ad_calc_traffic_level FOREIGN KEY (traffic_level) REFERENCES public.advertisement_calculation(traffic_level)
 );
 CREATE TABLE public.advertisements (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -188,6 +223,20 @@ CREATE TABLE public.bookings (
   CONSTRAINT bookings_pkey PRIMARY KEY (id),
   CONSTRAINT bookings_user_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT bookings_cancelled_by_fkey FOREIGN KEY (cancelled_by_user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.broadcast_messages (
+  id uuid NOT NULL,
+  message text NOT NULL,
+  priority text NOT NULL DEFAULT 'normal'::text,
+  display_duration_seconds integer NOT NULL CHECK (display_duration_seconds > 0),
+  frequency_seconds integer NOT NULL CHECK (frequency_seconds > 0),
+  start_at timestamp with time zone NOT NULL DEFAULT now(),
+  end_at timestamp with time zone,
+  is_active boolean NOT NULL DEFAULT true,
+  show_on_lounge_tv boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT broadcast_messages_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.bus_booking_seats (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -369,6 +418,38 @@ CREATE TABLE public.buses (
   CONSTRAINT fk_permit FOREIGN KEY (permit_id) REFERENCES public.route_permits(id),
   CONSTRAINT fk_buses_seat_layout FOREIGN KEY (seat_layout_id) REFERENCES public.bus_seat_layout_templates(id)
 );
+CREATE TABLE public.complaint_escalation_history (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  complaint_id uuid NOT NULL,
+  level integer NOT NULL,
+  team_name character varying NOT NULL,
+  escalated_at timestamp without time zone NOT NULL DEFAULT now(),
+  escalated_by character varying NOT NULL,
+  reason text,
+  created_at timestamp without time zone NOT NULL DEFAULT now(),
+  from_admin_id uuid,
+  to_admin_id uuid,
+  CONSTRAINT complaint_escalation_history_pkey PRIMARY KEY (id),
+  CONSTRAINT complaint_escalation_history_complaint_id_fkey FOREIGN KEY (complaint_id) REFERENCES public.report_issues(id),
+  CONSTRAINT complaint_escalation_history_from_admin_id_fkey FOREIGN KEY (from_admin_id) REFERENCES public.admin_users(id),
+  CONSTRAINT complaint_escalation_history_to_admin_id_fkey FOREIGN KEY (to_admin_id) REFERENCES public.admin_users(id)
+);
+CREATE TABLE public.complaint_escalations (
+  complaint_id uuid NOT NULL,
+  current_level integer NOT NULL DEFAULT 1,
+  current_team character varying NOT NULL,
+  assigned_to_admin_id uuid,
+  last_escalated_at timestamp without time zone NOT NULL DEFAULT now(),
+  next_escalation_due timestamp without time zone,
+  created_at timestamp without time zone NOT NULL DEFAULT now(),
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  source_app text CHECK (source_app = ANY (ARRAY['bus'::text, 'driver'::text, 'lounges'::text, 'passenger'::text])),
+  previous_assigned_admin_id uuid,
+  CONSTRAINT complaint_escalations_pkey PRIMARY KEY (complaint_id),
+  CONSTRAINT complaint_escalations_complaint_id_fkey FOREIGN KEY (complaint_id) REFERENCES public.report_issues(id),
+  CONSTRAINT complaint_escalations_assigned_to_admin_id_fkey FOREIGN KEY (assigned_to_admin_id) REFERENCES public.admin_users(id),
+  CONSTRAINT complaint_escalations_previous_assigned_admin_id_fkey FOREIGN KEY (previous_assigned_admin_id) REFERENCES public.admin_users(id)
+);
 CREATE TABLE public.current_locations (
   trip_id uuid NOT NULL DEFAULT gen_random_uuid(),
   route_id uuid NOT NULL,
@@ -384,6 +465,21 @@ CREATE TABLE public.current_locations (
   updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT current_locations_pkey PRIMARY KEY (trip_id),
   CONSTRAINT current_locations_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.master_routes(id)
+);
+CREATE TABLE public.lounge_ads (
+  id uuid NOT NULL,
+  lounge_id uuid,
+  advertisement_name text NOT NULL,
+  media_url text NOT NULL,
+  media_type text NOT NULL,
+  duration_seconds integer NOT NULL CHECK (duration_seconds > 0),
+  priority text NOT NULL DEFAULT 'normal'::text,
+  is_active boolean NOT NULL DEFAULT true,
+  is_default_for_all boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT lounge_ads_pkey PRIMARY KEY (id),
+  CONSTRAINT lounge_ads_lounge_id_fkey FOREIGN KEY (lounge_id) REFERENCES public.lounges(id)
 );
 CREATE TABLE public.lounge_booking_driver_assignments (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -699,6 +795,7 @@ CREATE TABLE public.lounge_products (
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  price_rate_type USER-DEFINED,
   CONSTRAINT lounge_products_pkey PRIMARY KEY (id),
   CONSTRAINT lounge_products_lounge_fkey FOREIGN KEY (lounge_id) REFERENCES public.lounges(id),
   CONSTRAINT lounge_products_category_fkey FOREIGN KEY (category_id) REFERENCES public.lounge_marketplace_categories(id)
@@ -783,6 +880,7 @@ CREATE TABLE public.lounge_transport_locations (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   est_duration integer CHECK (est_duration > 0),
+  distance double precision CHECK (distance > 0::double precision),
   CONSTRAINT lounge_transport_locations_pkey PRIMARY KEY (id),
   CONSTRAINT lounge_transport_locations_lounge_id_fkey FOREIGN KEY (lounge_id) REFERENCES public.lounges(id)
 );
@@ -1212,5 +1310,6 @@ CREATE TABLE public.users (
   metadata jsonb,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  function_permissions jsonb NOT NULL DEFAULT '[]'::jsonb,
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );

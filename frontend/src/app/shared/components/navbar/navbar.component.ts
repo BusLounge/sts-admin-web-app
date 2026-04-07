@@ -42,7 +42,8 @@ export class NavbarComponent implements OnInit {
       badge: 3,
       children: [
         { label: 'Complaints', route: '/complaints' },
-        { label: 'Feedback', route: '/feedback' }
+        { label: 'Assigned Complaints', route: '/complaints/assigned' }
+       
       ]
     },
     { label: 'Setting', icon: 'fas fa-cog', route: '/settings' }

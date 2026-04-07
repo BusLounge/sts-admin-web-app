@@ -21,7 +21,9 @@ type EscalationConfig struct {
 type ComplaintEscalation struct {
 	CurrentLevel      int       `json:"current_level"`
 	CurrentTeam       string    `json:"current_team"`
+	SourceApp         string    `json:"source_app"`
 	AssignedToAdminID *string   `json:"assigned_to_admin_id,omitempty"`
+	PreviousAssignedAdminID *string `json:"previous_assigned_admin_id,omitempty"`
 	AssignedToName    string    `json:"assigned_to_name,omitempty"`
 	LastEscalatedAt   *time.Time `json:"last_escalated_at,omitempty"`
 	NextEscalationDue *time.Time `json:"next_escalation_due,omitempty"`
@@ -34,6 +36,8 @@ type EscalationHistoryEntry struct {
 	TeamName     string    `json:"team_name"`
 	EscalatedAt  time.Time `json:"escalated_at"`
 	EscalatedBy  string    `json:"escalated_by"` // "auto" or admin user ID
+	FromAdminID  *string   `json:"from_admin_id,omitempty"`
+	ToAdminID    *string   `json:"to_admin_id,omitempty"`
 	Reason       string    `json:"reason"`
 }
 

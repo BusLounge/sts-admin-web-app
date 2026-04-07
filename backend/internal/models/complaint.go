@@ -51,6 +51,14 @@ type ComplaintResponse struct {
 	Escalation     *ComplaintEscalation `json:"escalation,omitempty"`
 }
 
+type ComplaintListResponse struct {
+	Data       []ComplaintResponse `json:"data"`
+	Page       int                 `json:"page"`
+	PageSize   int                 `json:"page_size"`
+	Total      int                 `json:"total"`
+	TotalPages int                 `json:"total_pages"`
+}
+
 // ComplaintWithEscalation combines complaint data with escalation status
 type ComplaintWithEscalation struct {
 	Complaint

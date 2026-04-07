@@ -90,6 +90,98 @@ func Init(cfg *config.Config) {
 		ALTER TABLE lounges ADD COLUMN IF NOT EXISTS marketplace_category_id uuid REFERENCES lounge_marketplace_categories(id);
 		ALTER TABLE lounges ADD COLUMN IF NOT EXISTS is_operational boolean DEFAULT true;
 
+		-- Admin Users Table (for authentication system)
+		CREATE TABLE IF NOT EXISTS admin_users (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			email TEXT NOT NULL UNIQUE,
+			password_hash TEXT NOT NULL,
+			full_name TEXT NOT NULL,
+			role TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('super_admin', 'supervisor', 'admin')),
+			app_scope TEXT CHECK (app_scope IN ('bus', 'driver', 'lounges', 'passenger') OR app_scope IS NULL),
+			supervisor_id UUID REFERENCES admin_users(id) ON DELETE SET NULL,
+			function_permissions JSONB NOT NULL DEFAULT '[]'::jsonb,
+			is_active BOOLEAN NOT NULL DEFAULT true,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+			updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+			last_login_at TIMESTAMP WITH TIME ZONE,
+			created_by UUID REFERENCES admin_users(id) ON DELETE SET NULL
+		);
+
+		ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS function_permissions jsonb NOT NULL DEFAULT '[]'::jsonb;
+		ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITH TIME ZONE;
+		ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES admin_users(id) ON DELETE SET NULL;
+		ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'admin';
+		ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS app_scope TEXT;
+		ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS supervisor_id UUID REFERENCES admin_users(id) ON DELETE SET NULL;
+
+		DO $$
+		BEGIN
+			IF NOT EXISTS (
+				SELECT 1
+				FROM pg_constraint
+				WHERE conname = 'admin_users_role_check'
+				  AND conrelid = 'admin_users'::regclass
+			) THEN
+				ALTER TABLE admin_users
+					ADD CONSTRAINT admin_users_role_check
+					CHECK (role IN ('super_admin', 'supervisor', 'admin'));
+			END IF;
+
+			IF NOT EXISTS (
+				SELECT 1
+				FROM pg_constraint
+				WHERE conname = 'admin_users_app_scope_check'
+				  AND conrelid = 'admin_users'::regclass
+			) THEN
+				ALTER TABLE admin_users
+					ADD CONSTRAINT admin_users_app_scope_check
+					CHECK (app_scope IN ('bus', 'driver', 'lounges', 'passenger') OR app_scope IS NULL);
+			END IF;
+		END $$;
+		
+		ALTER TABLE users ADD COLUMN IF NOT EXISTS function_permissions jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+		-- Complaint escalation compatibility migrations for legacy databases
+		ALTER TABLE complaint_escalations ADD COLUMN IF NOT EXISTS source_app TEXT;
+		ALTER TABLE complaint_escalations ADD COLUMN IF NOT EXISTS previous_assigned_admin_id UUID REFERENCES admin_users(id);
+		ALTER TABLE complaint_escalations ADD COLUMN IF NOT EXISTS assigned_to_admin_id UUID REFERENCES admin_users(id);
+
+		UPDATE complaint_escalations ce
+		SET source_app = COALESCE(
+			ce.source_app,
+			(
+				SELECT CASE
+					WHEN 'driver' = ANY(u.roles) THEN 'driver'
+					WHEN 'lounge_owner' = ANY(u.roles) THEN 'lounges'
+					WHEN 'passenger' = ANY(u.roles) THEN 'passenger'
+					WHEN 'bus_owner' = ANY(u.roles) OR 'conductor' = ANY(u.roles) THEN 'bus'
+					ELSE 'bus'
+				END
+				FROM report_issues ri
+				JOIN users u ON u.id = ri.reported_by_id
+				WHERE ri.id = ce.complaint_id
+			),
+			'bus'
+		)
+		WHERE ce.source_app IS NULL OR ce.source_app = '';
+
+		DO $$
+		BEGIN
+			IF NOT EXISTS (
+				SELECT 1
+				FROM pg_constraint
+				WHERE conname = 'complaint_escalations_source_app_check'
+				  AND conrelid = 'complaint_escalations'::regclass
+			) THEN
+				ALTER TABLE complaint_escalations
+					ADD CONSTRAINT complaint_escalations_source_app_check
+					CHECK (source_app IN ('bus', 'driver', 'lounges', 'passenger'));
+			END IF;
+		END $$;
+
+		ALTER TABLE complaint_escalation_history ADD COLUMN IF NOT EXISTS from_admin_id UUID REFERENCES admin_users(id);
+		ALTER TABLE complaint_escalation_history ADD COLUMN IF NOT EXISTS to_admin_id UUID REFERENCES admin_users(id);
+
 		ALTER TABLE lounge_owners ADD COLUMN IF NOT EXISTS email text;
 		ALTER TABLE lounge_owners ADD COLUMN IF NOT EXISTS contact_number text;
 		ALTER TABLE lounge_owners ADD COLUMN IF NOT EXISTS nic text;
@@ -239,6 +331,15 @@ func Init(cfg *config.Config) {
 		CREATE INDEX IF NOT EXISTS idx_lounge_bookings_status ON lounge_bookings(status);
 		CREATE INDEX IF NOT EXISTS idx_lounge_bookings_created_at ON lounge_bookings(created_at DESC);
 		CREATE INDEX IF NOT EXISTS idx_lounge_booking_pre_orders_booking ON lounge_booking_pre_orders(lounge_booking_id);
+		
+		-- Admin Users Indexes
+		CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users(email);
+		CREATE INDEX IF NOT EXISTS idx_admin_users_role ON admin_users(role);
+		CREATE INDEX IF NOT EXISTS idx_admin_users_app_scope ON admin_users(app_scope);
+		CREATE INDEX IF NOT EXISTS idx_admin_users_is_active ON admin_users(is_active);
+		CREATE INDEX IF NOT EXISTS idx_admin_users_supervisor_id ON admin_users(supervisor_id);
+		CREATE INDEX IF NOT EXISTS idx_admin_users_created_at ON admin_users(created_at DESC);
+		CREATE INDEX IF NOT EXISTS idx_complaint_escalations_source_app ON complaint_escalations(source_app);
 	`)
 	if err != nil {
 		log.Printf("Error creating/updating tables: %v", err)

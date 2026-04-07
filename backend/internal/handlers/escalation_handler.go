@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"sts-backend/internal/config"
+	"sts-backend/internal/database"
 	"sts-backend/internal/models"
 	"sts-backend/internal/services"
 
@@ -59,10 +60,20 @@ func (h *EscalationHandler) GetComplaintEscalation(c *gin.Context) {
 	}
 	
 	if escalation == nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "No escalation record found",
-		})
-		return
+		if initErr := h.escalationService.InitializeEscalation(complaintID, ""); initErr != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "No escalation record found",
+			})
+			return
+		}
+
+		escalation, err = h.escalationService.GetComplaintEscalation(complaintID)
+		if err != nil || escalation == nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "No escalation record found",
+			})
+			return
+		}
 	}
 	
 	c.JSON(http.StatusOK, escalation)
@@ -110,13 +121,15 @@ func (h *EscalationHandler) EscalateComplaint(c *gin.Context) {
 	})
 }
 
-// AssignComplaint assigns a complaint to a specific admin
+// AssignComplaint assigns a complaint to an app role/scope team
 // POST /api/escalation/complaint/:id/assign
 func (h *EscalationHandler) AssignComplaint(c *gin.Context) {
 	complaintID := c.Param("id")
 	
 	var request struct {
-		AdminID string `json:"admin_id" binding:"required"`
+		AppRole  string `json:"app_role"`
+		AppScope string `json:"app_scope"`
+		AdminID  string `json:"admin_id"`
 	}
 	
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -125,8 +138,30 @@ func (h *EscalationHandler) AssignComplaint(c *gin.Context) {
 		})
 		return
 	}
+
+	if request.AppRole == "" && request.AdminID != "" {
+		var role, scope string
+		err := database.DB.QueryRow(`
+			SELECT COALESCE(role, ''), COALESCE(app_scope, '')
+			FROM admin_users
+			WHERE id::text = $1
+		`, request.AdminID).Scan(&role, &scope)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid admin_id for assignment"})
+			return
+		}
+		request.AppRole = role
+		if request.AppScope == "" {
+			request.AppScope = scope
+		}
+	}
+
+	if request.AppRole == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "app_role is required"})
+		return
+	}
 	
-	err := h.escalationService.AssignComplaintToAdmin(complaintID, request.AdminID)
+	err := h.escalationService.AssignComplaintToRole(complaintID, request.AppRole, request.AppScope)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -135,7 +170,7 @@ func (h *EscalationHandler) AssignComplaint(c *gin.Context) {
 	}
 	
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Complaint assigned successfully",
+		"message": "Complaint assigned successfully by role",
 	})
 }
 

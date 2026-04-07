@@ -2,6 +2,10 @@ export interface AdminUser {
   id: string;
   email: string;
   full_name: string;
+  role: string; // 'admin' | 'supervisor' | 'super_admin'
+  app_scope?: string;
+  supervisor_id?: string;
+  permissions?: string[];
   is_active: boolean;
   last_login_at?: string;
   created_at: string;

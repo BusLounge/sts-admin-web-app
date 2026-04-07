@@ -3,7 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { NotificationService, BusNotification, DriverNotification, ConductorNotification, LoungeNotification, BusOwnerNotification } from '../../../core/services/notification.service';
+import {
+  NotificationService,
+  BusNotification,
+  DriverNotification,
+  ConductorNotification,
+  LoungeNotification,
+  BusOwnerNotification,
+  LoungeOwnerNotification
+} from '../../../core/services/notification.service';
 import { BusService } from '../../../core/services/bus.service';
 import { DriverService } from '../../../core/services/driver.service';
 import { ConductorService } from '../../../core/services/conductor.service';
@@ -17,7 +25,7 @@ export interface Notification {
   title: string;
   message: string;
   time: string;
-  type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking' | 'bus-owner';
+  type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking' | 'bus-owner' | 'lounge-owner';
   data?: any;
   timestamp: Date;
 }
@@ -53,7 +61,7 @@ export class NotificationPanelComponent implements OnInit {
   isRejectionSuccess = false;
   showRejectModal = false;
   rejectReason: string = '';
-  lastProcessedType: 'bus' | 'driver' | 'conductor' | 'lounge' | 'bus-owner' | null = null;
+  lastProcessedType: 'bus' | 'driver' | 'conductor' | 'lounge' | 'bus-owner' | 'lounge-owner' | null = null;
 
   ngOnInit() {
     combineLatest([
@@ -61,14 +69,16 @@ export class NotificationPanelComponent implements OnInit {
       this.notificationService.pendingDrivers$,
       this.notificationService.pendingConductors$,
       this.notificationService.pendingLounges$,
-      this.notificationService.pendingBusOwners$
-    ]).subscribe(([buses, drivers, conductors, lounges, busOwners]) => {
+      this.notificationService.pendingBusOwners$,
+      this.notificationService.pendingLoungeOwners$
+    ]).subscribe(([buses, drivers, conductors, lounges, busOwners, loungeOwners]) => {
       this.notifications = [
         ...buses.map(bus => this.mapBusToNotification(bus)),
         ...drivers.map(driver => this.mapDriverToNotification(driver)),
         ...conductors.map(conductor => this.mapConductorToNotification(conductor)),
         ...lounges.map(lounge => this.mapLoungeToNotification(lounge)),
-        ...busOwners.map(busOwner => this.mapBusOwnerToNotification(busOwner))
+        ...busOwners.map(busOwner => this.mapBusOwnerToNotification(busOwner)),
+        ...loungeOwners.map(loungeOwner => this.mapLoungeOwnerToNotification(loungeOwner))
       ];
       
       // Sort by timestamp - newest first
@@ -156,6 +166,22 @@ export class NotificationPanelComponent implements OnInit {
     };
   }
 
+  private mapLoungeOwnerToNotification(loungeOwner: LoungeOwnerNotification): Notification {
+    console.log('LoungeOwner notification data:', { id: loungeOwner.id, created_at: loungeOwner.created_at, manager: loungeOwner.manager_full_name });
+    const timestamp = loungeOwner.created_at ? new Date(loungeOwner.created_at) : new Date();
+    const formattedTime = this.formatDateTime(timestamp);
+    return {
+      id: loungeOwner.id,
+      icon: 'fas fa-user-check',
+      title: 'New Lounge Owner Request',
+      message: `A new lounge owner registration request has been submitted: ${loungeOwner.manager_full_name || 'Unknown'}, Email: ${loungeOwner.email || 'N/A'}. Awaiting approval.`,
+      time: formattedTime,
+      type: 'lounge-owner',
+      data: loungeOwner,
+      timestamp: timestamp
+    };
+  }
+
   private formatDateTime(date: Date): string {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -201,6 +227,23 @@ export class NotificationPanelComponent implements OnInit {
   }
 
   viewFullNotification(notification: Notification): void {
+    if (notification.type === 'lounge-owner') {
+      this.notificationService.getLoungeOwnerById(notification.id).subscribe({
+        next: (loungeOwner) => {
+          this.selectedNotification = {
+            ...notification,
+            data: loungeOwner
+          };
+          this.showDetailsModal = true;
+        },
+        error: () => {
+          this.selectedNotification = notification;
+          this.showDetailsModal = true;
+        }
+      });
+      return;
+    }
+
     this.selectedNotification = notification;
     this.showDetailsModal = true;
   }
@@ -259,6 +302,11 @@ export class NotificationPanelComponent implements OnInit {
         this.successModalTitle = 'New Bus Owner added Successfully!!!';
         this.successModalMessage = `The request to add a new bus owner has been approved.\nThe bus owner is now verified in the system\nand ready to manage buses.\nThank you.`;
         break;
+      case 'lounge-owner':
+        approveObservable = this.notificationService.approveLoungeOwner(id, { verification_notes: this.adminDocuments.trim() });
+        this.successModalTitle = 'New Lounge Owner added Successfully!!!';
+        this.successModalMessage = `The request to add a new lounge owner has been approved.\nThe lounge owner is now verified in the system\nand ready to manage lounges.\nThank you.`;
+        break;
       default:
         return;
     }
@@ -283,6 +331,9 @@ export class NotificationPanelComponent implements OnInit {
             break;
           case 'bus-owner':
             this.busOwnerService.loadBusOwners();
+            break;
+          case 'lounge-owner':
+            this.loungeService.loadLounges();
             break;
         }
         this.closeDetailsModal();
@@ -350,6 +401,11 @@ export class NotificationPanelComponent implements OnInit {
         this.successModalTitle = 'Bus Owner Request Rejected';
         this.successModalMessage = `The bus owner registration request has been rejected.\nReason: ${this.rejectReason}\nThank you.`;
         break;
+      case 'lounge-owner':
+        rejectObservable = this.notificationService.rejectLoungeOwner(id, { verification_notes: this.rejectReason.trim() });
+        this.successModalTitle = 'Lounge Owner Request Rejected';
+        this.successModalMessage = `The lounge owner registration request has been rejected.\nReason: ${this.rejectReason}\nThank you.`;
+        break;
       default:
         return;
     }
@@ -374,6 +430,9 @@ export class NotificationPanelComponent implements OnInit {
             break;
           case 'bus-owner':
             this.busOwnerService.loadBusOwners();
+            break;
+          case 'lounge-owner':
+            this.loungeService.loadLounges();
             break;
         }
         this.closeRejectModal();
@@ -409,6 +468,9 @@ export class NotificationPanelComponent implements OnInit {
           this.router.navigate(['/conductor-management']);
           break;
         case 'lounge':
+          this.router.navigate(['/lounges-management']);
+          break;
+        case 'lounge-owner':
           this.router.navigate(['/lounges-management']);
           break;
       }
