@@ -96,7 +96,7 @@
         font-weight: 700;
         color: var(--text-primary);
         letter-spacing: -0.3px;
-        background: linear-gradient(135deg, var(--logo), var(--logo));
+        background: none;
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -342,7 +342,7 @@
   
   .toolbar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: 1rem;
     gap: 1rem;
@@ -413,7 +413,8 @@
       }
     }
 
-    .export-btn {
+    .export-btn,
+    .clear-filters-btn {
       background: var(--color-buttns-light);
       color: white;
       border: none;
@@ -422,8 +423,19 @@
       cursor: pointer;
       transition: 0.2s;
       white-space: nowrap;
+      gap: 1rem;
 
       &:hover { opacity: 0.9; }
+    }
+  }
+  
+  .toolbar-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+
+    .pdf-export {
+      margin-right: 20px;
     }
   }
   
@@ -431,7 +443,7 @@
     width: 100%;
     border-collapse: collapse;
     margin: 0;
-    background: var(--bg-secondary);
+    background: var(--bg-secondary);gap: 1rem;
     border: 1px solid var(--border-color);
     border-radius: 12px;
     overflow: hidden;
@@ -542,23 +554,24 @@ app-sidebar {
 
 .sidebar {
   width: 280px;
-  background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
-  color: white;
-  transition: all 0.3s ease;
+  background: #ffffff;
+  color: var(--text-primary);
+  transition: all 180ms ease;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  border-right: 1px solid var(--border-color);
 }
 
 .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
 .sidebar-header .logo { display: flex; align-items: center; gap: 0.75rem; color: white; }
-.sidebar-header .logo .logo-text { font-size: 1.25rem; font-weight: 700; }
+.sidebar-header .logo .logo-text { font-size: 1.25rem; font-weight: 500; }
 
 .sidebar-nav { flex: 1; padding: 1rem 0; }
 .sidebar-nav .nav-list { list-style: none; margin: 0; padding: 0; }
 .sidebar-nav .nav-item { margin: 0.25rem 0; }
-.sidebar-nav .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; color: rgba(255,255,255,0.8); text-decoration: none; border-left: 3px solid transparent; cursor: pointer; transition: all 0.3s ease; }
-.sidebar-nav .nav-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.sidebar-nav .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; color: var(--text-secondary); text-decoration: none; border-left: 3px solid transparent; cursor: pointer; transition: all 180ms ease; }
+.sidebar-nav .nav-link:hover { background: var(--sidebar-hover); color: var(--sidebar-active); }
 .sidebar-nav .nav-item.active .nav-link { background: rgba(59,130,246,0.2); color: #60a5fa; border-left-color: #3b82f6; }
 
 .main-content { flex: 1; }
@@ -711,3 +724,81 @@ app-sidebar {
   font-size: 13px;
   font-style: italic;
 }
+
+.filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  
+    .search-box {
+      position: relative;
+      width: 300px;
+  
+      input {
+        width: 100%;
+        padding: 10px 15px 10px 40px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        font-size: 14px;
+      }
+  
+      .fa-search {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+      }
+    }
+  
+    .filter-group {
+      display: flex;
+      align-items: center;
+  
+      label {
+        margin-right: 10px;
+        font-weight: 500;
+      }
+  
+      select {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: white;
+      }
+    }
+  
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+  
+      .export-btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+  
+        &:hover {
+          background-color: #45a049;
+        }
+  
+        .fa-file-pdf, .fa-file-csv {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+  
+  .driver-table-container {
+    overflow-x: auto;
+  }

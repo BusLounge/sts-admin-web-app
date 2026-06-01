@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, forkJoin } from 'rxjs';
-import { tap, map } from 'rxjs/operators';
+import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
+import { catchError, tap, map } from 'rxjs/operators';
 
 export interface BusNotification {
   id: string;
@@ -137,12 +137,42 @@ export class NotificationService {
 
   loadAllPendingNotifications(): void {
     forkJoin({
-      buses: this.http.get<BusNotification[]>(`${this.apiUrl}/buses/pending`),
-      drivers: this.http.get<DriverNotification[]>(`${this.apiUrl}/drivers/pending`),
-      conductors: this.http.get<ConductorNotification[]>(`${this.apiUrl}/conductors/pending`),
-      lounges: this.http.get<LoungeNotification[]>(`${this.apiUrl}/lounges/pending`),
-      busOwners: this.http.get<BusOwnerNotification[]>(`${this.apiUrl}/bus-owners/pending`),
-      loungeOwners: this.http.get<LoungeOwnerNotification[]>(`${this.apiUrl}/lounge-owners/pending`)
+      buses: this.http.get<BusNotification[]>(`${this.apiUrl}/buses/pending`).pipe(
+        catchError((err) => {
+          console.error('Error loading pending buses:', err);
+          return of([] as BusNotification[]);
+        })
+      ),
+      drivers: this.http.get<DriverNotification[]>(`${this.apiUrl}/drivers/pending`).pipe(
+        catchError((err) => {
+          console.error('Error loading pending drivers:', err);
+          return of([] as DriverNotification[]);
+        })
+      ),
+      conductors: this.http.get<ConductorNotification[]>(`${this.apiUrl}/conductors/pending`).pipe(
+        catchError((err) => {
+          console.error('Error loading pending conductors:', err);
+          return of([] as ConductorNotification[]);
+        })
+      ),
+      lounges: this.http.get<LoungeNotification[]>(`${this.apiUrl}/lounges/pending`).pipe(
+        catchError((err) => {
+          console.error('Error loading pending lounges:', err);
+          return of([] as LoungeNotification[]);
+        })
+      ),
+      busOwners: this.http.get<BusOwnerNotification[]>(`${this.apiUrl}/bus-owners/pending`).pipe(
+        catchError((err) => {
+          console.error('Error loading pending bus owners:', err);
+          return of([] as BusOwnerNotification[]);
+        })
+      ),
+      loungeOwners: this.http.get<LoungeOwnerNotification[]>(`${this.apiUrl}/lounge-owners/pending`).pipe(
+        catchError((err) => {
+          console.error('Error loading pending lounge owners:', err);
+          return of([] as LoungeOwnerNotification[]);
+        })
+      )
     }).subscribe({
       next: (data) => {
         this._pendingBuses$.next(data.buses);

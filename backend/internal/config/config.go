@@ -25,17 +25,19 @@ type Config struct {
 	FrontendURL   string
 
 	// SMS configuration
-	SMSMode         string // "dev" or "production"
-	DialogSMSMethod string // "url" or "api_v2"
+	SMSMode                   string // "dev" or "production"
+	DialogSMSMethod           string // "url" or "api_v2"
+	ApprovalNotificationPhone string
 
 	// Dialog eSMS URL Method (Recommended)
 	DialogSMSEsmsqk string
 	DialogSMSMask   string
 
 	// Dialog eSMS API v2 Method (Alternative)
-	DialogSMSAPIURL   string
-	DialogSMSUsername string
-	DialogSMSPassword string
+	DialogSMSAPIURL      string
+	DialogSMSAccessToken string
+	DialogSMSUsername    string
+	DialogSMSPassword    string
 
 	// Legacy eSMS API support
 	ESMSAPIURL   string
@@ -66,17 +68,19 @@ func LoadConfig() *Config {
 		FrontendURL:   getEnv("FRONTEND_URL", "http://localhost:4200"),
 
 		// SMS configuration
-		SMSMode:         getEnv("SMS_MODE", "dev"),
-		DialogSMSMethod: getEnv("DIALOG_SMS_METHOD", "url"),
+		SMSMode:                   getEnv("SMS_MODE", "dev"),
+		DialogSMSMethod:           getEnv("DIALOG_SMS_METHOD", "url"),
+		ApprovalNotificationPhone: getEnv("APPROVAL_NOTIFICATION_PHONE", "94715342627,94772945875"),
 
 		// Dialog eSMS URL Method
 		DialogSMSEsmsqk: getEnv("DIALOG_SMS_ESMSQK", ""),
 		DialogSMSMask:   getEnv("DIALOG_SMS_MASK", "KanchTest"),
 
 		// Dialog eSMS API v2 Method
-		DialogSMSAPIURL:   getEnv("DIALOG_SMS_API_URL", "https://e-sms.dialog.lk/api/v2"),
-		DialogSMSUsername: getEnv("DIALOG_SMS_USERNAME", ""),
-		DialogSMSPassword: getEnv("DIALOG_SMS_PASSWORD", ""),
+		DialogSMSAPIURL:      getEnv("DIALOG_SMS_API_URL", "https://e-sms.dialog.lk/api/v2"),
+		DialogSMSAccessToken: getEnv("DIALOG_SMS_ACCESS_TOKEN", ""),
+		DialogSMSUsername:    getEnv("DIALOG_SMS_USERNAME", ""),
+		DialogSMSPassword:    getEnv("DIALOG_SMS_PASSWORD", ""),
 
 		// Legacy eSMS API support
 		ESMSAPIURL:   getEnv("ESMS_API_URL", "https://api.esms.lk/v1/sms/send"),

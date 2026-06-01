@@ -23,6 +23,8 @@
         <div class="dropdown-menu" *ngIf="activeDropdown === item.label">
           <a *ngFor="let child of item.children" 
              [routerLink]="child.route" 
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }"
              class="dropdown-item">
             {{ child.label }}
           </a>

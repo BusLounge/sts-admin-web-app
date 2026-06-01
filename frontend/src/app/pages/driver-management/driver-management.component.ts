@@ -24,6 +24,7 @@ export class DriverManagementComponent implements OnInit {
   filteredDrivers: Driver[] = [];
   searchTerm: string = '';
   statusFilter: 'All' | 'Active' | 'Inactive' = 'All';
+  experienceFilter: string = 'All';
   experienceLevels = ['0-2yrs', '3-5yrs', '6-10yrs', '10+yrs'];
   showNotificationPanel = false;
   showProfileMenu = false;
@@ -261,6 +262,32 @@ export class DriverManagementComponent implements OnInit {
     doc.save('drivers-history.pdf');
   }
 
+  exportCSV() {
+    const headers = ['Driver ID', 'Name', 'Contact', 'License No.', 'Experience', 'Status', 'License Expiry', 'Hire Date', 'Verification Status'];
+    const rows = this.filteredDrivers.map(d => [
+      d.id,
+      d.name,
+      this.formatPhone(d.contact_number),
+      d.license_number,
+      `${d.experience_years}yrs`,
+      d.status,
+      d.license_expiry_date,
+      d.hire_date,
+      d.verification_status
+    ].join(','));
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'drivers.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   // Stats helpers
   getTotalDrivers(): number {
     return this.drivers.length;
@@ -311,56 +338,58 @@ export class DriverManagementComponent implements OnInit {
   }
 
   // Search and filter functionality
-  applyFilters(): void {
-    let filtered = this.drivers;
+  filterDrivers() {
+    let tempDrivers = this.drivers;
 
-    // Apply status filter
+    // Filter by status
     if (this.statusFilter !== 'All') {
-      filtered = filtered.filter(driver => driver.status.toLowerCase() === this.statusFilter.toLowerCase());
+      tempDrivers = tempDrivers.filter(driver => driver.status === this.statusFilter);
     }
 
-    // Apply search term - search across all columns
-    if (this.searchTerm.trim()) {
-      const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(driver =>
-        driver.name.toLowerCase().includes(searchLower) ||
-        driver.contact_number.toLowerCase().includes(searchLower) ||
-        driver.license_number.toLowerCase().includes(searchLower) ||
-        driver.id.toString().toLowerCase().includes(searchLower) ||
-        driver.experience_years.toString().includes(this.searchTerm) ||
-        driver.status.toLowerCase().includes(searchLower) ||
-        (driver.license_expiry_date?.toLowerCase() || '').includes(searchLower) ||
-        (driver.hire_date?.toLowerCase() || '').includes(searchLower) ||
-        (driver.verification_status?.toLowerCase() || '').includes(searchLower) ||
-        (driver.verification_notes?.toLowerCase() || '').includes(searchLower)
+    // Filter by experience
+    if (this.experienceFilter !== 'All') {
+      const [min, max] = this.experienceFilter.replace('yrs', '').replace('+', '-Infinity').split('-').map(Number);
+      tempDrivers = tempDrivers.filter(driver => {
+        const exp = driver.experience_years;
+        if (max === Infinity) {
+          return exp >= min;
+        }
+        return exp >= min && exp <= max;
+      });
+    }
+
+    // Filter by search term
+    if (this.searchTerm) {
+      const lowercasedTerm = this.searchTerm.toLowerCase();
+      tempDrivers = tempDrivers.filter(driver =>
+        driver.name.toLowerCase().includes(lowercasedTerm) ||
+        driver.contact_number.includes(lowercasedTerm) ||
+        driver.license_number.toLowerCase().includes(lowercasedTerm)
       );
     }
 
-    this.filteredDrivers = filtered;
-
-    // Apply current sorting to filtered results
-    if (this.sortColumn) {
-      this.applySorting();
-    }
+    this.filteredDrivers = tempDrivers;
+    this.applySorting();
   }
 
   onSearchChange(): void {
-    this.applyFilters();
+    this.filterDrivers();
   }
 
-  onStatusFilterChange(): void {
-    this.applyFilters();
+  onFilterChange(): void {
+    this.filterDrivers();
   }
 
   clearFilters(): void {
     this.searchTerm = '';
     this.statusFilter = 'All';
-    this.applyFilters();
+    this.experienceFilter = 'All';
+    this.filterDrivers();
   }
 
   clearSearch(): void {
     this.searchTerm = '';
-    this.applyFilters();
+    this.filterDrivers();
   }
 
   goBusManagement(): void {

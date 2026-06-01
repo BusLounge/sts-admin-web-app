@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"sts-backend/internal/database"
 	"sts-backend/internal/models"
 )
@@ -18,7 +19,23 @@ func GetPendingBusOwners() ([]models.BusOwner, error) {
 }
 
 func CreateBusOwner(owner *models.BusOwner) error {
-	return database.CreateBusOwner(owner)
+	owner.VerificationStatus = ensurePendingApprovalStatus(owner.VerificationStatus)
+
+	if err := database.CreateBusOwner(owner); err != nil {
+		return err
+	}
+
+	if isPendingApprovalStatus(owner.VerificationStatus) {
+		notifyApprovalRequest(
+			"bus owner",
+			fmt.Sprintf("Company: %s", owner.CompanyName),
+			fmt.Sprintf("Business email: %s", owner.BusinessEmail),
+			fmt.Sprintf("Business phone: %s", owner.BusinessPhone),
+			fmt.Sprintf("Identity/registration: %s", owner.IdentityOrIncorporationNo),
+		)
+	}
+
+	return nil
 }
 
 func UpdateBusOwner(owner *models.BusOwner) error {
@@ -30,5 +47,25 @@ func DeleteBusOwner(id string) error {
 }
 
 func VerifyBusOwner(id string, status string, documents interface{}) error {
-	return database.VerifyBusOwner(id, status, documents)
+	if err := database.VerifyBusOwner(id, status, documents); err != nil {
+		return err
+	}
+
+	if isApprovedStatus(status) {
+		owner, err := database.GetBusOwnerByID(id)
+		if err != nil {
+			return err
+		}
+		if owner != nil {
+			notifyApprovalDecision(
+				owner.BusinessPhone,
+				"bus owner",
+				"approved",
+				formatDecisionDetail("Company", owner.CompanyName),
+				formatDecisionDetail("Email", owner.BusinessEmail),
+			)
+		}
+	}
+
+	return nil
 }

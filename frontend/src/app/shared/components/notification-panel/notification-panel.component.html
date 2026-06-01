@@ -9,8 +9,64 @@
       </button>
     </div>
 
+    <div class="notification-controls">
+      <div class="notification-controls-header">
+        <div>
+          <p class="control-eyebrow">Review queue</p>
+          <h4>Filter notifications</h4>
+        </div>
+        <div class="control-summary">
+          <span class="summary-pill">{{ filteredNotifications.length }} shown</span>
+          <span class="summary-meta">of {{ notifications.length }} total</span>
+        </div>
+      </div>
+
+      <div class="notification-search">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by title, type, time, or keyword"
+          aria-label="Search notifications"
+        />
+        <button
+          type="button"
+          class="search-reset-btn"
+          *ngIf="searchQuery"
+          (click)="searchQuery = ''"
+          aria-label="Clear search">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="notification-filter-bar" aria-label="Notification type filters">
+        <button
+          type="button"
+          class="filter-chip"
+          *ngFor="let filter of notificationFilters"
+          [class.active]="selectedFilter === filter.value"
+          (click)="setFilter(filter.value)">
+          <i [class]="filter.icon"></i>
+          <span>{{ filter.label }}</span>
+          <span class="filter-count">{{ getNotificationCount(filter.value) }}</span>
+        </button>
+      </div>
+
+      <div class="notification-filter-footer" *ngIf="hasActiveFilters">
+        <span class="active-filter-label">Active: {{ activeFilterLabel }}</span>
+        <button type="button" class="clear-filters-btn" (click)="clearFilters()">
+          Clear filters
+        </button>
+      </div>
+    </div>
+
     <div class="notification-list">
-      <div class="notification-item" *ngFor="let notification of notifications" [attr.data-type]="notification.type">
+      <div class="empty-state" *ngIf="filteredNotifications.length === 0">
+        <i class="fas fa-inbox"></i>
+        <p>No notifications found for this filter.</p>
+      </div>
+
+      <div class="notification-item" *ngFor="let notification of filteredNotifications" [attr.data-type]="notification.type">
         <div class="notification-icon">
           <i [class]="notification.icon"></i>
         </div>

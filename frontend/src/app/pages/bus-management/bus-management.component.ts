@@ -25,6 +25,7 @@ export class BusManagementComponent implements OnInit {
   buses: Bus[] = [];
   filteredBuses: Bus[] = [];
   searchTerm: string = '';
+  searchCriteria: string = 'bus_number'; // Default search criteria
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   currentPage: string = 'bus-management';
   showNotificationPanel = false;
@@ -496,25 +497,16 @@ export class BusManagementComponent implements OnInit {
   private applyFilters(): void {
     let filtered = this.buses;
 
-    // Apply search filter - search across all columns
+    // Apply search filter based on selected criteria
     if (this.searchTerm.trim()) {
-      const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(bus =>
-        bus.bus_number.toLowerCase().includes(searchLower) ||
-        bus.id.toString().toLowerCase().includes(searchLower) ||
-        bus.company_name.toLowerCase().includes(searchLower) ||
-        bus.identify_or_incorporation_no.toLowerCase().includes(searchLower) ||
-        bus.business_email.toLowerCase().includes(searchLower) ||
-        bus.business_phone.toLowerCase().includes(searchLower) ||
-        bus.permit_number.toLowerCase().includes(searchLower) ||
-        bus.license_plate.toLowerCase().includes(searchLower) ||
-        bus.bus_type.toLowerCase().includes(searchLower) ||
-        (bus.custom_route_name?.toLowerCase() || '').includes(searchLower) ||
-        bus.total_seats.toString().includes(searchLower) ||
-        bus.fare_per_seat.toString().includes(searchLower) ||
-        bus.status.toLowerCase().includes(searchLower) ||
-        bus.verification_status.toLowerCase().includes(searchLower)
-      );
+      const lowercasedTerm = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(bus => {
+        const value = bus[this.searchCriteria as keyof Bus];
+        if (value) {
+          return value.toString().toLowerCase().includes(lowercasedTerm);
+        }
+        return false;
+      });
     }
 
     // Apply status filter

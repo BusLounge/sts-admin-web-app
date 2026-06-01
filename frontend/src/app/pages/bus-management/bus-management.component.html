@@ -116,12 +116,21 @@
   </div>
 
   <div class="toolbar">
-    <div class="left-section">
-      <div class="search-container">
+    <div class="search-filter-container">
+      <div class="search-wrapper">
+        <select class="criteria-dropdown" [(ngModel)]="searchCriteria" (ngModelChange)="onFilterChange()">
+          <option value="bus_number">Bus Number</option>
+          <option value="id">Bus ID</option>
+          <option value="bus_type">Bus Type</option>
+          <option value="total_seats">Total Seats</option>
+          <option value="permit_number">Permit Number</option>
+          <option value="verification_status">Verification Status</option>
+          <option value="fare_per_seat">Approved Fare</option>
+        </select>
         <input
           type="text"
           class="search-input"
-          placeholder="Search buses by number, ID, type, route, or capacity..."
+          placeholder="Search..."
           [(ngModel)]="searchTerm"
           (input)="onSearchChange()"
         />
@@ -135,7 +144,9 @@
         </select>
       </div>
     </div>
-    <button class="export-btn" (click)="exportHistoryPdf()">Export Buses History (PDF)</button>
+    <div class="toolbar-actions">
+      <button class="export-btn" (click)="exportHistoryPdf()">Export PDF</button>
+    </div>
   </div>
 
   <table class="bus-table">
@@ -272,7 +283,6 @@
                 <option value="Normal">Normal</option>
                 <option value="Semi-Luxury">Semi-Luxury</option>
                 <option value="Luxury">Luxury</option>
-               
               </select>
             </div>
             <div class="form-row">
