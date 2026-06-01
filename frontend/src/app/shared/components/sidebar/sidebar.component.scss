@@ -2,14 +2,16 @@
   background: var(--sidebar-background); // White background as requested
   color: var(--sidebar-text);
   height: 100vh;
-  padding: 14px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 0;
   width: 260px;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  border-right: 1px solid var(--border-color);
+  transition: width 180ms ease;
 }
 .sidebar-collapsed { width: 72px; }
 
@@ -32,19 +34,24 @@
   display: flex; 
   align-items: center; 
   gap: 1px; 
-  font-weight: 700;
+  font-weight: 500;
   padding-left: 1px;
   font-size: 20px; 
 }
 .toggle-btn {
   background: transparent;
   color: var(--color-buttns-light);
-  border: 2px solid var(--color-buttns-light);
+  border: 1px solid var(--color-buttns-light);
   border-radius: 8px;
   padding: 6px;
   cursor: pointer;
   margin-left: 6px;
   flex-shrink: 0;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+
+  &:hover {
+    background: var(--sidebar-hover);
+  }
 }
 
 .sidebar-collapsed .toggle-btn {
@@ -57,12 +64,13 @@
   cursor: pointer;
   padding: 6px;
   border-radius: 8px;
-  transition: background-color 0.2s;
+  transition: background-color 180ms ease, color 180ms ease;
   flex-shrink: 0;
   color: var(--color-text-secondary);
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: var(--sidebar-hover);
+    color: var(--sidebar-active);
   }
 
   svg {
@@ -77,12 +85,12 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--sidebar-text);
   cursor: pointer;
   background: transparent;
   border: none;
-  transition: all 0.3s ease;
+  transition: all 180ms ease;
   justify-content: flex-start;
 
   svg {
@@ -112,7 +120,8 @@
 .nav-item.active .nav-link {
   background: var(--sidebar-hover);
   color: var(--sidebar-active);
-  font-weight: normal;
+  font-weight: 500;
+  box-shadow: inset 3px 0 0 var(--sidebar-active);
 
   svg {
     color: var(--sidebar-active);
@@ -136,7 +145,7 @@
 }
 
 .bus-staff-label {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--sidebar-text) !important;
 }
 
@@ -145,12 +154,12 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px 12px 40px;
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--sidebar-text);
   cursor: pointer;
   background: transparent;
   border: none;
-  transition: all 0.3s ease;
+  transition: all 180ms ease;
   justify-content: flex-start;
   font-size: 14px;
 
@@ -166,7 +175,7 @@
   &.active {
     background: var(--sidebar-hover);
     color: var(--sidebar-active);
-    font-weight: normal;
+    font-weight: 500;
 
     svg {
       color: var(--sidebar-active);
@@ -182,8 +191,17 @@
   padding: 12px 15px;
   background: var(--color-background-dark-primary);
   color: var(--color-text-secondary);
-  border: 0px solid var(--color-background-dark-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   width: 100%;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+
+  &:hover {
+    background: var(--sidebar-hover);
+    color: var(--sidebar-active);
+    border-color: var(--sidebar-active);
+  }
   
 }
 

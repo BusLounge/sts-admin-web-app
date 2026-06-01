@@ -96,7 +96,7 @@
         font-weight: 700;
         color: var(--text-primary);
         letter-spacing: -0.3px;
-        background: linear-gradient(135deg, var(--logo), var(--logo));
+        background: none;
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -409,7 +409,8 @@
       }
     }
 
-    .export-btn {
+    .export-btn,
+    .clear-filters-btn {
       background: var(--color-buttns-light);
       color: var(--color-text-inverse);
       border: none;
@@ -535,23 +536,24 @@ app-sidebar {
 
 .sidebar {
   width: 280px;
-  background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
-  color: white;
-  transition: all 0.3s ease;
+  background: #ffffff;
+  color: var(--text-primary);
+  transition: all 180ms ease;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  border-right: 1px solid var(--border-color);
 }
 
 .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
 .sidebar-header .logo { display: flex; align-items: center; gap: 0.75rem; color: white; }
-.sidebar-header .logo .logo-text { font-size: 1.25rem; font-weight: 700; }
+.sidebar-header .logo .logo-text { font-size: 1.25rem; font-weight: 500; }
 
 .sidebar-nav { flex: 1; padding: 1rem 0; }
 .sidebar-nav .nav-list { list-style: none; margin: 0; padding: 0; }
 .sidebar-nav .nav-item { margin: 0.25rem 0; }
-.sidebar-nav .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; color: rgba(255,255,255,0.8); text-decoration: none; border-left: 3px solid transparent; cursor: pointer; transition: all 0.3s ease; }
-.sidebar-nav .nav-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.sidebar-nav .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; color: var(--text-secondary); text-decoration: none; border-left: 3px solid transparent; cursor: pointer; transition: all 180ms ease; }
+.sidebar-nav .nav-link:hover { background: var(--sidebar-hover); color: var(--sidebar-active); }
 .sidebar-nav .nav-item.active .nav-link { background: rgba(59,130,246,0.2); color: #60a5fa; border-left-color: #3b82f6; }
 
 .main-content { flex: 1; margin-left: 72px;}

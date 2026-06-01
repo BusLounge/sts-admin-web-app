@@ -90,7 +90,7 @@ export class BusBookingComponent implements OnInit {
       y: {
         beginAtZero: true,
         ticks: {
-          stepSize: 10
+          maxTicksLimit: 8
         }
       }
     }

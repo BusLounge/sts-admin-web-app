@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -20,8 +20,9 @@ import { NotificationService } from '../../core/services/notification.service';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   showNotificationPanel = false;
+  private pendingNotificationsRefreshId: ReturnType<typeof setInterval> | null = null;
 
   numBuses = 0;
   numLounges = 0;
@@ -125,6 +126,11 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.refreshPendingNotifications();
+    this.pendingNotificationsRefreshId = setInterval(() => {
+      this.refreshPendingNotifications();
+    }, 30000);
+
     this.busService.buses$.subscribe(buses => {
       this.numBuses = buses.length;
       this.busStatusCounts = this.countBusStatus(buses);
@@ -178,6 +184,17 @@ export class DashboardComponent implements OnInit {
     this.passengerService.passengers$.subscribe(passengers => {
       this.updatePassengerGrowth();
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.pendingNotificationsRefreshId) {
+      clearInterval(this.pendingNotificationsRefreshId);
+      this.pendingNotificationsRefreshId = null;
+    }
+  }
+
+  private refreshPendingNotifications(): void {
+    this.notificationService.loadAllPendingNotifications();
   }
 
   private updatePassengerGrowth(): void {

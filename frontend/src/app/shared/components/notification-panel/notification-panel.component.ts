@@ -30,6 +30,14 @@ export interface Notification {
   timestamp: Date;
 }
 
+type NotificationFilter = 'all' | Notification['type'];
+
+interface NotificationFilterOption {
+  value: NotificationFilter;
+  label: string;
+  icon: string;
+}
+
 @Component({
   selector: 'app-notification-panel',
   standalone: true,
@@ -39,6 +47,16 @@ export interface Notification {
 })
 export class NotificationPanelComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
+
+  readonly notificationFilters: NotificationFilterOption[] = [
+    { value: 'all', label: 'All', icon: 'fas fa-layer-group' },
+    { value: 'bus', label: 'Bus', icon: 'fas fa-bus' },
+    { value: 'driver', label: 'Driver', icon: 'fas fa-user-tie' },
+    { value: 'conductor', label: 'Conductor', icon: 'fas fa-user-secret' },
+    { value: 'lounge', label: 'Lounge', icon: 'fas fa-couch' },
+    { value: 'bus-owner', label: 'Bus Owner', icon: 'fas fa-building' },
+    { value: 'lounge-owner', label: 'Lounge Owner', icon: 'fas fa-user-check' }
+  ];
 
   constructor(
     private router: Router,
@@ -52,6 +70,8 @@ export class NotificationPanelComponent implements OnInit {
   ) {}
 
   notifications: Notification[] = [];
+  selectedFilter: NotificationFilter = 'all';
+  searchQuery: string = '';
   showDetailsModal = false;
   selectedNotification: Notification | null = null;
   adminDocuments: string = '';
@@ -84,6 +104,57 @@ export class NotificationPanelComponent implements OnInit {
       // Sort by timestamp - newest first
       this.notifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     });
+  }
+
+  get filteredNotifications(): Notification[] {
+    const normalizedQuery = this.searchQuery.trim().toLowerCase();
+
+    return this.notifications.filter(notification => {
+      const matchesFilter = this.selectedFilter === 'all' || notification.type === this.selectedFilter;
+
+      if (!matchesFilter) {
+        return false;
+      }
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      const searchableText = [
+        notification.title,
+        notification.message,
+        notification.time,
+        notification.type
+      ].join(' ').toLowerCase();
+
+      return searchableText.includes(normalizedQuery);
+    });
+  }
+
+  get hasActiveFilters(): boolean {
+    return this.selectedFilter !== 'all' || this.searchQuery.trim().length > 0;
+  }
+
+  get activeFilterLabel(): string {
+    const activeFilter = this.notificationFilters.find(filter => filter.value === this.selectedFilter);
+    return activeFilter?.label || 'All';
+  }
+
+  getNotificationCount(filter: NotificationFilter): number {
+    if (filter === 'all') {
+      return this.notifications.length;
+    }
+
+    return this.notifications.filter(notification => notification.type === filter).length;
+  }
+
+  setFilter(filter: NotificationFilter): void {
+    this.selectedFilter = filter;
+  }
+
+  clearFilters(): void {
+    this.selectedFilter = 'all';
+    this.searchQuery = '';
   }
 
   private mapBusToNotification(bus: BusNotification): Notification {

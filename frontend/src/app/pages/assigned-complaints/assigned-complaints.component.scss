@@ -20,14 +20,14 @@
   .page-header {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 14px;
+    border-radius: 8px;
     padding: 1rem 1.25rem;
 
     h1 {
       margin: 0 0 0.25rem;
       color: var(--text-primary);
       font-size: 1.45rem;
-      font-weight: 700;
+      font-weight: 500;
     }
 
     p {
@@ -40,7 +40,7 @@
   .loading-state,
   .empty-state {
     padding: 1rem;
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px dashed var(--border-color);
     color: var(--text-secondary);
     background: var(--bg-secondary);
@@ -49,13 +49,13 @@
   .team-section {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 14px;
+    border-radius: 8px;
     padding: 1.15rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 180ms ease, border-color 180ms ease;
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+      transform: translateY(-1px);
+      border-color: var(--color-border-medium);
     }
   }
 
@@ -76,7 +76,7 @@
 
   .solved-section {
     border-color: rgba(22, 163, 74, 0.3);
-    background: linear-gradient(180deg, rgba(240, 253, 244, 0.95) 0%, var(--bg-secondary) 100%);
+    background: var(--bg-secondary);
   }
 
   .team-header {
@@ -89,12 +89,12 @@
       margin: 0;
       font-size: 1.05rem;
       color: var(--text-primary);
-      font-weight: 700;
+      font-weight: 500;
     }
 
     .count-pill {
       font-size: 0.78rem;
-      font-weight: 700;
+      font-weight: 500;
       color: var(--color-text-inverse);
       background: var(--color-buttns-light);
       border-radius: 999px;
@@ -102,7 +102,7 @@
     }
 
     .solved-pill {
-      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      background: #15803d;
     }
   }
 
@@ -127,13 +127,13 @@
     border-radius: 8px;
     padding: 0.4rem 0.8rem;
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     color: #fff;
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    background: #047857;
 
     &:hover:not(:disabled) {
-      background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+      background: #065f46;
     }
 
     &:disabled {
