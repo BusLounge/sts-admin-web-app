@@ -1,0 +1,404 @@
+<div class="route-management">
+  <div class="top-navigation-row">
+    <div class="app-branding">
+      <div class="logo-circle">
+        <i class="fas fa-route"></i>
+      </div>
+      <span class="app-name">BusLounge</span>
+    </div>
+    <app-navbar></app-navbar>
+    <div class="header-actions-nav">
+      <!-- Nav actions can go here -->
+    </div>
+  </div>
+  <!-- ── Header ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <i class="fas fa-route"></i>
+      </div>
+      <div>
+        <h1>Route Management</h1>
+        <p>Manage bus routes, polylines, and geographic paths</p>
+      </div>
+    </div>
+    <div class="header-actions" *ngIf="!isEditMode">
+      <button class="btn-primary" (click)="activeTab = 'create'">
+        <i class="fas fa-plus"></i> New Route
+      </button>
+    </div>
+    <div class="header-actions" *ngIf="isEditMode">
+      <button class="btn-outline-danger" (click)="exitEditMode()">
+        <i class="fas fa-times"></i> Exit Editor
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Alerts ── -->
+  <div class="alert alert-error" *ngIf="errorMsg">
+    <i class="fas fa-exclamation-circle"></i> {{ errorMsg }}
+  </div>
+  <div class="alert alert-success" *ngIf="successMsg">
+    <i class="fas fa-check-circle"></i> {{ successMsg }}
+  </div>
+
+  <!-- ── Main Layout ── -->
+  <div class="main-layout">
+    <!-- ── Sidebar ── -->
+    <div class="sidebar">
+      <!-- Sidebar tabs -->
+      <div class="sidebar-tabs" *ngIf="!isEditMode">
+        <button [class.active]="activeTab === 'list'" (click)="activeTab = 'list'">
+          <i class="fas fa-list"></i> Routes
+        </button>
+        <button [class.active]="activeTab === 'create'" (click)="activeTab = 'create'">
+          <i class="fas fa-plus"></i> Create
+        </button>
+      </div>
+
+      <!-- ══ Route List Tab ══ -->
+      <div *ngIf="activeTab === 'list' && !isEditMode" class="tab-content">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            placeholder="Search routes..."
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="applyFilter()"
+          />
+        </div>
+
+        <div class="route-count">
+          {{ filteredRoutes.length }} route(s) found
+        </div>
+
+        <div class="route-list" *ngIf="!isLoading">
+          <div
+            *ngFor="let route of filteredRoutes"
+            class="route-card"
+            [class.active-route]="!route.is_active"
+          >
+            <div class="route-card-header">
+              <span class="route-number">{{ route.route_number }}</span>
+              <span class="route-badge" [class.inactive]="!route.is_active">
+                {{ route.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+            <div class="route-name">{{ route.route_name }}</div>
+            <div class="route-meta">
+              <span><i class="fas fa-map-marker-alt"></i> {{ route.origin_city }}</span>
+              <i class="fas fa-arrow-right separator"></i>
+              <span>{{ route.destination_city }}</span>
+            </div>
+            <div class="route-stats">
+              <span title="Distance"><i class="fas fa-road"></i> {{ route.total_distance_km }} km</span>
+              <span title="Duration"><i class="fas fa-clock"></i> {{ route.estimated_duration_minutes }}m</span>
+            </div>
+            <div class="route-actions">
+              <button class="btn-icon btn-view" title="View on map" (click)="viewRouteOnMap(route)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn-icon btn-duplicate" title="Duplicate route" (click)="duplicateRoute(route)">
+                <i class="fas fa-copy"></i>
+              </button>
+              <button class="btn-icon btn-edit" title="Edit route" (click)="enterEditMode(route)">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-icon btn-delete" title="Delete route" (click)="confirmDelete(route)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="filteredRoutes.length === 0">
+            <i class="fas fa-route"></i>
+            <p>No routes found.</p>
+          </div>
+        </div>
+
+        <div class="loading-spinner" *ngIf="isLoading">
+          <i class="fas fa-spinner fa-spin"></i> Loading routes...
+        </div>
+      </div>
+
+      <!-- ══ Create Tab ══ -->
+      <div *ngIf="activeTab === 'create' && !isEditMode" class="tab-content">
+        <div class="form-section">
+          <h3><i class="fas fa-plus-circle"></i> New Route</h3>
+
+          <div class="form-group">
+            <label>Route Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="newRouteName" placeholder="e.g. Colombo - Kandy Express" />
+          </div>
+          <div class="form-group">
+            <label>Route Number</label>
+            <input type="text" [(ngModel)]="newRouteNumber" placeholder="Auto-assigned if blank" />
+          </div>
+          <div class="form-group">
+            <label>Origin City <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="newOriginCity" placeholder="e.g. Colombo" />
+          </div>
+          <div class="form-group">
+            <label>Destination City <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="newDestinationCity" placeholder="e.g. Kandy" />
+          </div>
+
+          <button class="btn-primary btn-full" (click)="enterCreateMode()">
+            <i class="fas fa-map-marked-alt"></i> Start Drawing Route
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ Edit Mode Sidebar ══ -->
+      <div *ngIf="isEditMode && editableRoute" class="tab-content">
+        <!-- Route info header -->
+        <div class="edit-route-info">
+          <h3>{{ editableRoute.isNew ? 'New Route' : (isReadOnlyMode ? 'Viewing Route' : 'Editing Route') }}</h3>
+          <div class="route-info-chips">
+            <span class="chip chip-blue">{{ editableRoute.routeName }}</span>
+            <span class="chip chip-green">{{ editableRoute.originCity }}</span>
+            <i class="fas fa-arrow-right chip-arrow"></i>
+            <span class="chip chip-red">{{ editableRoute.destinationCity }}</span>
+          </div>
+
+          <!-- Editable fields for existing routes -->
+          <div *ngIf="!editableRoute.isNew && !isReadOnlyMode" class="mini-form">
+            <div class="form-group">
+              <label>Route Name</label>
+              <input type="text" [(ngModel)]="editableRoute.routeName" />
+            </div>
+            <div class="form-group">
+              <label>Route Number</label>
+              <input type="text" [(ngModel)]="editRouteNumber" />
+            </div>
+            <div class="form-group">
+              <label>Origin City</label>
+              <input type="text" [(ngModel)]="editableRoute.originCity" />
+            </div>
+            <div class="form-group">
+              <label>Destination City</label>
+              <input type="text" [(ngModel)]="editableRoute.destinationCity" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="edit-stats">
+          <div class="stat">
+            <span class="stat-val">{{ pointCount }}</span>
+            <span class="stat-label">Points</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val">{{ estimatedDistance }}</span>
+            <span class="stat-label">km</span>
+          </div>
+          <div class="stat" *ngIf="selectedIndices.size > 0">
+            <span class="stat-val">{{ selectedIndices.size }}</span>
+            <span class="stat-label">Selected</span>
+          </div>
+        </div>
+
+        <!-- Edit mode type selector -->
+        <div class="mode-selector" *ngIf="!isReadOnlyMode">
+          <button
+            *ngFor="let mode of editModes"
+            [class.active]="editModeType === mode"
+            (click)="setEditMode(mode)"
+            [title]="modeTooltips[mode]"
+          >
+            <i [class]="modeIcons[mode]"></i>
+            <span>{{ modeLabels[mode] }}</span>
+          </button>
+        </div>
+
+        <!-- Mode description -->
+        <div class="mode-desc" *ngIf="!isReadOnlyMode">
+          <i class="fas fa-info-circle"></i> {{ modeTooltips[editModeType] }}
+        </div>
+
+        <!-- Coordinate input -->
+        <div class="tool-section" *ngIf="!isReadOnlyMode">
+          <div class="tool-section-title">
+            <i class="fas fa-crosshairs"></i> Add by Coordinates
+          </div>
+          <div class="coord-inputs">
+            <input type="number" [(ngModel)]="coordLat" placeholder="Latitude" step="0.0001" />
+            <input type="number" [(ngModel)]="coordLng" placeholder="Longitude" step="0.0001" />
+          </div>
+          <div class="error-text" *ngIf="coordError">{{ coordError }}</div>
+          <div class="tool-buttons">
+            <button class="btn-sm btn-outline" (click)="searchByCoords()">
+              <i class="fas fa-search-location"></i> Find
+            </button>
+            <button class="btn-sm btn-primary-sm" (click)="addPointFromCoords()">
+              <i class="fas fa-plus"></i> Add Point
+            </button>
+          </div>
+        </div>
+
+        <!-- City search -->
+        <div class="tool-section" *ngIf="!isReadOnlyMode">
+          <div class="tool-section-title">
+            <i class="fas fa-city"></i> Add by City
+          </div>
+          <input
+            type="text"
+            [(ngModel)]="cityInput"
+            placeholder="e.g. Kandy"
+            (keydown.enter)="addPointFromCity()"
+          />
+          <div class="error-text" *ngIf="cityError">{{ cityError }}</div>
+          <div class="tool-buttons">
+            <button class="btn-sm btn-outline" (click)="searchCity()" [disabled]="isCitySearching">
+              <i [class]="isCitySearching ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i> Find
+            </button>
+            <button class="btn-sm btn-primary-sm" (click)="addPointFromCity()" [disabled]="isCitySearching">
+              <i class="fas fa-plus"></i> Add Point
+            </button>
+          </div>
+        </div>
+
+        <!-- Delete selected points -->
+        <div class="tool-section" *ngIf="selectedIndices.size > 0">
+          <button class="btn-danger-sm btn-full" (click)="deleteSelectedPoints()">
+            <i class="fas fa-trash"></i> Delete {{ selectedIndices.size }} Selected Point(s)
+          </button>
+        </div>
+
+        <!-- Points list -->
+        <div class="tool-section" *ngIf="activeTab === 'points'">
+          <div class="tool-section-title">
+            <i class="fas fa-list-ol"></i> Points ({{ pointCount }})
+          </div>
+          <div class="points-list">
+            <div
+              *ngFor="let point of editableRoute.points; let i = index"
+              style="display: flex; flex-direction: column; gap: 4px; padding: 6px; border-bottom: 1px solid #e5e7eb;"
+              [class.highlighted]="i === highlightedIndex"
+              [class.selected]="selectedIndices.has(i)"
+            >
+              <div class="point-item" style="border-bottom: none; padding: 0;">
+                <span class="point-index">{{ i + 1 }}</span>
+                <span class="point-coords" [style.background-color]="i === highlightedIndex ? '#fef08a' : 'transparent'" [style.font-weight]="i === highlightedIndex ? 'bold' : 'normal'" style="padding: 2px 4px; border-radius: 4px;">
+                  {{ point.lat.toFixed(4) }}, {{ point.lng.toFixed(4) }}
+                </span>
+                <label *ngIf="!isReadOnlyMode" style="display: flex; align-items: center; gap: 4px; font-size: 11px; margin-left: auto; margin-right: 8px;">
+                  <input type="checkbox" [(ngModel)]="point.isStop" /> Stop
+                </label>
+                <div class="point-actions">
+                  <button class="btn-icon-xs" (click)="focusOnPoint(i)" title="Focus on map">
+                    <i class="fas fa-crosshairs"></i>
+                  </button>
+                  <button *ngIf="!isReadOnlyMode" class="btn-icon-xs btn-danger-xs" (click)="deletePoint(i)" title="Delete">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <div *ngIf="point.isStop && !isReadOnlyMode" style="padding-left: 24px;">
+                <input type="text" [(ngModel)]="point.stopName" placeholder="Stop name..." style="width: 100%; padding: 4px 8px; font-size: 11px; border: 1px solid #d1d5db; border-radius: 4px;" />
+              </div>
+              <div *ngIf="point.isStop && isReadOnlyMode" style="padding-left: 24px; font-size: 11px; color: #4b5563;">
+                <strong>Stop:</strong> {{ point.stopName || 'Unnamed Stop' }}
+              </div>
+            </div>
+            <div class="empty-points" *ngIf="pointCount === 0">
+              Click on the map to add points.
+            </div>
+          </div>
+        </div>
+
+        <!-- Polyline generation -->
+        <div class="polyline-section">
+          <div class="tool-section-title"><i class="fas fa-code"></i> Encoded Polyline</div>
+          <button *ngIf="!isReadOnlyMode" class="btn-primary btn-full" (click)="generatePolyline()" [disabled]="pointCount < 2">
+            <i class="fas fa-magic"></i> Generate Polyline
+          </button>
+
+          <div *ngIf="generatedPolyline" class="polyline-output" [style.margin-top.px]="isReadOnlyMode ? 0 : 10">
+            <div class="polyline-text" title="{{ generatedPolyline }}">
+              {{ generatedPolyline | slice:0:60 }}{{ generatedPolyline.length > 60 ? '…' : '' }}
+            </div>
+            <button class="btn-sm btn-outline" (click)="copyPolyline()">
+              <i class="fas fa-copy"></i> Copy
+            </button>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-row" *ngIf="!isReadOnlyMode">
+          <button class="btn-outline-sm" (click)="clearRoute()">
+            <i class="fas fa-eraser"></i> Clear
+          </button>
+          <button class="btn-outline-sm" (click)="revertRoute()" *ngIf="!editableRoute.isNew">
+            <i class="fas fa-undo"></i> Revert
+          </button>
+          <button
+            class="btn-save"
+            (click)="saveRoute()"
+            [disabled]="!generatedPolyline"
+            [title]="!generatedPolyline ? 'Generate polyline first' : 'Save to database'"
+          >
+            <i class="fas fa-save"></i> Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Map ── -->
+    <div class="map-container">
+      <div id="route-map"></div>
+
+      <!-- Edit mode overlay badge -->
+      <div class="map-mode-badge" *ngIf="isEditMode">
+        <i [class]="modeIcons[editModeType]"></i>
+        {{ modeLabels[editModeType] }} Mode
+      </div>
+
+      <!-- Point count overlay -->
+      <div class="map-stats-overlay" *ngIf="isEditMode && pointCount > 0">
+        <span><i class="fas fa-map-pin"></i> {{ pointCount }} pts</span>
+        <span><i class="fas fa-road"></i> {{ estimatedDistance }} km</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modals ── -->
+
+<!-- Delete confirmation -->
+<div class="modal-backdrop" *ngIf="showDeleteModal" (click)="showDeleteModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon modal-icon-danger"><i class="fas fa-trash"></i></div>
+    <h3>Delete Route</h3>
+    <p>Are you sure you want to delete <strong>{{ routeToDelete?.route_name }}</strong>? This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn-outline-sm" (click)="showDeleteModal = false">Cancel</button>
+      <button class="btn-danger-sm" (click)="doDeleteRoute()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Exit confirmation -->
+<div class="modal-backdrop" *ngIf="showExitModal" (click)="showExitModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon modal-icon-warning"><i class="fas fa-exclamation-triangle"></i></div>
+    <h3>Unsaved Changes</h3>
+    <p>You have {{ pointCount }} unsaved point(s). Exiting will discard them.</p>
+    <div class="modal-actions">
+      <button class="btn-outline-sm" (click)="showExitModal = false">Stay</button>
+      <button class="btn-danger-sm" (click)="doExitEditMode()">Discard & Exit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Clear confirmation -->
+<div class="modal-backdrop" *ngIf="showClearModal" (click)="showClearModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon modal-icon-warning"><i class="fas fa-eraser"></i></div>
+    <h3>Clear All Points</h3>
+    <p>This will remove all {{ pointCount }} points from the route. Continue?</p>
+    <div class="modal-actions">
+      <button class="btn-outline-sm" (click)="showClearModal = false">Cancel</button>
+      <button class="btn-danger-sm" (click)="doConfirmClear()">Clear All</button>
+    </div>
+  </div>
+</div>

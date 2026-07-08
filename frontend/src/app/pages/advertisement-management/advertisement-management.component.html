@@ -1,0 +1,711 @@
+<div class="ad-management-container">
+
+  <!-- ── Top Navigation Row ─────────────────────────────────────────────── -->
+  <div class="top-navigation-row">
+    <div class="app-branding">
+      <div class="logo-circle">
+        <i class="fas fa-ad"></i>
+      </div>
+      <span class="app-name">BusLounge</span>
+    </div>
+    <app-navbar></app-navbar>
+    <div class="header-actions">
+      <button class="icon-btn notification-btn" id="ad-notification-btn" (click)="toggleNotificationPanel()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+        <span *ngIf="notificationService.totalPendingCount > 0" class="notification-badge">
+          {{ notificationService.totalPendingCount }}
+        </span>
+      </button>
+      <div class="profile-dropdown-container">
+        <button class="icon-btn profile-btn" id="ad-profile-btn" (click)="toggleProfileMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </button>
+        <div class="profile-dropdown-menu" *ngIf="showProfileMenu">
+          <a routerLink="/settings" class="dropdown-item"><i class="fas fa-cog"></i> Profile settings</a>
+          <a (click)="logout()" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Log out</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Page Header ────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-title-area">
+      <h1 class="page-title">Advertisement Management</h1>
+      <p class="page-subtitle">Manage lounge advertisements and advertisement groups</p>
+    </div>
+    <button class="primary-btn" id="ad-add-btn"
+      (click)="activeTab === 'advertisements' ? openModal() : openGroupModal()">
+      <i class="fas fa-plus"></i>
+      {{ activeTab === 'advertisements' ? 'Add Advertisement' : 'Create Group' }}
+    </button>
+  </div>
+
+  <!-- ── Tab Navigation ─────────────────────────────────────────────────── -->
+  <div class="tab-nav">
+    <button class="tab-btn" id="tab-advertisements"
+      [class.active]="activeTab === 'advertisements'"
+      (click)="switchTab('advertisements')">
+      <i class="fas fa-film"></i> Advertisements
+      <span class="tab-count">{{ advertisements.length }}</span>
+    </button>
+    <button class="tab-btn" id="tab-groups"
+      [class.active]="activeTab === 'groups'"
+      (click)="switchTab('groups')">
+      <i class="fas fa-layer-group"></i> Advertisement Groups
+      <span class="tab-count">{{ advertisementGroups.length }}</span>
+    </button>
+
+  </div>
+
+  <!-- ── Search Bar ─────────────────────────────────────────────────────── -->
+  <div class="search-bar-row">
+    <div class="search-input-wrap">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="search-input" id="ad-search-input"
+        [placeholder]="activeTab === 'advertisements' ? 'Search advertisements…' : 'Search groups…'"
+        [(ngModel)]="searchTerm">
+      <button class="clear-search-btn" *ngIf="searchTerm" (click)="searchTerm = ''">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Advertisements Table ───────────────────────────────────────────── -->
+  <div class="table-card" *ngIf="activeTab === 'advertisements'">
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>AD NAME</th>
+            <th>CATEGORY</th>
+            <th>DURATION</th>
+            <th>SCHEDULE TYPE</th>
+            <th>LOUNGE GROUP</th>
+            <th>PRIORITY</th>
+            <th>VERSION</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ad of filteredAdvertisements">
+            <td class="ad-name-cell">
+              <i class="fas fa-film ad-icon"></i>
+              <span>{{ ad.name }}</span>
+            </td>
+            <td>
+              <span class="category-badge" [ngClass]="ad.category.toLowerCase()">
+                {{ ad.category }}
+              </span>
+            </td>
+            <td>{{ ad.duration }}</td>
+            <td>{{ ad.scheduleType }}</td>
+            <td>{{ ad.loungeGroups }}</td>
+            <td>
+              <span class="priority-badge" [ngClass]="ad.priority.toLowerCase()">
+                {{ ad.priority }}
+              </span>
+            </td>
+            <td>{{ ad.version }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="ad.status.toLowerCase()">
+                <span class="status-dot"></span>{{ ad.status }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <button class="action-btn view-btn" title="View" (click)="viewAdvertisement(ad)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="action-btn edit-btn" title="Edit" (click)="editAdvertisement(ad)">
+                <i class="fas fa-pen"></i>
+              </button>
+              <button class="action-btn delete-btn" title="Delete" (click)="deleteAdvertisement(ad)">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredAdvertisements.length === 0">
+            <td colspan="9" class="empty-state">
+              <i class="fas fa-film empty-icon"></i>
+              <p>No advertisements found.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Advertisement Groups Table ────────────────────────────────────── -->
+  <div class="table-card" *ngIf="activeTab === 'groups'">
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>GROUP NAME</th>
+            <th>LOUNGES</th>
+            <th>NUMBER OF ADS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let group of filteredAdvertisementGroups">
+            <td class="ad-name-cell">
+              <i class="fas fa-layer-group ad-icon"></i>
+              <span>{{ group.groupName }}</span>
+            </td>
+            <td>{{ getLoungesDisplay(group.lounges) }}</td>
+            <td>
+              <span class="count-badge">{{ group.noOfAdvertisements }}</span>
+            </td>
+            <td class="actions-cell">
+              <button class="action-btn view-btn" title="View" (click)="viewGroup(group)">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="action-btn edit-btn" title="Edit" (click)="editGroup(group)">
+                <i class="fas fa-pen"></i>
+              </button>
+              <button class="action-btn delete-btn" title="Delete" (click)="deleteGroup(group)">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredAdvertisementGroups.length === 0">
+            <td colspan="4" class="empty-state">
+              <i class="fas fa-layer-group empty-icon"></i>
+              <p>No advertisement groups found.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Advertisement Modal (Add / View / Edit)
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+
+    <!-- Modal header -->
+    <div class="modal-header" [class.emergency]="isEmergencyCategory">
+      <div class="modal-header-left">
+        <i class="fas" [ngClass]="isViewMode ? 'fa-eye' : (isEditMode ? 'fa-pen' : 'fa-plus')"></i>
+        <h2>
+          {{ isViewMode ? 'View Advertisement' : (isEditMode ? 'Edit Advertisement' : 'New Advertisement') }}
+          <span *ngIf="isEmergencyCategory" class="emergency-tag">⚠️ Emergency</span>
+        </h2>
+      </div>
+      <button class="modal-close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Emergency alert -->
+      <div class="emergency-alert" *ngIf="isEmergencyCategory && !isViewMode">
+        ⚠️ <strong>Emergency Mode Active</strong> — This ad will broadcast immediately with highest priority.
+      </div>
+
+      <!-- Row 1: Name + File -->
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>Ad Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="ad-name-input"
+            [(ngModel)]="viewData.name" [readonly]="isViewMode"
+            placeholder="Enter advertisement name">
+        </div>
+        <div class="form-group flex-1">
+          <label>Media File <span class="required" *ngIf="!isViewMode && !isEditMode">*</span></label>
+          <div class="file-upload-area" *ngIf="!isViewMode">
+            <input type="file" id="ad-file-input" class="file-hidden"
+              accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.avi"
+              (change)="onFileSelected($event)">
+            <label for="ad-file-input" class="file-upload-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span *ngIf="!selectedFile && !viewData.fileName">Click to upload media</span>
+              <span *ngIf="selectedFile">{{ selectedFile.name }}</span>
+              <span *ngIf="!selectedFile && viewData.fileName" class="existing-file">{{ viewData.fileName }}</span>
+            </label>
+          </div>
+          <input type="text" class="form-input" *ngIf="isViewMode"
+            [value]="viewData.fileName || 'No file'" readonly>
+        </div>
+      </div>
+
+      <!-- Row 2: Lounge Group + Category -->
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>Lounge Group <span class="required">*</span></label>
+
+          <!-- Selected tags -->
+          <div class="tag-list" *ngIf="selectedGroups.length > 0 && !isViewMode">
+            <span class="tag" *ngFor="let g of selectedGroups">
+              {{ g }} <span class="tag-remove" (click)="removeGroup(g)">×</span>
+            </span>
+          </div>
+
+          <!-- Dropdown (create/edit) -->
+          <div class="lounge-dropdown-wrap" *ngIf="!isViewMode">
+            <div class="lounge-search-input-wrap">
+              <input type="text" class="form-input" id="ad-group-search"
+                placeholder="Search group…"
+                [(ngModel)]="groupSearchTerm"
+                (focus)="showGroupDropdown = true">
+              <span class="dropdown-chevron" (click)="showGroupDropdown = !showGroupDropdown">
+                <i class="fas fa-chevron-down"></i>
+              </span>
+            </div>
+            <div class="dropdown-panel" *ngIf="showGroupDropdown">
+              <div class="dropdown-header">
+                <span>Select lounge group(s)</span>
+                <button class="clear-btn" (click)="clearAllGroups()">Clear</button>
+              </div>
+              <div class="dropdown-options">
+                <label class="checkbox-label" *ngFor="let g of filteredSortedGroups">
+                  <input type="checkbox" [checked]="isGroupSelected(g)" (change)="toggleGroup(g)">
+                  <span>{{ g }}</span>
+                </label>
+                <p class="no-results" *ngIf="filteredSortedGroups.length === 0">No groups found</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- View mode -->
+          <input type="text" class="form-input" *ngIf="isViewMode"
+            [value]="viewData.loungeGroups" readonly>
+        </div>
+
+        <div class="form-group flex-1">
+          <label>Category <span class="required">*</span></label>
+          <select class="form-select" id="ad-category-select"
+            [(ngModel)]="viewData.category" (change)="onCategoryChange($event)"
+            [disabled]="isViewMode">
+            <option value="" disabled>Select category</option>
+            <option>internal branding</option>
+            <option>commercial</option>
+            <option>event</option>
+            <option>seasonal</option>
+            <option>emergency</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Row 3: Duration + Priority + Version + Enabled -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Duration <span class="required">*</span></label>
+          <input type="text" class="form-input" id="ad-duration-input"
+            [(ngModel)]="viewData.duration" [readonly]="isViewMode"
+            placeholder="e.g. 10s">
+          <span class="field-hint" *ngIf="!isViewMode && selectedTrafficLevel">
+            Max: {{ maxAllowedAdDurationSeconds }}s for {{ selectedTrafficLevel }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Priority <span class="required">*</span></label>
+          <select class="form-select" id="ad-priority-select"
+            [(ngModel)]="viewData.priority"
+            [disabled]="isViewMode || isEmergencyCategory">
+            <option value="" disabled>Select</option>
+            <option>high</option>
+            <option>medium</option>
+            <option>low</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Version</label>
+          <input type="text" class="form-input" id="ad-version-input"
+            [(ngModel)]="viewData.version" [readonly]="isViewMode" placeholder="v1.0">
+        </div>
+
+        <div class="form-group enabled-group" *ngIf="!isViewMode">
+          <label class="toggle-label">
+            <span>Enabled</span>
+            <div class="toggle-switch" [class.on]="isEnabled" (click)="isEnabled = !isEnabled">
+              <div class="toggle-knob"></div>
+            </div>
+          </label>
+        </div>
+        <div class="form-group" *ngIf="isViewMode">
+          <label>Status</label>
+          <span class="status-badge" [ngClass]="viewData.status.toLowerCase()">
+            <span class="status-dot"></span>{{ viewData.status }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Traffic Level + Time Period -->
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>Traffic Level</label>
+          <select class="form-select" id="ad-traffic-select"
+            [(ngModel)]="selectedTrafficLevel" [disabled]="isViewMode">
+            <option value="">Any traffic level</option>
+            <option value="Peak">Peak</option>
+            <option value="Moderate">Moderate</option>
+            <option value="Off-Peak">Off-Peak</option>
+          </select>
+        </div>
+        <div class="form-group flex-2" *ngIf="selectedTrafficLevel">
+          <label>Time Period</label>
+          <select class="form-select" id="ad-time-period-select"
+            [(ngModel)]="selectedTimePeriodName" (ngModelChange)="onTimePeriodChange()" [disabled]="isViewMode">
+            <option value="">Select time period</option>
+            <option *ngFor="let p of filteredTrafficTimePeriods" [value]="p.name">
+              {{ p.name }} ({{ p.startTime }} – {{ p.endTime }}) — {{ p.trafficLevel }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Time Cycles generated from the Time Period -->
+      <div class="form-row" *ngIf="availableCycles.length > 0">
+        <div class="form-group full-width cycle-slots-container">
+          <label>Select Time Cycle(s) <span class="required">*</span></label>
+          <p class="field-hint" style="margin-bottom: 0.5rem">
+            Available ad duration per cycle: <strong>{{ maxAllowedAdDurationSeconds }}s</strong>. 
+            Click to select the slots you want your ad to run in.
+          </p>
+          <div class="cycle-chips-grid">
+            <div class="cycle-chip" 
+              *ngFor="let cycle of availableCycles"
+              [class.selected]="cycle.selected"
+              [class.full]="cycle.isFull && !cycle.selected"
+              (click)="toggleCycle(cycle)">
+              
+              <div class="cycle-time">{{ cycle.label }}</div>
+              <div class="cycle-capacity" [ngClass]="{'capacity-full': cycle.isFull}">
+                {{ cycle.bookedSeconds }}s / {{ maxAllowedAdDurationSeconds }}s Booked
+              </div>
+              
+              <i class="fas fa-check-circle check-icon" *ngIf="cycle.selected"></i>
+              <i class="fas fa-ban full-icon" *ngIf="cycle.isFull && !cycle.selected"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description (read-only) -->
+      <div class="form-row" *ngIf="isViewMode && viewData.description">
+        <div class="form-group full-width">
+          <label>Description</label>
+          <textarea class="form-textarea" rows="2" [value]="viewData.description" readonly></textarea>
+        </div>
+      </div>
+
+      <!-- ── Schedule section ──────────────────────────────────────────── -->
+      <div class="schedule-section">
+        <div class="section-divider">
+          <span>Schedule</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Schedule Type</label>
+            <select class="form-select" id="ad-schedule-type-select"
+              [(ngModel)]="scheduleType" [disabled]="isViewMode || isEmergencyCategory">
+              <option>recurring</option>
+              <option>one-time</option>
+              <option>on startup</option>
+              <option>on idle</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- recurring -->
+        <div *ngIf="scheduleType === 'recurring'" class="recurring-wrap">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Occurs</label>
+              <select class="form-select" id="ad-occurs-select"
+                [(ngModel)]="occursType" [disabled]="isViewMode">
+                <option>daily</option>
+                <option>weekly</option>
+                <option>monthly</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Interval (every N)</label>
+              <input type="number" class="form-input" id="ad-recurrence-interval"
+                [(ngModel)]="recurrenceInterval" [readonly]="isViewMode" min="1">
+            </div>
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" class="form-input" id="ad-start-date"
+                [(ngModel)]="startDate" [readonly]="isViewMode">
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="date" class="form-input" id="ad-end-date"
+                [(ngModel)]="endDate" [readonly]="isViewMode || noEndDate">
+              <label class="inline-check" *ngIf="!isViewMode">
+                <input type="checkbox" [(ngModel)]="noEndDate"> No end date
+              </label>
+            </div>
+          </div>
+
+          <!-- daily -->
+          <div class="freq-block" *ngIf="occursType === 'daily'">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="radio-label">
+                  <input type="radio" name="freq" [(ngModel)]="frequencyType" value="once" [disabled]="isViewMode">
+                  Occurs once at:
+                </label>
+                <input type="time" class="form-input" id="ad-occurs-once-time"
+                  [(ngModel)]="occursOnceTime" [readonly]="isViewMode">
+              </div>
+              <div class="form-group">
+                <label>Starting at</label>
+                <input type="time" class="form-input" id="ad-starting-time"
+                  [(ngModel)]="startingTime" [readonly]="isViewMode">
+              </div>
+              <div class="form-group">
+                <label>Ending at</label>
+                <input type="time" class="form-input" id="ad-ending-time"
+                  [(ngModel)]="endingTime" [readonly]="isViewMode">
+              </div>
+            </div>
+          </div>
+
+          <!-- weekly -->
+          <div class="freq-block" *ngIf="occursType === 'weekly'">
+            <div class="weekday-row">
+              <label class="weekday-chip" [class.selected]="weeklyMonday">
+                <input type="checkbox" [(ngModel)]="weeklyMonday" [disabled]="isViewMode"> Mon
+              </label>
+              <label class="weekday-chip" [class.selected]="weeklyTuesday">
+                <input type="checkbox" [(ngModel)]="weeklyTuesday" [disabled]="isViewMode"> Tue
+              </label>
+              <label class="weekday-chip" [class.selected]="weeklyWednesday">
+                <input type="checkbox" [(ngModel)]="weeklyWednesday" [disabled]="isViewMode"> Wed
+              </label>
+              <label class="weekday-chip" [class.selected]="weeklyThursday">
+                <input type="checkbox" [(ngModel)]="weeklyThursday" [disabled]="isViewMode"> Thu
+              </label>
+              <label class="weekday-chip" [class.selected]="weeklyFriday">
+                <input type="checkbox" [(ngModel)]="weeklyFriday" [disabled]="isViewMode"> Fri
+              </label>
+              <label class="weekday-chip" [class.selected]="weeklySaturday">
+                <input type="checkbox" [(ngModel)]="weeklySaturday" [disabled]="isViewMode"> Sat
+              </label>
+              <label class="weekday-chip" [class.selected]="weeklySunday">
+                <input type="checkbox" [(ngModel)]="weeklySunday" [disabled]="isViewMode"> Sun
+              </label>
+            </div>
+            <div class="form-row" style="margin-top:0.75rem">
+              <div class="form-group">
+                <label>Starting at</label>
+                <input type="time" class="form-input" [(ngModel)]="startingTime" [readonly]="isViewMode">
+              </div>
+              <div class="form-group">
+                <label>Ending at</label>
+                <input type="time" class="form-input" [(ngModel)]="endingTime" [readonly]="isViewMode">
+              </div>
+            </div>
+          </div>
+
+          <!-- monthly -->
+          <div class="freq-block" *ngIf="occursType === 'monthly'">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="radio-label">
+                  <input type="radio" name="mtype" [(ngModel)]="monthlyType" value="dayOfMonth" [disabled]="isViewMode">
+                  Day of month:
+                </label>
+                <input type="number" class="form-input" [(ngModel)]="monthlyDayOfMonth"
+                  min="1" max="31" [readonly]="isViewMode">
+              </div>
+              <div class="form-group">
+                <label class="radio-label">
+                  <input type="radio" name="mtype" [(ngModel)]="monthlyType" value="weekday" [disabled]="isViewMode">
+                  Nth weekday:
+                </label>
+                <div class="inline-selects">
+                  <select class="form-select" [(ngModel)]="monthlyWeek" [disabled]="isViewMode || monthlyType !== 'weekday'">
+                    <option>first</option><option>second</option>
+                    <option>third</option><option>fourth</option><option>last</option>
+                  </select>
+                  <select class="form-select" [(ngModel)]="monthlyDay" [disabled]="isViewMode || monthlyType !== 'weekday'">
+                    <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+                    <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Starting at</label>
+                <input type="time" class="form-input" [(ngModel)]="startingTime" [readonly]="isViewMode">
+              </div>
+              <div class="form-group">
+                <label>Ending at</label>
+                <input type="time" class="form-input" [(ngModel)]="endingTime" [readonly]="isViewMode">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- one-time -->
+        <div *ngIf="scheduleType === 'one-time'" class="schedule-info-block">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Schedule Date</label>
+              <input type="date" class="form-input" id="ad-one-time-date"
+                [(ngModel)]="oneTimeScheduleDate" [readonly]="isViewMode">
+            </div>
+            <div class="form-group">
+              <label>Schedule Time</label>
+              <input type="time" class="form-input" id="ad-one-time-time"
+                [(ngModel)]="oneTimeScheduleTime" [readonly]="isViewMode">
+            </div>
+          </div>
+        </div>
+
+        <!-- on startup -->
+        <div *ngIf="scheduleType === 'on startup'" class="schedule-info-block">
+          <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            This ad will trigger automatically when the lounge display boots up.
+          </div>
+        </div>
+
+        <!-- on idle -->
+        <div *ngIf="scheduleType === 'on idle'" class="schedule-info-block">
+          <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            Filler ad — plays when no other ads are scheduled.
+          </div>
+          <div class="form-group" style="margin-top:0.75rem">
+            <label>Max idle loop duration (minutes)</label>
+            <input type="number" class="form-input" id="ad-idle-duration"
+              [(ngModel)]="maxIdleLoopDuration" [readonly]="isViewMode"
+              style="max-width:120px">
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <!-- Modal footer -->
+    <div class="modal-footer">
+      <p class="validation-hint" *ngIf="!isViewMode && !canSaveAdvertisement">
+        <i class="fas fa-exclamation-triangle"></i>
+        Required: ad name, valid duration, media file, lounge group, priority.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeModal()">
+          {{ isViewMode ? 'Close' : 'Cancel' }}
+        </button>
+        <button class="btn-save" id="ad-save-btn"
+          *ngIf="!isViewMode"
+          [disabled]="!canSaveAdvertisement || isSaving"
+          (click)="saveAdvertisement()">
+          <i class="fas fa-spinner fa-spin" *ngIf="isSaving"></i>
+          <i class="fas fa-save" *ngIf="!isSaving"></i>
+          {{ isSaving ? 'Saving…' : 'Save' }}
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /modal-container -->
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Advertisement Group Modal
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showGroupModal" (click)="closeGroupModal()">
+  <div class="group-modal-container" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <i class="fas fa-layer-group"></i>
+        <h2>
+          {{ isViewGroupMode ? 'View Group' : (isEditGroupMode ? 'Edit Group' : 'Create Group') }}
+        </h2>
+      </div>
+      <button class="modal-close-btn" (click)="closeGroupModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Group name -->
+      <div class="form-group">
+        <label>Group Name <span class="required">*</span></label>
+        <input type="text" class="form-input" id="group-name-input"
+          [(ngModel)]="groupData.groupName"
+          [readonly]="isViewGroupMode"
+          placeholder="e.g. Group A — City Centre Lounges">
+      </div>
+
+      <!-- Lounge selector -->
+      <div class="form-group">
+        <label>{{ isViewGroupMode ? 'Selected Lounges' : 'Select Lounges' }}</label>
+
+        <div class="tag-list" *ngIf="selectedLounges.length > 0">
+          <span class="tag" *ngFor="let l of selectedLounges">
+            {{ l }}
+            <span class="tag-remove" *ngIf="!isViewGroupMode" (click)="removeLounge(l)">×</span>
+          </span>
+        </div>
+
+        <div class="lounge-dropdown-wrap" *ngIf="!isViewGroupMode">
+          <div class="lounge-search-input-wrap">
+            <input type="text" class="form-input" id="group-lounge-search"
+              placeholder="Search lounge…"
+              [(ngModel)]="loungeSearchTerm"
+              (focus)="showLoungeDropdown = true">
+            <span class="dropdown-chevron" (click)="showLoungeDropdown = !showLoungeDropdown">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+          </div>
+          <div class="dropdown-panel" *ngIf="showLoungeDropdown">
+            <div class="dropdown-header">
+              <label class="checkbox-label">
+                <input type="checkbox" [checked]="isAllLoungesSelected()" (change)="toggleSelectAll()">
+                Select All
+              </label>
+              <button class="clear-btn" (click)="clearAllLounges()">Clear</button>
+            </div>
+            <div class="dropdown-options">
+              <label class="checkbox-label" *ngFor="let l of filteredSortedLounges">
+                <input type="checkbox" [checked]="isLoungeSelected(l)" (change)="toggleLounge(l)">
+                <span>{{ l }}</span>
+              </label>
+              <p class="no-results" *ngIf="filteredSortedLounges.length === 0">No lounges found</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="field-hint" *ngIf="selectedLounges.length === 0 && isViewGroupMode">No lounges assigned.</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeGroupModal()">
+          {{ isViewGroupMode ? 'Close' : 'Cancel' }}
+        </button>
+        <button class="btn-save" id="group-save-btn"
+          *ngIf="!isViewGroupMode"
+          (click)="saveGroup()">
+          <i class="fas fa-save"></i> Save
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<app-notification-panel
+  *ngIf="showNotificationPanel"
+  (close)="closeNotificationPanel()">
+</app-notification-panel>

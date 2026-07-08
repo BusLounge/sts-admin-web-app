@@ -50,7 +50,7 @@ export class NotificationPanelComponent implements OnInit {
 
   readonly notificationFilters: NotificationFilterOption[] = [
     { value: 'all', label: 'All', icon: 'fas fa-layer-group' },
-    { value: 'bus', label: 'Bus', icon: 'fas fa-bus' },
+    { value: 'bus', label: 'Route Permit', icon: 'fas fa-file-signature' },
     { value: 'driver', label: 'Driver', icon: 'fas fa-user-tie' },
     { value: 'conductor', label: 'Conductor', icon: 'fas fa-user-secret' },
     { value: 'lounge', label: 'Lounge', icon: 'fas fa-couch' },
@@ -163,9 +163,9 @@ export class NotificationPanelComponent implements OnInit {
     const formattedTime = this.formatDateTime(timestamp);
     return {
       id: bus.id,
-      icon: 'fas fa-bus',
-      title: 'New Bus Added Request',
-      message: `A new bus registration request has been submitted: Bus No: ${bus.permit_number || bus.bus_number}, Route: ${bus.custom_route_name || 'Not specified'}. Awaiting approval.`,
+      icon: 'fas fa-file-signature',
+      title: 'New Route Permit Request',
+      message: `A new route permit registration request has been submitted: Bus No: ${bus.permit_number || bus.bus_number}, Route: ${bus.custom_route_name || 'Not specified'}. Awaiting approval.`,
       time: formattedTime,
       type: 'bus',
       data: bus,

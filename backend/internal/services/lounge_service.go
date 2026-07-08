@@ -84,3 +84,32 @@ func UpdateLoungeVerification(id string, status string, documents string) error 
 
 	return nil
 }
+
+func ProcessLoungeWebhook(l models.Lounge) error {
+	if isPendingApprovalStatus(l.Verification) {
+		notifyApprovalRequest(
+			"lounge",
+			fmt.Sprintf("Lounge: %s", l.LoungeName),
+			fmt.Sprintf("Owner: %s", l.LoungeOwner),
+			fmt.Sprintf("Contact: %s", l.LoungeContact),
+			fmt.Sprintf("Address: %s", l.Address),
+		)
+		
+		// Notify the requester that their request was received
+		notifyApprovalDecision(
+			l.LoungeContact,
+			"lounge",
+			"received and is currently pending approval",
+		)
+	} else if isApprovedStatus(l.Verification) {
+		// Send SMS to requester when they are approved
+		notifyApprovalDecision(
+			l.LoungeContact,
+			"lounge",
+			"approved",
+			formatDecisionDetail("Lounge", l.LoungeName),
+			formatDecisionDetail("Owner", l.LoungeOwner),
+		)
+	}
+	return nil
+}

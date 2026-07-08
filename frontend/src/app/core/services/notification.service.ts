@@ -122,8 +122,24 @@ export class NotificationService {
   readonly pendingBusOwners$ = this._pendingBusOwners$.asObservable();
   readonly pendingLoungeOwners$ = this._pendingLoungeOwners$.asObservable();
 
+  private pollingInterval: any;
+
   constructor(private http: HttpClient) {
     this.loadAllPendingNotifications();
+    this.startPolling();
+  }
+
+  startPolling(): void {
+    // Poll every 15 seconds for new notifications
+    this.pollingInterval = setInterval(() => {
+      this.loadAllPendingNotifications();
+    }, 15000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
   }
 
   get totalPendingCount(): number {

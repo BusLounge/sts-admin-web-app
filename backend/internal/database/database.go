@@ -32,6 +32,47 @@ func Init(cfg *config.Config) {
 	_, err = DB.Exec(`
 		CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+		CREATE TABLE IF NOT EXISTS advertisement_groups (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			group_name TEXT NOT NULL,
+			lounges TEXT NOT NULL,
+			no_of_advertisements INT DEFAULT 0,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+			updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+		);
+
+		CREATE TABLE IF NOT EXISTS advertisements (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			advertisement_name TEXT,
+			description TEXT,
+			advertisement_category TEXT,
+			media_duration INT,
+			media_url TEXT,
+			media_type TEXT,
+			lounge_group_name TEXT,
+			priority TEXT,
+			version INT DEFAULT 1,
+			schedule_type TEXT,
+			frequency TEXT,
+			recurrence_interval INT,
+			occurs_once_at TIMESTAMP WITH TIME ZONE,
+			occurs_every_interval INT,
+			weekly_days TEXT,
+			monthly_day_of_month INT,
+			monthly_week TEXT,
+			monthly_day TEXT,
+			start_time TIME,
+			end_time TIME,
+			max_idle_loop_duration INT,
+			status TEXT DEFAULT 'active',
+			start_date DATE,
+			end_date DATE,
+			selected_time_slots TEXT,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+			updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+		);
+		ALTER TABLE advertisements ADD COLUMN IF NOT EXISTS selected_time_slots TEXT;
+
 		CREATE TABLE IF NOT EXISTS bus_staff (
 			id uuid default uuid_generate_v4() primary key,
 			staff_type text not null,
@@ -340,6 +381,52 @@ func Init(cfg *config.Config) {
 		CREATE INDEX IF NOT EXISTS idx_admin_users_supervisor_id ON admin_users(supervisor_id);
 		CREATE INDEX IF NOT EXISTS idx_admin_users_created_at ON admin_users(created_at DESC);
 		CREATE INDEX IF NOT EXISTS idx_complaint_escalations_source_app ON complaint_escalations(source_app);
+
+		-- OTP Master Table
+		CREATE TABLE IF NOT EXISTS otp_master (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			otp TEXT NOT NULL,
+			phone TEXT,
+			app_name TEXT,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+		);
+		CREATE INDEX IF NOT EXISTS idx_otp_master_created_at ON otp_master(created_at DESC);
+
+		-- Master Routes Table (for route management)
+		CREATE TABLE IF NOT EXISTS master_routes (
+			id                        UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			route_number              TEXT NOT NULL,
+			route_name                TEXT NOT NULL,
+			origin_city               TEXT NOT NULL DEFAULT '',
+			destination_city          TEXT NOT NULL DEFAULT '',
+			total_distance_km         TEXT NOT NULL DEFAULT '0',
+			estimated_duration_minutes INTEGER NOT NULL DEFAULT 210,
+			encoded_polyline          TEXT NOT NULL DEFAULT '',
+			is_active                 BOOLEAN NOT NULL DEFAULT true,
+			created_at                TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+			updated_at                TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+		);
+
+		ALTER TABLE master_routes ADD COLUMN IF NOT EXISTS origin_city TEXT NOT NULL DEFAULT '';
+		ALTER TABLE master_routes ADD COLUMN IF NOT EXISTS destination_city TEXT NOT NULL DEFAULT '';
+
+		CREATE INDEX IF NOT EXISTS idx_master_routes_route_number ON master_routes(route_number);
+		CREATE INDEX IF NOT EXISTS idx_master_routes_is_active ON master_routes(is_active);
+
+		-- System Settings Table
+		CREATE TABLE IF NOT EXISTS system_settings (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			setting_key TEXT UNIQUE NOT NULL,
+			setting_value JSONB NOT NULL,
+			description TEXT,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+			updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+		);
+		
+		-- Insert default notification settings if they don't exist
+		INSERT INTO system_settings (setting_key, setting_value)
+		VALUES ('admin_notification_phones', '{"lounge_owner": ["94715342627"], "lounge": ["94715342627"], "bus_owner": ["94715342627"], "driver": ["94715342627"], "conductor": ["94715342627"]}'::jsonb)
+		ON CONFLICT (setting_key) DO NOTHING;
 	`)
 	if err != nil {
 		log.Printf("Error creating/updating tables: %v", err)

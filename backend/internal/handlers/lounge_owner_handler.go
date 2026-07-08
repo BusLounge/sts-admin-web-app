@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strings"
+	"sts-backend/internal/models"
 	"sts-backend/internal/services"
 
 	"github.com/gin-gonic/gin"
@@ -75,4 +76,22 @@ func VerifyLoungeOwner(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Lounge owner verification updated successfully"})
+}
+
+func CreateLoungeOwner(c *gin.Context) {
+	var owner models.LoungeOwner
+	if err := c.ShouldBindJSON(&owner); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := services.CreateLoungeOwner(&owner); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Lounge owner created successfully",
+		"id":      owner.ID,
+	})
 }

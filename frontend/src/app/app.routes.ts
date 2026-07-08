@@ -28,6 +28,9 @@ import { ComplaintManagementComponent } from './pages/complaint-management/compl
 import { AssignedComplaintsComponent } from './pages/assigned-complaints/assigned-complaints.component';
 import { SearchResultsComponent } from './pages/search-results/search-results.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
+import { AdvertisementManagementComponent } from './pages/advertisement-management/advertisement-management.component';
+import { RouteManagementComponent } from './pages/route-management/route-management.component';
+import { OtpManagementComponent } from './pages/otp-management/otp-management.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -61,5 +64,8 @@ export const routes: Routes = [
   { path: 'notification-details', component: NotificationDetailsComponent },
   { path: 'search-results', component: SearchResultsComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'advertisement-management', component: AdvertisementManagementComponent },
+  { path: 'route-management', component: RouteManagementComponent },
+  { path: 'otp-management', component: OtpManagementComponent },
   { path: '**', redirectTo: '' }
 ];

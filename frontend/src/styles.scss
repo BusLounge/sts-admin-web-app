@@ -508,3 +508,74 @@ tbody tr:hover {
     align-items: stretch !important;
   }
 }
+
+/* Hide BusLounge text globally */
+.app-name { display: none !important; }
+
+
+/* Hide app branding globally */
+.app-branding { display: none !important; }
+
+
+
+/* Make the entire top row a seamless blue bar, fixed to the top */
+.top-navigation-row { 
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  padding: 0 !important; 
+  margin: 0 !important;
+  border: none !important; 
+  background: linear-gradient(135deg, #1e3a8a, #2563eb) !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+  z-index: 9999 !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* Ensure right actions align properly without their own background */
+.top-navigation-row .header-actions {
+  padding-right: 1.5rem !important;
+  padding-left: 0.5rem !important;
+  background: transparent !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Ensure profile and notification icons are visible */
+.top-navigation-row .header-actions .icon-btn { 
+  color: #ffffff !important; 
+  background: transparent !important; 
+  border: none !important; 
+  box-shadow: none !important; 
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.top-navigation-row .header-actions .icon-btn svg { 
+  stroke: #ffffff !important; 
+  color: #ffffff !important;
+}
+
+.top-navigation-row .header-actions .icon-btn i { 
+  color: #ffffff !important; 
+}
+
+/* Add padding to body so fixed navbar doesn't cover content */
+body {
+  padding-top: 60px !important; 
+}
+
+
+/* Hide old duplicated header-actions on pages to avoid double icons, since they are now in the navbar component */
+.top-navigation-row > .header-actions { display: none !important; }
+
+
+/* Ensure app-navbar stretches to full width to push icons to the right */
+app-navbar { display: flex !important; flex: 1 !important; width: 100% !important; }
+

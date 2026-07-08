@@ -472,186 +472,97 @@
       <div *ngIf="activeSection === 'Notification Settings'" class="notification-settings-section">
         <div class="section-header">
           <h2>Notification Settings</h2>
+          <p>Manage SMS alert phone numbers for approval requests.</p>
         </div>
         
-        <div class="notification-grid">
-          <!-- Left Column -->
-          <div class="notification-card">
-            <h3>Notifications</h3>
+        <div class="notification-card full-width-card">
+          <h3>Admin Notification SMS Phones</h3>
+          <p class="card-subtitle">Add or remove phone numbers that receive SMS alerts when a new request is pending.</p>
+          
+          <div class="phone-settings-grid">
+            <!-- Lounge Owner Requests -->
+            <div class="form-group phone-group mt-20">
+              <label>Lounge Owner Requests</label>
+              <div class="phone-input-row">
+                <input pInputText type="text" [(ngModel)]="newPhoneInputs.lounge_owner" placeholder="e.g. +94715342627" (keyup.enter)="addPhone('lounge_owner')" />
+                <button pButton icon="pi pi-plus" class="p-button-primary" style="background-color: #007bff; border-color: #007bff;" (click)="addPhone('lounge_owner')" [disabled]="!newPhoneInputs.lounge_owner"></button>
+              </div>
+              <div class="phone-tags-container mt-2">
+                <span class="phone-tag" *ngFor="let phone of notificationAdminPhones.lounge_owner; let i = index">
+                  {{ phone }}
+                  <i class="pi pi-times remove-icon" (click)="removePhone('lounge_owner', i)"></i>
+                </span>
+                <span class="no-phones" *ngIf="notificationAdminPhones.lounge_owner.length === 0">No numbers added.</span>
+              </div>
+            </div>
             
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Bus Notification</h4>
-                <p>Add new bus requests,Modification bus details...</p>
+            <!-- Lounge Requests -->
+            <div class="form-group phone-group mt-20">
+              <label>Lounge Requests</label>
+              <div class="phone-input-row">
+                <input pInputText type="text" [(ngModel)]="newPhoneInputs.lounge" placeholder="e.g. +94715342627" (keyup.enter)="addPhone('lounge')" />
+                <button pButton icon="pi pi-plus" class="p-button-primary" style="background-color: #007bff; border-color: #007bff;" (click)="addPhone('lounge')" [disabled]="!newPhoneInputs.lounge"></button>
               </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.busNotification">
-                <span class="slider"></span>
-              </label>
+              <div class="phone-tags-container mt-2">
+                <span class="phone-tag" *ngFor="let phone of notificationAdminPhones.lounge; let i = index">
+                  {{ phone }}
+                  <i class="pi pi-times remove-icon" (click)="removePhone('lounge', i)"></i>
+                </span>
+                <span class="no-phones" *ngIf="notificationAdminPhones.lounge.length === 0">No numbers added.</span>
+              </div>
             </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Driver Notification</h4>
-                <p>Add new driver requests,Modification driver details...</p>
+            
+            <!-- Bus Owner Requests -->
+            <div class="form-group phone-group mt-20">
+              <label>Bus Owner Requests</label>
+              <div class="phone-input-row">
+                <input pInputText type="text" [(ngModel)]="newPhoneInputs.bus_owner" placeholder="e.g. +94715342627" (keyup.enter)="addPhone('bus_owner')" />
+                <button pButton icon="pi pi-plus" class="p-button-primary" style="background-color: #007bff; border-color: #007bff;" (click)="addPhone('bus_owner')" [disabled]="!newPhoneInputs.bus_owner"></button>
               </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.driverNotification">
-                <span class="slider"></span>
-              </label>
+              <div class="phone-tags-container mt-2">
+                <span class="phone-tag" *ngFor="let phone of notificationAdminPhones.bus_owner; let i = index">
+                  {{ phone }}
+                  <i class="pi pi-times remove-icon" (click)="removePhone('bus_owner', i)"></i>
+                </span>
+                <span class="no-phones" *ngIf="notificationAdminPhones.bus_owner.length === 0">No numbers added.</span>
+              </div>
             </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Conductor Notification</h4>
-                <p>Add new conductor requests,Modification conductor details</p>
+            
+            <!-- Driver Requests -->
+            <div class="form-group phone-group mt-20">
+              <label>Driver Requests</label>
+              <div class="phone-input-row">
+                <input pInputText type="text" [(ngModel)]="newPhoneInputs.driver" placeholder="e.g. +94715342627" (keyup.enter)="addPhone('driver')" />
+                <button pButton icon="pi pi-plus" class="p-button-primary" style="background-color: #007bff; border-color: #007bff;" (click)="addPhone('driver')" [disabled]="!newPhoneInputs.driver"></button>
               </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.conductorNotification">
-                <span class="slider"></span>
-              </label>
+              <div class="phone-tags-container mt-2">
+                <span class="phone-tag" *ngFor="let phone of notificationAdminPhones.driver; let i = index">
+                  {{ phone }}
+                  <i class="pi pi-times remove-icon" (click)="removePhone('driver', i)"></i>
+                </span>
+                <span class="no-phones" *ngIf="notificationAdminPhones.driver.length === 0">No numbers added.</span>
+              </div>
             </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Lounges Notification</h4>
-                <p>Add new lounges requests,Modification lounge details</p>
+            
+            <!-- Conductor Requests -->
+            <div class="form-group phone-group mt-20">
+              <label>Conductor Requests</label>
+              <div class="phone-input-row">
+                <input pInputText type="text" [(ngModel)]="newPhoneInputs.conductor" placeholder="e.g. +94715342627" (keyup.enter)="addPhone('conductor')" />
+                <button pButton icon="pi pi-plus" class="p-button-primary" style="background-color: #007bff; border-color: #007bff;" (click)="addPhone('conductor')" [disabled]="!newPhoneInputs.conductor"></button>
               </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.loungesNotification">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Lounge Booking Notifications</h4>
-                <p>Add new lounge bookings,Modification lounge booking details</p>
+              <div class="phone-tags-container mt-2">
+                <span class="phone-tag" *ngFor="let phone of notificationAdminPhones.conductor; let i = index">
+                  {{ phone }}
+                  <i class="pi pi-times remove-icon" (click)="removePhone('conductor', i)"></i>
+                </span>
+                <span class="no-phones" *ngIf="notificationAdminPhones.conductor.length === 0">No numbers added.</span>
               </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.loungeBookingNotification">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Bus Booking Notifications</h4>
-                <p>Add new Bus bookings,Modification Bus booking details</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.busBookingNotification">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Complaints Notifications</h4>
-                <p>This notifications send by Customer service,other teams .</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.complaintsNotification">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Complaints</h4>
-                <p>This Notifications come from complaints module in system</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.complaints">
-                <span class="slider"></span>
-              </label>
             </div>
           </div>
-
-          <!-- Right Column -->
-          <div class="notification-card">
-            <h3>Quiet Hours</h3>
-            <p class="card-subtitle">For when notifications should be muted</p>
-            
-            <div class="notification-item quiet-hours-toggle">
-              <div class="notification-info">
-                <h4>Enable Quiet Hours</h4>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.quietHours.enabled">
-                <span class="slider"></span>
-              </label>
-            </div>
-            
-            <div class="radio-group" [class.disabled]="!notificationSettings.quietHours.enabled">
-              <div class="radio-item">
-                <input type="radio" id="qh1" name="quietHours" value="1 hour" [(ngModel)]="notificationSettings.quietHours.duration" [disabled]="!notificationSettings.quietHours.enabled">
-                <label for="qh1">1 hour</label>
-              </div>
-              <div class="radio-item">
-                <input type="radio" id="qh4" name="quietHours" value="4 Hours" [(ngModel)]="notificationSettings.quietHours.duration" [disabled]="!notificationSettings.quietHours.enabled">
-                <label for="qh4">4 Hours</label>
-              </div>
-              <div class="radio-item">
-                <input type="radio" id="qh8" name="quietHours" value="8 Hours" [(ngModel)]="notificationSettings.quietHours.duration" [disabled]="!notificationSettings.quietHours.enabled">
-                <label for="qh8">8 Hours</label>
-              </div>
-            </div>
-
-            <div class="notification-item mt-large">
-              <div class="notification-info">
-                <h4>Enable Desktop Notifications</h4>
-                <p>Allow the system to show real-time pop-up alerts on your computer screen.</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.desktopNotifications">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Enable Unread Notification Badge</h4>
-                <p>Display a red badge showing the number of unread notifications on the top bar.</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.unreadBadge">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Notification Sounds</h4>
-                <p>Play a sound whenever a new notification arrives.</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.notificationSounds">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Email Alerts</h4>
-                <p>Receive an email whenever a new system or user notification is triggered.</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.emailAlerts">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="notification-item">
-              <div class="notification-info">
-                <h4>Auto-Mark as Read</h4>
-                <p>Automatically mark notifications as read after they are opened.</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" [(ngModel)]="notificationSettings.autoMarkRead">
-                <span class="slider"></span>
-              </label>
-            </div>
+          
+          <div class="form-actions mt-30">
+            <button pButton label="Save Changes" icon="pi pi-check" [loading]="isLoadingNotificationPhones" class="p-button-primary w-full max-w-sm save-changes-btn" (click)="saveNotificationAdminPhones()"></button>
           </div>
         </div>
       </div>

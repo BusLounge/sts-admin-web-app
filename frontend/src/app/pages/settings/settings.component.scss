@@ -798,18 +798,130 @@
       .notification-info {
         h4 {
           font-size: 16px;
-          font-weight: 400;
+          font-weight: 600;
           color: var(--text-primary);
-          margin-top: 0;
-          margin-bottom: 4px;
+          margin-bottom: 5px;
         }
 
         p {
           font-size: 13px;
           color: var(--text-secondary);
           line-height: 1.4;
-          margin: 0;
         }
+      }
+    }
+
+    .full-width-card {
+      grid-column: 1 / -1;
+    }
+
+    .phone-settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .phone-input-row {
+      display: flex;
+      gap: 10px;
+      
+      input {
+        flex: 1;
+      }
+      
+      button {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+    }
+
+    .phone-tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 32px;
+      padding-top: 8px;
+      
+      .phone-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background-color: var(--color-primary-50);
+        color: var(--primary-color);
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid rgba(0, 70, 255, 0.2);
+        
+        .remove-icon {
+          font-size: 10px;
+          cursor: pointer;
+          opacity: 0.7;
+          transition: opacity 0.2s;
+          
+          &:hover {
+            opacity: 1;
+            color: #e91e63;
+          }
+        }
+      }
+      
+      .no-phones {
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-style: italic;
+        padding-top: 4px;
+      }
+    }
+
+    .mt-20 {
+      margin-top: 20px;
+    }
+
+    .mt-30 {
+      margin-top: 30px;
+      
+      .save-changes-btn {
+        background-color: #007bff !important;
+        border-color: #007bff !important;
+        color: #ffffff !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        padding: 12px 24px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2) !important;
+        border-radius: 8px !important;
+        
+        &:hover {
+          background-color: #0056b3 !important;
+          border-color: #0056b3 !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3) !important;
+        }
+
+        &:active {
+          transform: translateY(0) !important;
+        }
+      }
+    }
+
+    .mb-20 {
+      margin-bottom: 20px;
+    }
+
+    .p-chips {
+      width: 100%;
+      
+      .p-inputtext {
+        width: 100%;
+        background-color: var(--bg-primary);
+        border: 1px solid var(--color-border-light);
+        border-radius: 8px;
+        color: var(--text-primary);
       }
     }
 

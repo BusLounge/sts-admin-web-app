@@ -54,7 +54,20 @@ func isApprovedStatus(status string) bool {
 
 func notifyApprovalRequest(requestType string, details ...string) {
 	cfg := loadApprovalNotificationConfig()
-	phoneList := strings.Split(cfg.ApprovalNotificationPhone, ",")
+	
+	// Map requestType to settings key
+	settingsKey := strings.ReplaceAll(requestType, " ", "_")
+	
+	var phoneList []string
+	
+	// Try to get from database first
+	settings, err := GetNotificationSettings()
+	if err == nil && len(settings[settingsKey]) > 0 {
+		phoneList = settings[settingsKey]
+	} else {
+		// Fallback to .env config
+		phoneList = strings.Split(cfg.ApprovalNotificationPhone, ",")
+	}
 
 	var recipients []string
 	for _, phone := range phoneList {

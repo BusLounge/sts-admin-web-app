@@ -69,3 +69,32 @@ func VerifyBusOwner(id string, status string, documents interface{}) error {
 
 	return nil
 }
+
+func ProcessBusOwnerWebhook(owner models.BusOwner) error {
+	if isPendingApprovalStatus(owner.VerificationStatus) {
+		notifyApprovalRequest(
+			"bus owner",
+			fmt.Sprintf("Company: %s", owner.CompanyName),
+			fmt.Sprintf("Business email: %s", owner.BusinessEmail),
+			fmt.Sprintf("Business phone: %s", owner.BusinessPhone),
+			fmt.Sprintf("Identity/registration: %s", owner.IdentityOrIncorporationNo),
+		)
+
+		// Notify the requester that their request was received
+		notifyApprovalDecision(
+			owner.BusinessPhone,
+			"bus owner",
+			"received and is currently pending approval",
+		)
+	} else if isApprovedStatus(owner.VerificationStatus) {
+		// Send SMS to requester when they are approved
+		notifyApprovalDecision(
+			owner.BusinessPhone,
+			"bus owner",
+			"approved",
+			formatDecisionDetail("Company", owner.CompanyName),
+			formatDecisionDetail("Email", owner.BusinessEmail),
+		)
+	}
+	return nil
+}

@@ -1,0 +1,303 @@
+.bus-container {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  // Profile Dropdown Styles
+  .profile-dropdown-container {
+    position: relative;
+    
+    .dropdown-menu {
+      position: absolute;
+      top: 120%;
+      right: 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+      padding: 0.5rem;
+      min-width: 180px;
+      z-index: 1000;
+      border: 1px solid var(--border-color);
+
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+
+        i {
+          color: var(--text-secondary);
+          font-size: 1rem;
+          width: 20px;
+          text-align: center;
+        }
+
+        &:hover {
+          background: var(--bg-secondary);
+          color: var(--primary-color);
+          
+          i {
+            color: var(--primary-color);
+          }
+        }
+      }
+    }
+  }
+
+  // New Navbar Styles
+  .top-navigation-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 0.5rem 0;
+    overflow: visible;
+    gap: 0.5rem;
+
+    .app-branding {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      padding-right: 10px;
+      flex-shrink: 0;
+      
+      .logo-circle {
+        width: 28px;
+        height: 28px;
+        background: var(--primary-color);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        box-shadow: none;
+        transform: none;
+        transition: transform 180ms ease;
+
+        &:hover {
+          transform: translateY(-1px);
+        }
+      }
+
+      .app-name {
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        letter-spacing: -0.3px;
+        background: none;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    }
+
+    app-navbar {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.1rem;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+        color: var(--color-text-secondary);
+        position: relative;
+
+        &:hover {
+          background-color: rgba(0, 70, 255, 0.1);
+        }
+
+        svg {
+          width: 24px;
+          height: 24px;
+          color: var(--color-text-secondary);
+        }
+      }
+    }
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+
+    .header-content {
+      flex: 1;
+
+      h2 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+        color: var(--text-primary);
+      }
+    }
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+  }
+
+  .search-filter-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .search-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border-color);
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+    }
+  }
+
+  .search-input {
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    width: 250px;
+
+    &::placeholder {
+      color: var(--text-secondary);
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .clear-search-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  .filter-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .filter-select {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .export-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+      background-color: #2563eb;
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .bus-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--flat-shadow);
+    
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    th {
+      font-weight: 600;
+      color: var(--text-secondary);
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    .otp-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: rgba(99, 102, 241, 0.1);
+      color: #6366f1;
+      border-radius: 4px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
+  }
+}

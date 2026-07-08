@@ -194,6 +194,37 @@ func main() {
 		api.GET("/departures/lounge/:id", func(c *gin.Context) {
 			c.JSON(200, gin.H{"items": []interface{}{}})
 		})
+
+		// Advertisement endpoints
+		api.GET("/advertisements", handlers.GetAdvertisements)
+		api.POST("/advertisements", handlers.CreateAdvertisement)
+		api.PUT("/advertisements/:id", handlers.UpdateAdvertisement)
+		api.DELETE("/advertisements/:id", handlers.DeleteAdvertisement)
+		api.POST("/advertisements/upload-media", handlers.UploadMedia)
+
+		api.GET("/advertisement-groups", handlers.GetAdvertisementGroups)
+		api.POST("/advertisement-groups", handlers.CreateAdvertisementGroup)
+		api.PUT("/advertisement-groups/:id", handlers.UpdateAdvertisementGroup)
+		api.DELETE("/advertisement-groups/:id", handlers.DeleteAdvertisementGroup)
+
+		// Route management endpoints
+		routeHandler := handlers.NewRouteHandler(database.DB)
+		api.GET("/routes", routeHandler.GetRoutes)
+		api.GET("/routes/:id", routeHandler.GetRoute)
+		api.GET("/routes/:id/stops", routeHandler.GetRouteStops)
+		api.POST("/routes", routeHandler.CreateRoute)
+		api.PUT("/routes/:id", routeHandler.UpdateRoute)
+		api.DELETE("/routes/:id", routeHandler.DeleteRoute)
+
+		// OTP Master endpoint
+		api.GET("/otp-master", handlers.GetOTPMasterData)
+
+		// System Settings
+		api.GET("/settings/notifications", handlers.GetNotificationSettings)
+		api.PUT("/settings/notifications", handlers.UpdateNotificationSettings)
+
+		// Webhooks
+		api.POST("/webhooks/supabase", handlers.HandleSupabaseWebhook)
 	}
 
 	log.Printf("Server starting on port %s", cfg.Port)

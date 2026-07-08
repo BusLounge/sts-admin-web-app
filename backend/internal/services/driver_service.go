@@ -71,3 +71,39 @@ func UpdateDriverVerification(id string, status string, documents string) error 
 
 	return nil
 }
+
+func ProcessBusStaffWebhook(staff map[string]interface{}) error {
+	staffType, _ := staff["staff_type"].(string)
+	verificationStatus, _ := staff["verification_status"].(string)
+	contactNumber, _ := staff["emergency_contact"].(string)
+	firstName, _ := staff["first_name"].(string)
+	lastName, _ := staff["last_name"].(string)
+	name := firstName + " " + lastName
+	if name == " " {
+		name, _ = staff["emergency_contact_name"].(string)
+	}
+
+	if isPendingApprovalStatus(verificationStatus) {
+		notifyApprovalRequest(
+			staffType,
+			fmt.Sprintf("Name: %s", name),
+			fmt.Sprintf("Contact: %s", contactNumber),
+		)
+
+		// Notify the requester that their request was received
+		notifyApprovalDecision(
+			contactNumber,
+			staffType,
+			"received and is currently pending approval",
+		)
+	} else if isApprovedStatus(verificationStatus) {
+		// Send SMS to requester when they are approved
+		notifyApprovalDecision(
+			contactNumber,
+			staffType,
+			"approved",
+			formatDecisionDetail("Name", name),
+		)
+	}
+	return nil
+}

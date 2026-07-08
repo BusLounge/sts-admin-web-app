@@ -1313,3 +1313,15 @@ CREATE TABLE public.users (
   function_permissions jsonb NOT NULL DEFAULT '[]'::jsonb,
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
+
+CREATE TABLE public.admin_notification_settings (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  lounge_owner_request_mobiles text[] DEFAULT '{}'::text[],
+  lounge_request_mobiles text[] DEFAULT '{}'::text[],
+  bus_owner_request_mobiles text[] DEFAULT '{}'::text[],
+  driver_request_mobiles text[] DEFAULT '{}'::text[],
+  conductor_request_mobiles text[] DEFAULT '{}'::text[],
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT admin_notification_settings_pkey PRIMARY KEY (id)
+);

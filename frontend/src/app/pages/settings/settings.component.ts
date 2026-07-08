@@ -14,6 +14,7 @@ import { NotificationPanelComponent } from '../../shared/components/notification
 import { NotificationService } from '../../core/services/notification.service';
 import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { UserManagementService } from '../../core/services/user-management.service';
+import { SystemSettingsService, NotificationSettings } from '../../core/services/system-settings.service';
 
 @Component({
   selector: 'app-settings',
@@ -192,6 +193,7 @@ export class SettingsComponent implements OnInit {
   // Menu items accessible to both admin and super_admin
   private commonMenuItems = [
     'Profile Setting',
+    'Notification Settings',
     'System Appearance'
   ];
 
@@ -240,14 +242,28 @@ export class SettingsComponent implements OnInit {
     failedLoginProtection: true
   };
 
+  newPhoneInputs = {
+    lounge_owner: '',
+    lounge: '',
+    bus_owner: '',
+    driver: '',
+    conductor: ''
+  };
 
-
-  constructor(
+  notificationAdminPhones: NotificationSettings = {
+    lounge_owner: [],
+    lounge: [],
+    bus_owner: [],
+    driver: [],
+    conductor: []
+  };
+  isLoadingNotificationPhones = false;  constructor(
     private router: Router, 
     @Inject(PLATFORM_ID) private platformId: Object, 
     public notificationService: NotificationService,
     private authService: AdminAuthService,
-    private userManagementService: UserManagementService
+    private userManagementService: UserManagementService,
+    private systemSettingsService: SystemSettingsService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -256,6 +272,7 @@ export class SettingsComponent implements OnInit {
     // Check user role and filter menu items
     this.isSuperAdmin = this.authService.isSuperAdmin();
     this.filterMenuItems();
+    this.loadNotificationAdminPhones();
 
     // Load current user profile
     const currentUser = this.authService.getCurrentAdmin();
@@ -876,5 +893,54 @@ showProfileMenu = false;
     console.log('Cancelling system preferences changes');
     // Revert to original theme
     this.selectTheme(this.originalTheme);
+  }
+
+  loadNotificationAdminPhones() {
+    this.isLoadingNotificationPhones = true;
+    this.systemSettingsService.getNotificationSettings().subscribe({
+      next: (settings) => {
+        const defaultPhones = ['+94715342627', '+94772945875'];
+        this.notificationAdminPhones = {
+          lounge_owner: settings.lounge_owner?.length ? settings.lounge_owner : [...defaultPhones],
+          lounge: settings.lounge?.length ? settings.lounge : [...defaultPhones],
+          bus_owner: settings.bus_owner?.length ? settings.bus_owner : [...defaultPhones],
+          driver: settings.driver?.length ? settings.driver : [...defaultPhones],
+          conductor: settings.conductor?.length ? settings.conductor : [...defaultPhones]
+        };
+        this.isLoadingNotificationPhones = false;
+      },
+      error: (err) => {
+        console.error('Failed to load notification settings', err);
+        this.isLoadingNotificationPhones = false;
+      }
+    });
+  }
+
+  addPhone(category: keyof NotificationSettings) {
+    const val = this.newPhoneInputs[category]?.trim();
+    if (val && !this.notificationAdminPhones[category].includes(val)) {
+      this.notificationAdminPhones[category].push(val);
+      this.newPhoneInputs[category] = '';
+    }
+  }
+
+  removePhone(category: keyof NotificationSettings, index: number) {
+    this.notificationAdminPhones[category].splice(index, 1);
+  }
+
+  saveNotificationAdminPhones() {
+    this.isLoadingNotificationPhones = true;
+    
+    this.systemSettingsService.updateNotificationSettings(this.notificationAdminPhones).subscribe({
+      next: () => {
+        alert('Notification settings saved successfully!');
+        this.isLoadingNotificationPhones = false;
+      },
+      error: (err) => {
+        console.error('Failed to save notification settings', err);
+        alert('Failed to save notification settings.');
+        this.isLoadingNotificationPhones = false;
+      }
+    });
   }
 }

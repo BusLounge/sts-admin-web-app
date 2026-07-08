@@ -119,6 +119,15 @@
           <span *ngIf="sidebarOpen">Bus booking Management</span>
         </a>
       </li>
+      <li class="nav-item" [class.active]="currentPage === 'otp-management'">
+        <a (click)="setActivePage('otp-management'); navigate.emit('otp-management')" class="nav-link">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="2" width="16" height="20" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span *ngIf="sidebarOpen">OTP Master</span>
+        </a>
+      </li>
       <li class="nav-item bus-staff-nav-item">
         <a class="nav-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

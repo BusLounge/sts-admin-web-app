@@ -139,3 +139,33 @@ func VerifyLoungeOwner(id string, status string, notes string) error {
 
 	return nil
 }
+
+func CreateLoungeOwner(owner *models.LoungeOwner) error {
+	query := `
+		INSERT INTO lounge_owners (
+			user_id, manager_full_name, email, contact_number, nic,
+			business_name, business_license, verification_status, verification_notes
+		) VALUES (
+			NULLIF($1, ''), $2, $3, $4, $5, $6, $7, $8, $9
+		) RETURNING id
+	`
+
+	err := DB.QueryRow(
+		query,
+		owner.UserID,
+		owner.ManagerFullName,
+		owner.Email,
+		owner.ContactNumber,
+		owner.NIC,
+		owner.BusinessName,
+		owner.BusinessLicense,
+		owner.VerificationStatus,
+		owner.VerificationNotes,
+	).Scan(&owner.ID)
+
+	if err != nil {
+		return fmt.Errorf("error creating lounge owner: %w", err)
+	}
+
+	return nil
+}
