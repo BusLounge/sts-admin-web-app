@@ -61,18 +61,18 @@
         <a href="#" (click)="openForgotPasswordModal($event)">Forgot Password?</a>
       </div>
 
-      <div class="error-message" *ngIf="errorMessage">
+      <div class="error-message" *ngIf="errorMessage()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        {{ errorMessage }}
+        {{ errorMessage() }}
       </div>
 
-      <button type="submit" class="login-btn" [disabled]="isLoading">
-        <span *ngIf="!isLoading">Login</span>
-        <span *ngIf="isLoading" class="loading">
+      <button type="submit" class="login-btn" [disabled]="isLoading()">
+        <span *ngIf="!isLoading()">Login</span>
+        <span *ngIf="isLoading()" class="loading">
           <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
               <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
@@ -91,7 +91,7 @@
 </div>
 
 <!-- Forgot Password Modal -->
-<div class="modal-overlay" *ngIf="showForgotPasswordModal" (click)="closeForgotPasswordModal()">
+<div class="modal-overlay" *ngIf="showForgotPasswordModal()" (click)="closeForgotPasswordModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Reset Password</h2>
@@ -127,26 +127,26 @@
           </div>
         </div>
 
-        <div class="success-message" *ngIf="resetSuccessMessage">
+        <div class="success-message" *ngIf="resetSuccessMessage()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.7088 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <polyline points="22,4 12,14.01 9,11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          {{ resetSuccessMessage }}
+          {{ resetSuccessMessage() }}
         </div>
 
-        <div class="error-message" *ngIf="resetErrorMessage">
+        <div class="error-message" *ngIf="resetErrorMessage()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          {{ resetErrorMessage }}
+          {{ resetErrorMessage() }}
         </div>
 
-        <button type="submit" class="reset-btn" [disabled]="isResetLoading">
-          <span *ngIf="!isResetLoading">Send Reset Link</span>
-          <span *ngIf="isResetLoading" class="loading">
+        <button type="submit" class="reset-btn" [disabled]="isResetLoading()">
+          <span *ngIf="!isResetLoading()">Send Reset Link</span>
+          <span *ngIf="isResetLoading()" class="loading">
             <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
                 <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
