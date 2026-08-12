@@ -301,7 +301,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
       if (lounge.latitude && lounge.longitude && (lounge.latitude !== 0 || lounge.longitude !== 0)) {
         
         // Filter based on active route proximity if a route is selected
-        if (this.isEditMode) {
+        if (this.isEditMode || this.selectedRoutesForView.length > 0) {
           let isNearAnyRoute = false;
 
           if (this.selectedRoutesForView.length > 0) {
@@ -465,19 +465,14 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
       this.selectedRoutesForView = this.selectedRoutesForView.filter(r => r.id !== route.id);
     }
     
-    // If no routes are selected, clear map and exit edit mode
+    // If no routes are selected, clear map and exit multi-view
     if (this.selectedRoutesForView.length === 0) {
-      this.exitEditMode();
+      this.clearMapLayers();
+      this.renderLounges(); // Reset lounges to show all
       return;
     }
 
-    // Set UI state for viewing
-    this.isEditMode = true;
-    this.isReadOnlyMode = true;
-    this.editModeType = 'select'; // view only
-    this.activeTab = 'points';
-    
-    // Render the routes
+    // Render the routes (do NOT enter Edit Mode, keep the list open)
     this.renderMultiRoutesOnMap();
   }
 
