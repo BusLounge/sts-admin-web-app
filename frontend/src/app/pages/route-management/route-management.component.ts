@@ -55,7 +55,13 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
   private markersLayer: any[] = [];
   private selectionRect: any = null;
   private loungeFeatureGroup: any = null;
+  private multiPolylinesLayer: any = null;
+  private multiMarkersLayer: any[] = [];
   private isBrowser = false;
+
+  // ── Multi-route view ──────────────────────────────────────────────────
+  selectedRoutesForView: MasterRoute[] = [];
+  routeColors: string[] = ['#6366f1', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#0ea5e9'];
 
   // ── Edit mode ────────────────────────────────────────────────────────
   isEditMode = false;
@@ -295,9 +301,36 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
       if (lounge.latitude && lounge.longitude && (lounge.latitude !== 0 || lounge.longitude !== 0)) {
         
         // Filter based on active route proximity if a route is selected
-        if (this.isEditMode && this.editableRoute && this.editableRoute.points && this.editableRoute.points.length > 0) {
-          const dist = this.getDistanceToPolyline(lounge.latitude, lounge.longitude, this.editableRoute.points);
-          if (dist > LOUNGE_MAX_DISTANCE_KM) {
+        if (this.isEditMode) {
+          let isNearAnyRoute = false;
+
+          if (this.selectedRoutesForView.length > 0) {
+            // Check against all selected multi-routes
+            for (const route of this.selectedRoutesForView) {
+              if (!route.encoded_polyline) continue;
+              try {
+                const points = decodePolyline(route.encoded_polyline);
+                const dist = this.getDistanceToPolyline(lounge.latitude, lounge.longitude, points);
+                if (dist <= LOUNGE_MAX_DISTANCE_KM) {
+                  isNearAnyRoute = true;
+                  break;
+                }
+              } catch (e) {
+                // Ignore decode error for individual route
+              }
+            }
+          } else if (this.editableRoute && this.editableRoute.points && this.editableRoute.points.length > 0) {
+            // Check against single editable route
+            const dist = this.getDistanceToPolyline(lounge.latitude, lounge.longitude, this.editableRoute.points);
+            if (dist <= LOUNGE_MAX_DISTANCE_KM) {
+              isNearAnyRoute = true;
+            }
+          } else {
+            // If edit mode but no routes loaded yet, show it (or hide it?) Let's show it.
+            isNearAnyRoute = true;
+          }
+
+          if (!isNearAnyRoute) {
             return; // Skip rendering this lounge
           }
         }
@@ -414,10 +447,42 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
       this.generatedPolyline = route.encoded_polyline;
       this.selectedIndices.clear();
       this.activeTab = 'points';
-      this.renderEditableRoute();
+      
+      this.selectedRoutesForView = [route];
+      this.renderMultiRoutesOnMap();
     } catch (e) {
       this.showError('Could not decode polyline for this route.');
     }
+  }
+
+  toggleMultiSelectRoute(route: MasterRoute, event: any): void {
+    const isChecked = event.target.checked;
+    if (isChecked) {
+      if (!this.selectedRoutesForView.some(r => r.id === route.id)) {
+        this.selectedRoutesForView.push(route);
+      }
+    } else {
+      this.selectedRoutesForView = this.selectedRoutesForView.filter(r => r.id !== route.id);
+    }
+    
+    // If no routes are selected, clear map and exit edit mode
+    if (this.selectedRoutesForView.length === 0) {
+      this.exitEditMode();
+      return;
+    }
+
+    // Set UI state for viewing
+    this.isEditMode = true;
+    this.isReadOnlyMode = true;
+    this.editModeType = 'select'; // view only
+    this.activeTab = 'points';
+    
+    // Render the routes
+    this.renderMultiRoutesOnMap();
+  }
+
+  isSelectedForMultiView(route: MasterRoute): boolean {
+    return this.selectedRoutesForView.some(r => r.id === route.id);
   }
 
   // ── Edit mode ─────────────────────────────────────────────────────────
@@ -511,6 +576,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
     this.isEditMode = false;
     this.isReadOnlyMode = false;
     this.editableRoute = null;
+    this.selectedRoutesForView = [];
     this.generatedPolyline = '';
     this.selectedIndices.clear();
     this.highlightedIndex = null;
@@ -820,6 +886,12 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
       this.selectionRect.remove();
       this.selectionRect = null;
     }
+    if (this.multiPolylinesLayer) {
+      this.multiPolylinesLayer.remove();
+      this.multiPolylinesLayer = null;
+    }
+    this.multiMarkersLayer.forEach((m) => m.remove());
+    this.multiMarkersLayer = [];
   }
 
   private renderViewPolyline(points: LatLng[]): void {
@@ -835,6 +907,73 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
     // Start/end markers
     this.addStartEndMarkers(points);
     this.refreshMapSize();
+  }
+
+  private renderMultiRoutesOnMap(): void {
+    this.clearMapLayers();
+    if (!this.map || this.selectedRoutesForView.length === 0) return;
+
+    this.multiPolylinesLayer = this.L.featureGroup().addTo(this.map);
+
+    this.selectedRoutesForView.forEach((route, index) => {
+      if (!route.encoded_polyline) return;
+      
+      try {
+        const points = decodePolyline(route.encoded_polyline);
+        if (points.length < 2) return;
+        
+        const latlngs = points.map((p) => [p.lat, p.lng]);
+        const color = this.routeColors[index % this.routeColors.length];
+        
+        const polyline = this.L.polyline(latlngs, {
+          color: color,
+          weight: 4,
+          opacity: 0.85,
+        });
+        this.multiPolylinesLayer.addLayer(polyline);
+
+        // Add start/end markers for this route
+        this.addStartEndMarkersForMultiRoute(points, color);
+      } catch (e) {
+        console.error('Error decoding polyline for multi-view', e);
+      }
+    });
+
+    if (this.multiPolylinesLayer.getLayers().length > 0) {
+      this.map.fitBounds(this.multiPolylinesLayer.getBounds(), { padding: [20, 20] });
+    }
+    
+    // Evaluate lounges for all selected routes
+    this.renderLounges();
+  }
+
+  private addStartEndMarkersForMultiRoute(points: LatLng[], color: string): void {
+    if (points.length === 0) return;
+
+    const createMultiMarkerIcon = (bgIconClass: string) => {
+      return this.L.divIcon({
+        className: 'custom-point-marker',
+        html: `
+          <div style="position:relative; width:24px; height:24px; display:flex; align-items:center; justify-content:center;">
+            <i class="${bgIconClass}" style="position:absolute; font-size:24px; color:${color}; text-shadow: 0 1px 3px rgba(0,0,0,0.5);"></i>
+            <i class="fas fa-circle" style="position:absolute; font-size:8px; color:#fff;"></i>
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
+    };
+
+    const first = points[0];
+    const last = points[points.length - 1];
+
+    const m1 = this.L.marker([first.lat, first.lng], { icon: createMultiMarkerIcon('fas fa-map-marker') }).addTo(this.map);
+    this.multiMarkersLayer.push(m1);
+
+    if (points.length > 1) {
+      const m2 = this.L.marker([last.lat, last.lng], { icon: createMultiMarkerIcon('fas fa-map-pin') }).addTo(this.map);
+      this.multiMarkersLayer.push(m2);
+    }
   }
 
   private renderEditableRoute(): void {
