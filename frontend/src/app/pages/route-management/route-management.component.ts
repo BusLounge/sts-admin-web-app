@@ -197,7 +197,8 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
 
       // Selection drag
       this.map.on('mousedown', (e: any) => {
-        if (this.isEditMode && this.editModeType === 'select') {
+        // Only allow selection dragging if NOT in read-only mode (so viewing a route allows panning)
+        if (this.isEditMode && this.editModeType === 'select' && !this.isReadOnlyMode) {
           this.ngZone.run(() => {
             this.isDragging = true;
             this.dragStart = { lat: e.latlng.lat, lng: e.latlng.lng };
@@ -207,7 +208,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
       });
 
       this.map.on('mousemove', (e: any) => {
-        if (this.isDragging && this.dragStart && this.editModeType === 'select') {
+        if (this.isDragging && this.dragStart && this.editModeType === 'select' && !this.isReadOnlyMode) {
           this.ngZone.run(() => {
             this.dragCurrent = { lat: e.latlng.lat, lng: e.latlng.lng };
             this.updateSelectionRect();
