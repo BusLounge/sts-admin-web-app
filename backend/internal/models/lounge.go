@@ -9,6 +9,8 @@ type Lounge struct {
 	LoungeName       string   `json:"lounge_name"`
 	LoungeContact    string   `json:"lounge_contact"`
 	Address          string   `json:"address"`
+	Latitude         float64  `json:"latitude"`
+	Longitude        float64  `json:"longitude"`
 	Capacity         int      `json:"capacity"`
 	PricePerHour     float64  `json:"price_per_hour"`
 	Facilities       []string `json:"facilities"`
