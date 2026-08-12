@@ -11,6 +11,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MasterRoute, LatLng, CreateRouteRequest, UpdateRouteRequest, EditModeType } from '../../core/models/route.model';
 import { RouteService } from '../../core/services/route.service';
+import { LoungeService } from '../../core/services/lounge.service';
+import { Lounge } from '../../core/models/lounge.model';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import {
   decodePolyline,
@@ -44,6 +46,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
   isLoading = false;
   errorMsg = '';
   successMsg = '';
+  lounges: Lounge[] = [];
 
   // ── Map ──────────────────────────────────────────────────────────────
   private map: any = null;
@@ -51,6 +54,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
   private polylineLayer: any = null;
   private markersLayer: any[] = [];
   private selectionRect: any = null;
+  private loungeFeatureGroup: any = null;
   private isBrowser = false;
 
   // ── Edit mode ────────────────────────────────────────────────────────
@@ -119,6 +123,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
 
   constructor(
     private routeService: RouteService,
+    private loungeService: LoungeService,
     private ngZone: NgZone,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -127,6 +132,10 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
 
   ngOnInit(): void {
     this.loadRoutes();
+    this.loungeService.lounges$.subscribe((lounges) => {
+      this.lounges = lounges;
+      this.renderLounges();
+    });
   }
 
   ngAfterViewInit(): void {
@@ -222,9 +231,64 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
         }
       });
 
+      this.loungeFeatureGroup = this.L.featureGroup().addTo(this.map);
+      this.renderLounges();
+
     } catch (err) {
       console.error('Error initializing map:', err);
     }
+  }
+
+  private renderLounges(): void {
+    if (!this.map || !this.L || !this.loungeFeatureGroup) return;
+
+    this.loungeFeatureGroup.clearLayers();
+
+    // Unique icon for lounges
+    const loungeIcon = this.L.divIcon({
+      className: 'lounge-marker-icon',
+      html: `<div class="lounge-marker-inner"><i class="fas fa-coffee"></i></div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+
+    this.lounges.forEach(lounge => {
+      // Check if coordinates exist and are valid (not 0,0 default if uninitialized)
+      if (lounge.latitude && lounge.longitude && (lounge.latitude !== 0 || lounge.longitude !== 0)) {
+        const marker = this.L.marker([lounge.latitude, lounge.longitude], {
+          icon: loungeIcon,
+          title: lounge.lounge_name
+        });
+
+        // Implement hover delay for popup
+        let hoverTimer: any = null;
+        const popupContent = `
+          <div class="lounge-popup">
+            <h4><i class="fas fa-couch"></i> ${lounge.lounge_name}</h4>
+            <p><strong>Capacity:</strong> ${lounge.capacity} persons</p>
+            <p><strong>Price:</strong> LKR ${lounge.price_per_hour}/hr</p>
+          </div>
+        `;
+
+        marker.bindPopup(popupContent, {
+          closeButton: false,
+          className: 'custom-lounge-popup'
+        });
+
+        marker.on('mouseover', () => {
+          hoverTimer = setTimeout(() => {
+            marker.openPopup();
+          }, 2000); // 2-second delay
+        });
+
+        marker.on('mouseout', () => {
+          if (hoverTimer) clearTimeout(hoverTimer);
+          marker.closePopup();
+        });
+
+        this.loungeFeatureGroup.addLayer(marker);
+      }
+    });
   }
 
   // ── Data Loading ──────────────────────────────────────────────────────
