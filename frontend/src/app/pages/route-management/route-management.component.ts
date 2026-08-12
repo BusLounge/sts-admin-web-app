@@ -239,6 +239,41 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
     }
   }
 
+  // ── Distance Calculation Helpers ─────────────────────────────────────
+  private getDistanceToPolyline(lat: number, lng: number, polyline: LatLng[]): number {
+    if (!polyline || polyline.length === 0) return Infinity;
+    
+    // Scale longitude to match latitude distance using cosine of the point's latitude
+    const cosLat = Math.cos(lat * Math.PI / 180);
+    const p = { x: lng * cosLat, y: lat };
+
+    if (polyline.length === 1) {
+      const v = { x: polyline[0].lng * cosLat, y: polyline[0].lat };
+      return Math.sqrt((p.x - v.x) ** 2 + (p.y - v.y) ** 2) * 111.32;
+    }
+
+    let minDistance = Infinity;
+    for (let i = 0; i < polyline.length - 1; i++) {
+      const v = { x: polyline[i].lng * cosLat, y: polyline[i].lat };
+      const w = { x: polyline[i+1].lng * cosLat, y: polyline[i+1].lat };
+      const dist = this.pointToSegmentDistance(p, v, w);
+      if (dist < minDistance) {
+        minDistance = dist;
+      }
+    }
+    // Convert to km (1 degree latitude is ~111.32 km)
+    return minDistance * 111.32;
+  }
+
+  private pointToSegmentDistance(p: {x: number, y: number}, v: {x: number, y: number}, w: {x: number, y: number}): number {
+    const l2 = (w.x - v.x) ** 2 + (w.y - v.y) ** 2;
+    if (l2 === 0) return Math.sqrt((p.x - v.x) ** 2 + (p.y - v.y) ** 2);
+    let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    t = Math.max(0, Math.min(1, t));
+    const proj = { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) };
+    return Math.sqrt((p.x - proj.x) ** 2 + (p.y - proj.y) ** 2);
+  }
+
   private renderLounges(): void {
     if (!this.map || !this.L || !this.loungeFeatureGroup) return;
 
@@ -252,9 +287,20 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
       iconAnchor: [15, 15]
     });
 
+    const LOUNGE_MAX_DISTANCE_KM = 5;
+
     this.lounges.forEach(lounge => {
       // Check if coordinates exist and are valid (not 0,0 default if uninitialized)
       if (lounge.latitude && lounge.longitude && (lounge.latitude !== 0 || lounge.longitude !== 0)) {
+        
+        // Filter based on active route proximity if a route is selected
+        if (this.isEditMode && this.editableRoute && this.editableRoute.points && this.editableRoute.points.length > 0) {
+          const dist = this.getDistanceToPolyline(lounge.latitude, lounge.longitude, this.editableRoute.points);
+          if (dist > LOUNGE_MAX_DISTANCE_KM) {
+            return; // Skip rendering this lounge
+          }
+        }
+
         const marker = this.L.marker([lounge.latitude, lounge.longitude], {
           icon: loungeIcon,
           title: lounge.lounge_name
@@ -475,6 +521,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
     this.newRouteNumber = '';
     this.activeTab = 'list';
     this.refreshMapSize();
+    this.renderLounges();
   }
 
   // ── Points ────────────────────────────────────────────────────────────
@@ -878,6 +925,8 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
         this.map.setView([points[0].lat, points[0].lng], 14);
       }
     }, 100);
+
+    this.renderLounges();
   }
 
   private addStartEndMarkers(points: LatLng[]): void {
