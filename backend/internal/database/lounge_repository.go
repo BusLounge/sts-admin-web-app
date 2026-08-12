@@ -27,6 +27,8 @@ func (r *LoungeRepository) GetLounges() ([]models.Lounge, error) {
 			COALESCE(l.lounge_name, ''),
 			COALESCE(l.contact_phone, ''),
 			COALESCE(l.address, ''),
+			COALESCE(l.latitude, 0),
+			COALESCE(l.longitude, 0),
 			COALESCE(l.capacity, 0),
 			COALESCE(l.price_1_hour, 0),
 			COALESCE(l.amenities::text, '[]'),
@@ -58,6 +60,8 @@ func (r *LoungeRepository) GetLounges() ([]models.Lounge, error) {
 			&l.LoungeName,
 			&l.LoungeContact,
 			&l.Address,
+			&l.Latitude,
+			&l.Longitude,
 			&l.Capacity,
 			&l.PricePerHour,
 			&amenitiesJSON,
@@ -135,10 +139,10 @@ func (r *LoungeRepository) CreateLounge(l models.Lounge) error {
 
 	_, err = tx.Exec(`
 		INSERT INTO lounges (
-			lounge_owner_id, lounge_name, contact_phone, address, capacity, price_1_hour, 
+			lounge_owner_id, lounge_name, contact_phone, address, latitude, longitude, capacity, price_1_hour, 
 			is_operational, amenities, status, marketplace_category_id
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-	`, ownerID, l.LoungeName, l.LoungeContact, l.Address, l.Capacity, l.PricePerHour,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+	`, ownerID, l.LoungeName, l.LoungeContact, l.Address, l.Latitude, l.Longitude, l.Capacity, l.PricePerHour,
 		l.Operational, facilitiesJSON, strings.ToLower(l.Verification), marketplaceID)
 
 	if err != nil {
@@ -175,11 +179,11 @@ func (r *LoungeRepository) UpdateLounge(l models.Lounge) error {
 	// Update Lounge details - use lowercase for verification status
 	_, err = r.db.Exec(`
 		UPDATE lounges SET 
-			lounge_name = $1, contact_phone = $2, address = $3, capacity = $4, 
-			price_1_hour = $5, is_operational = $6, amenities = $7,
-			status = $8, marketplace_category_id = $9, verification_note = $10
-		WHERE id = $11
-	`, l.LoungeName, l.LoungeContact, l.Address, l.Capacity, l.PricePerHour,
+			lounge_name = $1, contact_phone = $2, address = $3, latitude = $4, longitude = $5, capacity = $6, 
+			price_1_hour = $7, is_operational = $8, amenities = $9,
+			status = $10, marketplace_category_id = $11, verification_note = $12
+		WHERE id = $13
+	`, l.LoungeName, l.LoungeContact, l.Address, l.Latitude, l.Longitude, l.Capacity, l.PricePerHour,
 		l.Operational, facilitiesJSON, strings.ToLower(l.Verification), marketplaceID, l.VerificationNote, l.LoungeID)
 	if err != nil {
 		return fmt.Errorf("error updating lounge: %v", err)
@@ -216,6 +220,8 @@ func (r *LoungeRepository) GetPendingLounges() ([]models.Lounge, error) {
 			COALESCE(l.lounge_name, ''),
 			COALESCE(l.contact_phone, ''),
 			COALESCE(l.address, ''),
+			COALESCE(l.latitude, 0),
+			COALESCE(l.longitude, 0),
 			COALESCE(l.capacity, 0),
 			COALESCE(l.price_1_hour, 0),
 			COALESCE(l.amenities::text, '[]'),
@@ -249,6 +255,8 @@ func (r *LoungeRepository) GetPendingLounges() ([]models.Lounge, error) {
 			&l.LoungeName,
 			&l.LoungeContact,
 			&l.Address,
+			&l.Latitude,
+			&l.Longitude,
 			&l.Capacity,
 			&l.PricePerHour,
 			&amenitiesJSON,
@@ -283,6 +291,8 @@ func (r *LoungeRepository) GetLoungeByID(id string) (*models.Lounge, error) {
 			COALESCE(l.lounge_name, ''),
 			COALESCE(l.contact_phone, ''),
 			COALESCE(l.address, ''),
+			COALESCE(l.latitude, 0),
+			COALESCE(l.longitude, 0),
 			COALESCE(l.capacity, 0),
 			COALESCE(l.price_1_hour, 0),
 			COALESCE(l.amenities::text, '[]'),
@@ -307,6 +317,8 @@ func (r *LoungeRepository) GetLoungeByID(id string) (*models.Lounge, error) {
 		&l.LoungeName,
 		&l.LoungeContact,
 		&l.Address,
+		&l.Latitude,
+		&l.Longitude,
 		&l.Capacity,
 		&l.PricePerHour,
 		&amenitiesJSON,
