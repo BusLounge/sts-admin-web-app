@@ -24,6 +24,8 @@ export class LoungesManagementComponent implements OnInit {
   filteredLounges: Lounge[] = [];
   searchTerm = '';
   priceFilter: number | null = null;
+  selectedProvince = '';
+  provinces: string[] = ['Western', 'Central', 'Southern', 'Northern', 'Eastern', 'North Western', 'North Central', 'Uva', 'Sabaragamuwa'];
   showNotificationPanel = false;
 
   amenitiesCounts: { label: string; count: number }[] = [];
@@ -45,6 +47,7 @@ export class LoungesManagementComponent implements OnInit {
     lounge_name: '',
     lounge_contact: '',
     address: '',
+    state: '',
     latitude: 0,
     longitude: 0,
     capacity: 0,
@@ -188,11 +191,12 @@ export class LoungesManagementComponent implements OnInit {
         (l.verification_note?.toLowerCase() || '').includes(q) ||
         (l.operational ? 'open' : 'closed').includes(q);
       const matchesPrice = this.priceFilter === null || l.price_per_hour === this.priceFilter;
-      return matchesSearch && matchesPrice;
+      const matchesProvince = !this.selectedProvince || (l.state && l.state.toLowerCase() === this.selectedProvince.toLowerCase());
+      return matchesSearch && matchesPrice && matchesProvince;
     });
   }
 
-  clearSearch(): void { this.searchTerm = ''; this.priceFilter = null; this.filteredLounges = this.lounges; }
+  clearSearch(): void { this.searchTerm = ''; this.priceFilter = null; this.selectedProvince = ''; this.filteredLounges = this.lounges; }
 
   addLounge(): void {
     this.modalMode = 'add';
@@ -207,6 +211,7 @@ export class LoungesManagementComponent implements OnInit {
       lounge_name: '',
       lounge_contact: '',
       address: '',
+      state: '',
       latitude: 0,
       longitude: 0,
       capacity: 0,

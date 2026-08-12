@@ -7,6 +7,7 @@ export interface Lounge {
   lounge_name: string;
   lounge_contact: string;
   address: string;
+  state: string;
   latitude: number;
   longitude: number;
   capacity: number;

@@ -69,6 +69,10 @@
       <div class="search-group">
         <input type="text" placeholder="Search by name, address, lounge contact" [(ngModel)]="searchTerm" (input)="onSearchChange()" />
         <input type="number" placeholder="Price / hr ($)" [(ngModel)]="priceFilter" (input)="onSearchChange()" style="margin-left: 0.1rem; width: 80px; color: var(--color-text-muted);" />
+        <select [(ngModel)]="selectedProvince" (change)="onSearchChange()" style="margin-left: 0.1rem; width: 140px; color: var(--color-text-muted); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem;">
+          <option value="">All Provinces</option>
+          <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
+        </select>
       </div>
       <button class="export-btn" (click)="exportLoungeHistoryPdf()">Export Lounge History</button>
     </section>
