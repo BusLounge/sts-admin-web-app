@@ -284,8 +284,8 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
     const loungeIcon = this.L.divIcon({
       className: 'lounge-marker-icon',
       html: `<div class="lounge-marker-inner"><i class="fas fa-coffee"></i></div>`,
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
     });
 
     const LOUNGE_MAX_DISTANCE_KM = 5;
