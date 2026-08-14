@@ -162,6 +162,15 @@ func main() {
 		api.PATCH("/lounge-bookings/:id/booking-status", handlers.RequireAdminPermission("lounge_bookings.write"), handlers.UpdateLoungeBookingStatus)
 		api.DELETE("/lounge-bookings/:id", handlers.RequireAdminPermission("lounge_bookings.write"), handlers.DeleteLoungeBooking)
 
+		// Master Inventory routes
+		api.GET("/admin/inventory/items", handlers.RequireAdminPermission("inventory.read"), handlers.GetMasterItems)
+		api.GET("/admin/inventory/items/:id", handlers.RequireAdminPermission("inventory.read"), handlers.GetMasterItem)
+		api.POST("/admin/inventory/items", handlers.RequireAdminPermission("inventory.write"), handlers.CreateMasterItem)
+		api.PUT("/admin/inventory/items/:id", handlers.RequireAdminPermission("inventory.write"), handlers.UpdateMasterItem)
+		api.PATCH("/admin/inventory/items/:id/status", handlers.RequireAdminPermission("inventory.write"), handlers.ToggleItemStatus)
+		api.GET("/admin/inventory/categories", handlers.RequireAdminPermission("inventory.read"), handlers.GetCategories)
+		api.POST("/admin/inventory/images", handlers.RequireAdminPermission("inventory.write"), handlers.UploadInventoryImage)
+
 		// Complaint routes
 		api.GET("/complaints", handlers.GetComplaints)
 		api.GET("/complaints/:id", handlers.GetComplaintById)

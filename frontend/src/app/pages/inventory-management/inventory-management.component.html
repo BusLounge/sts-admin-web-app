@@ -1,0 +1,100 @@
+<div class="bus-container">
+  <div class="top-navigation-row">
+    <div class="app-branding">
+      <div class="logo-circle">
+        <i class="fas fa-boxes"></i>
+      </div>
+      <span class="app-name">LoungeMaster</span>
+    </div>
+    <app-navbar></app-navbar>
+    <div class="header-actions">
+      <button class="icon-btn notification-btn" (click)="toggleNotificationPanel()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="page-header">
+    <div class="header-content">
+      <h2>Master Inventory</h2>
+    </div>
+    <div class="header-actions">
+      <button class="add-bus-btn" (click)="addItem()">Add Item</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-filter-container">
+      <div class="search-wrapper">
+        <select class="criteria-dropdown" [(ngModel)]="searchCriteria" (ngModelChange)="onFilterChange()">
+          <option value="name">Item Name</option>
+          <option value="item_code">Item Code</option>
+        </select>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+        />
+        <button class="clear-search-btn" (click)="clearSearch()" *ngIf="searchTerm">×</button>
+      </div>
+      <div class="filter-container">
+        <select [(ngModel)]="categoryFilter" (change)="onFilterChange()" class="filter-select">
+          <option value="all">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+        <select [(ngModel)]="statusFilter" (change)="onFilterChange()" class="filter-select">
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <table class="bus-table">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Item Code</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Unit</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of filteredItems">
+        <td>
+          <img [src]="item.image_url" alt="Item Image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" *ngIf="item.image_url">
+          <span *ngIf="!item.image_url">No Image</span>
+        </td>
+        <td>{{ item.item_code }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.category_name }}</td>
+        <td>{{ item.unit }}</td>
+        <td>
+          <span [class.status-active]="item.is_active" [class.status-inactive]="!item.is_active">
+            {{ item.is_active ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+        <td>
+          <i class="fas fa-edit action-icon edit-icon" (click)="editItem(item)" title="Edit"></i>
+          <i class="fas fa-power-off action-icon" 
+             [ngStyle]="{'color': item.is_active ? 'red' : 'green', 'margin-left': '10px', 'cursor': 'pointer'}" 
+             (click)="toggleActive(item)" 
+             [title]="item.is_active ? 'Deactivate' : 'Activate'"></i>
+        </td>
+      </tr>
+      <tr *ngIf="filteredItems.length === 0">
+        <td colspan="7" style="text-align: center; padding: 20px;">No items found.</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<app-notification-panel *ngIf="showNotificationPanel" (close)="closeNotificationPanel()"></app-notification-panel>

@@ -35,3 +35,28 @@ func UploadToCloudinary(file multipart.File, filename string) (string, string, e
 
 	return resp.SecureURL, resp.ResourceType, nil
 }
+
+// UploadImageToCloudinary uploads a file to Cloudinary to a specific folder.
+func UploadImageToCloudinary(file multipart.File, folder string) (string, error) {
+	cloudinaryURL := os.Getenv("CLOUDINARY_URL")
+	if cloudinaryURL == "" {
+		return "", fmt.Errorf("CLOUDINARY_URL environment variable is not set")
+	}
+
+	cld, err := cloudinary.NewFromURL(cloudinaryURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to initialize Cloudinary: %v", err)
+	}
+
+	ctx := context.Background()
+
+	resp, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{
+		Folder:       folder,
+		ResourceType: "image",
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to upload to Cloudinary: %v", err)
+	}
+
+	return resp.SecureURL, nil
+}

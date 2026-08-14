@@ -1,0 +1,120 @@
+.bus-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.top-navigation-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.app-branding {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-circle {
+  width: 40px;
+  height: 40px;
+  background-color: #0046FF;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-bus-btn {
+  background-color: #0046FF;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toolbar {
+  margin-bottom: 20px;
+}
+
+.search-filter-container {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.search-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filter-container {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.bus-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.bus-table th, .bus-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.bus-table th {
+  background-color: #f2f2f2;
+}
+
+.status-active {
+  color: green;
+  font-weight: bold;
+}
+
+.status-inactive {
+  color: red;
+  font-weight: bold;
+}

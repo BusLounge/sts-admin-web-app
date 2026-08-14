@@ -1,0 +1,76 @@
+<div class="form-container" *ngIf="item">
+  <div class="page-header">
+    <div class="header-content">
+      <h2>Edit Master Inventory Item</h2>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form (ngSubmit)="saveItem()">
+      <div class="form-section">
+        <h3>Item Details</h3>
+        
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Item Code</label>
+            <input type="text" [(ngModel)]="item.item_code" name="item_code" disabled placeholder="e.g. BEV-001" />
+            <span class="help-text" style="font-size: 11px;">Item Code cannot be modified after creation.</span>
+          </div>
+          
+          <div class="form-row">
+            <label>Item Name *</label>
+            <input type="text" [(ngModel)]="item.name" name="name" required placeholder="e.g. Coca Cola 330ml" [disabled]="isSubmitting" />
+          </div>
+
+          <div class="form-row">
+            <label>Category *</label>
+            <select [(ngModel)]="item.category_id" name="category" required [disabled]="isSubmitting">
+              <option value="">Select Category</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label>Unit *</label>
+            <select [(ngModel)]="item.unit" name="unit" required [disabled]="isSubmitting">
+              <option value="Bottle">Bottle</option>
+              <option value="Can">Can</option>
+              <option value="Packet">Packet</option>
+              <option value="Plate">Plate</option>
+              <option value="Cup">Cup</option>
+              <option value="Piece">Piece</option>
+            </select>
+          </div>
+
+          <div class="form-row" style="grid-column: span 2;">
+            <label>Description</label>
+            <textarea [(ngModel)]="item.description" name="description" rows="3" placeholder="Optional description" [disabled]="isSubmitting"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Product Image</h3>
+        <div class="image-upload-container">
+          <div class="image-preview" *ngIf="imagePreviewUrl">
+            <img [src]="imagePreviewUrl" alt="Preview">
+          </div>
+          <div class="upload-controls">
+            <input type="file" (change)="onImageSelected($event)" accept="image/*" [disabled]="isSubmitting" />
+            <p class="help-text">Upload a new image to replace the existing one, or leave blank to keep it.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="isSubmitting">Cancel</button>
+        <button type="submit" class="btn-save" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Saving...' : 'Update Item' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<div *ngIf="!item" style="padding: 20px; text-align: center;">
+  Loading...
+</div>
