@@ -47,13 +47,17 @@ func CreateMasterItem(c *gin.Context) {
 		return
 	}
 
-	// Extract admin ID from context (set by auth middleware)
-	adminID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: user_id not found in context"})
+	claims, err := getJWTClaimsFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: " + err.Error()})
 		return
 	}
-	i.CreatedByAdminID = adminID.(string)
+	adminID, ok := claims["admin_id"].(string)
+	if !ok || adminID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: admin_id not found in token claims"})
+		return
+	}
+	i.CreatedByAdminID = adminID
 
 	err := services.CreateMasterItem(i)
 	if err != nil {
