@@ -37,6 +37,7 @@ export class NavbarComponent implements OnInit {
     { label: 'Lounge', icon: 'fas fa-couch', route: '/lounges-management' },
     { label: 'Bus Bookings', icon: 'fas fa-ticket-alt', route: '/bus-booking' },
     { label: 'Lounge Bookings', icon: 'fas fa-clipboard-list', route: '/lounge-booking' },
+    { label: 'Inventory', icon: 'fas fa-boxes', route: '/inventory-management' },
     { label: 'Advertisements', icon: 'fas fa-ad', route: '/advertisement-management' },
     { label: 'Routes', icon: 'fas fa-map', route: '/route-management' },
     { label: 'OTP Master', icon: 'fas fa-key', route: '/otp-management' },
