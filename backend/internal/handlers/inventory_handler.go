@@ -59,7 +59,7 @@ func CreateMasterItem(c *gin.Context) {
 	}
 	i.CreatedByAdminID = adminID
 
-	err := services.CreateMasterItem(i)
+	err = services.CreateMasterItem(i)
 	if err != nil {
 		var pqErr *pq.Error
 		// Handle Postgres unique violation (error code 23505)
