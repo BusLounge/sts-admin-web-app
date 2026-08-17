@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { InventoryItem, InventoryCategory } from '../../core/models/inventory.mo
   styleUrls: ['./add-inventory-item.component.scss']
 })
 export class AddInventoryItemComponent implements OnInit {
+  @Output() close = new EventEmitter<void>();
   item: InventoryItem = {
     item_code: '',
     name: '',
@@ -78,7 +79,7 @@ export class AddInventoryItemComponent implements OnInit {
       this.inventoryService.add(this.item).subscribe({
         next: () => {
           alert('Item created successfully!');
-          this.router.navigate(['/inventory-management']);
+          this.close.emit();
         },
         error: (err) => {
           console.error(err);
@@ -98,6 +99,6 @@ export class AddInventoryItemComponent implements OnInit {
   }
 
   cancel() {
-    this.router.navigate(['/inventory-management']);
+    this.close.emit();
   }
 }

@@ -97,4 +97,11 @@
 
 </div>
 
+<!-- Add Item Modal -->
+<div class="modal-overlay" *ngIf="showAddModal">
+  <div class="modal-content">
+    <app-add-inventory-item (close)="showAddModal = false"></app-add-inventory-item>
+  </div>
+</div>
+
 <app-notification-panel *ngIf="showNotificationPanel" (close)="closeNotificationPanel()"></app-notification-panel>

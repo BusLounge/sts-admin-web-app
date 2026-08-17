@@ -6,11 +6,12 @@ import { NavbarComponent } from '../../shared/components/navbar/navbar.component
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { InventoryService } from '../../core/services/inventory.service';
 import { InventoryItem, InventoryCategory } from '../../core/models/inventory.model';
+import { AddInventoryItemComponent } from './add-inventory-item.component';
 
 @Component({
   selector: 'app-inventory-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent, RouterModule],
+  imports: [CommonModule, FormsModule, NavbarComponent, NotificationPanelComponent, RouterModule, AddInventoryItemComponent],
   templateUrl: './inventory-management.component.html',
   styleUrls: ['./inventory-management.component.scss']
 })
@@ -25,6 +26,7 @@ export class InventoryManagementComponent implements OnInit {
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   
   showNotificationPanel = false;
+  showAddModal = false;
 
   constructor(
     private router: Router,
@@ -87,7 +89,7 @@ export class InventoryManagementComponent implements OnInit {
   }
 
   addItem() {
-    this.router.navigate(['/inventory-management/add']);
+    this.showAddModal = true;
   }
 
   editItem(item: InventoryItem) {
