@@ -44,6 +44,7 @@ func (r *InventoryRepository) GetMasterItems() ([]models.InventoryItem, error) {
 	for rows.Next() {
 		var i models.InventoryItem
 		var desc sql.NullString
+		var imgURL sql.NullString
 		err := rows.Scan(
 			&i.ID,
 			&i.ItemCode,
@@ -52,7 +53,7 @@ func (r *InventoryRepository) GetMasterItems() ([]models.InventoryItem, error) {
 			&i.CategoryID,
 			&i.CategoryName,
 			&i.Unit,
-			&i.ImageURL,
+			&imgURL,
 			&i.IsActive,
 			&i.CreatedByAdminID,
 			&i.CreatedAt,
@@ -63,6 +64,9 @@ func (r *InventoryRepository) GetMasterItems() ([]models.InventoryItem, error) {
 		}
 		if desc.Valid {
 			i.Description = &desc.String
+		}
+		if imgURL.Valid {
+			i.ImageURL = imgURL.String
 		}
 		items = append(items, i)
 	}
@@ -92,6 +96,7 @@ func (r *InventoryRepository) GetMasterItemByID(id string) (*models.InventoryIte
 
 	var i models.InventoryItem
 	var desc sql.NullString
+	var imgURL sql.NullString
 	err := r.db.QueryRow(query, id).Scan(
 		&i.ID,
 		&i.ItemCode,
@@ -100,7 +105,7 @@ func (r *InventoryRepository) GetMasterItemByID(id string) (*models.InventoryIte
 		&i.CategoryID,
 		&i.CategoryName,
 		&i.Unit,
-		&i.ImageURL,
+		&imgURL,
 		&i.IsActive,
 		&i.CreatedByAdminID,
 		&i.CreatedAt,
@@ -114,6 +119,9 @@ func (r *InventoryRepository) GetMasterItemByID(id string) (*models.InventoryIte
 	}
 	if desc.Valid {
 		i.Description = &desc.String
+	}
+	if imgURL.Valid {
+		i.ImageURL = imgURL.String
 	}
 	return &i, nil
 }
