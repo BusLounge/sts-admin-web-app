@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -30,17 +30,20 @@ export class InventoryManagementComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.inventoryService.items$.subscribe(items => {
       this.items = items;
       this.applyFilters();
+      this.cdr.detectChanges();
     });
     
     this.inventoryService.categories$.subscribe(categories => {
       this.categories = categories;
+      this.cdr.detectChanges();
     });
   }
 

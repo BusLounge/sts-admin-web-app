@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,12 +22,14 @@ export class EditInventoryItemComponent implements OnInit {
   constructor(
     private inventoryService: InventoryService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.inventoryService.categories$.subscribe(categories => {
       this.categories = categories;
+      this.cdr.detectChanges();
     });
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -36,6 +38,7 @@ export class EditInventoryItemComponent implements OnInit {
         next: (res) => {
           this.item = res;
           this.imagePreviewUrl = this.item.image_url;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error(err);
@@ -53,6 +56,7 @@ export class EditInventoryItemComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = () => {
         this.imagePreviewUrl = reader.result;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
@@ -67,6 +71,7 @@ export class EditInventoryItemComponent implements OnInit {
     }
 
     this.isSubmitting = true;
+    this.cdr.detectChanges();
 
     try {
       if (this.selectedImageFile) {
@@ -84,11 +89,14 @@ export class EditInventoryItemComponent implements OnInit {
       this.inventoryService.update(this.item.id!, this.item).subscribe({
         next: () => {
           alert('Item updated successfully!');
+          this.isSubmitting = false;
+          this.cdr.detectChanges();
           this.router.navigate(['/inventory-management']);
         },
         error: (err) => {
           console.error(err);
           this.isSubmitting = false;
+          this.cdr.detectChanges();
           alert('Failed to update item. ' + (err.error?.error || ''));
         }
       });
@@ -96,6 +104,7 @@ export class EditInventoryItemComponent implements OnInit {
       console.error('Image upload failed', err);
       alert('Failed to upload image. Please try again.');
       this.isSubmitting = false;
+      this.cdr.detectChanges();
     }
   }
 
