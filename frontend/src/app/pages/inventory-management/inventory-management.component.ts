@@ -101,6 +101,12 @@ export class InventoryManagementComponent implements OnInit {
 
   toggleActive(item: InventoryItem) {
     if (!item.id) return;
+    
+    const action = item.is_active ? 'deactivate' : 'activate';
+    if (!confirm(`Are you sure you want to ${action} ${item.name}?`)) {
+      return;
+    }
+
     const newStatus = !item.is_active;
     this.inventoryService.toggleStatus(item.id, newStatus).subscribe({
       next: () => {
