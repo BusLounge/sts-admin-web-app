@@ -85,7 +85,7 @@ func UpdateMasterItem(c *gin.Context) {
 	}
 
 	// Basic validation
-	if i.Name == "" || i.CategoryID == "" || i.Unit == "" || i.ImageURL == "" {
+	if i.Name == "" || i.CategoryID == "" || i.Unit == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required fields"})
 		return
 	}
