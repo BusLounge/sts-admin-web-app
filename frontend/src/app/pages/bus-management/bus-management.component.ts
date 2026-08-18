@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -69,7 +69,14 @@ export class BusManagementComponent implements OnInit {
   isBrowser: boolean;
   private pendingEditBusId: string | null = null;
 
-  constructor(private router: Router, private route: ActivatedRoute, private busService: BusService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
+  constructor(
+    private router: Router, 
+    private route: ActivatedRoute, 
+    private busService: BusService, 
+    @Inject(PLATFORM_ID) private platformId: Object, 
+    public notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -85,6 +92,7 @@ export class BusManagementComponent implements OnInit {
       if (this.isBrowser) {
         this.updateBarChart();
       }
+      this.cdr.detectChanges();
     });
 
     this.route.queryParams.subscribe(params => {
@@ -106,6 +114,7 @@ export class BusManagementComponent implements OnInit {
     this.selectedBus = { ...busToEdit };
     this.showEditBusModal = true;
     this.pendingEditBusId = null;
+    this.cdr.detectChanges();
 
     this.router.navigate([], {
       relativeTo: this.route,
@@ -123,18 +132,22 @@ export class BusManagementComponent implements OnInit {
 
   toggleProfileMenu() {
     this.showProfileMenu = !this.showProfileMenu;
+    this.cdr.detectChanges();
   }
 
   toggleNotificationPanel() {
     this.showNotificationPanel = !this.showNotificationPanel;
+    this.cdr.detectChanges();
   }
 
   closeNotificationPanel() {
     this.showNotificationPanel = false;
+    this.cdr.detectChanges();
   }
 
   addBus() {
     this.showAddBusModal = true;
+    this.cdr.detectChanges();
   }
 
   closeAddBusModal() {
@@ -155,6 +168,7 @@ export class BusManagementComponent implements OnInit {
       verification_status: 'Pending',
       verification_documents: []
     };
+    this.cdr.detectChanges();
   }
 
   // Validate bus form - all required fields must be filled
@@ -241,6 +255,7 @@ export class BusManagementComponent implements OnInit {
   closeEditBusModal() {
     this.showEditBusModal = false;
     this.selectedBus = null;
+    this.cdr.detectChanges();
   }
 
   saveEditBus() {
@@ -336,12 +351,14 @@ export class BusManagementComponent implements OnInit {
   updateBus(bus: Bus) {
     this.selectedBus = { ...bus };
     this.showEditBusModal = true;
+    this.cdr.detectChanges();
   }
 
   toggleActive(bus: Bus) {
     const currentStatus = bus.status.toLowerCase();
     bus.status = currentStatus === 'active' ? 'inactive' : 'active';
     console.log(`${bus.bus_number} is now ${bus.status}`);
+    this.cdr.detectChanges();
     // Call backend API to update status
     this.busService.updateBus(bus).subscribe({
       next: () => {
@@ -352,6 +369,7 @@ export class BusManagementComponent implements OnInit {
         // Revert status on error
         const revertStatus = bus.status.toLowerCase();
         bus.status = revertStatus === 'active' ? 'inactive' : 'active';
+        this.cdr.detectChanges();
       }
     });
   }
