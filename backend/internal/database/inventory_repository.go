@@ -43,31 +43,31 @@ func (r *InventoryRepository) GetMasterItems() ([]models.InventoryItem, error) {
 	items := []models.InventoryItem{}
 	for rows.Next() {
 		var i models.InventoryItem
-		var desc sql.NullString
-		var imgURL sql.NullString
+		var desc, imgURL, catID, catName, unit, createdBy sql.NullString
 		err := rows.Scan(
 			&i.ID,
 			&i.ItemCode,
 			&i.Name,
 			&desc,
-			&i.CategoryID,
-			&i.CategoryName,
-			&i.Unit,
+			&catID,
+			&catName,
+			&unit,
 			&imgURL,
 			&i.IsActive,
-			&i.CreatedByAdminID,
+			&createdBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning master item: %v", err)
 		}
-		if desc.Valid {
-			i.Description = &desc.String
-		}
-		if imgURL.Valid {
-			i.ImageURL = imgURL.String
-		}
+		if desc.Valid { i.Description = &desc.String }
+		if imgURL.Valid { i.ImageURL = imgURL.String }
+		if catID.Valid { i.CategoryID = catID.String }
+		if catName.Valid { i.CategoryName = catName.String }
+		if unit.Valid { i.Unit = unit.String }
+		if createdBy.Valid { i.CreatedByAdminID = createdBy.String }
+		
 		items = append(items, i)
 	}
 
@@ -95,19 +95,18 @@ func (r *InventoryRepository) GetMasterItemByID(id string) (*models.InventoryIte
 	`
 
 	var i models.InventoryItem
-	var desc sql.NullString
-	var imgURL sql.NullString
+	var desc, imgURL, catID, catName, unit, createdBy sql.NullString
 	err := r.db.QueryRow(query, id).Scan(
 		&i.ID,
 		&i.ItemCode,
 		&i.Name,
 		&desc,
-		&i.CategoryID,
-		&i.CategoryName,
-		&i.Unit,
+		&catID,
+		&catName,
+		&unit,
 		&imgURL,
 		&i.IsActive,
-		&i.CreatedByAdminID,
+		&createdBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -117,12 +116,13 @@ func (r *InventoryRepository) GetMasterItemByID(id string) (*models.InventoryIte
 		}
 		return nil, fmt.Errorf("error querying master item by ID: %v", err)
 	}
-	if desc.Valid {
-		i.Description = &desc.String
-	}
-	if imgURL.Valid {
-		i.ImageURL = imgURL.String
-	}
+	if desc.Valid { i.Description = &desc.String }
+	if imgURL.Valid { i.ImageURL = imgURL.String }
+	if catID.Valid { i.CategoryID = catID.String }
+	if catName.Valid { i.CategoryName = catName.String }
+	if unit.Valid { i.Unit = unit.String }
+	if createdBy.Valid { i.CreatedByAdminID = createdBy.String }
+	
 	return &i, nil
 }
 
@@ -139,7 +139,7 @@ func (r *InventoryRepository) CreateMasterItem(i models.InventoryItem) error {
 	).Scan(&i.ID, &i.CreatedAt, &i.UpdatedAt)
 
 	if err != nil {
-		return fmt.Errorf("error creating master item: %v", err)
+		return fmt.Errorf("error creating master item: %w", err)
 	}
 	return nil
 }
