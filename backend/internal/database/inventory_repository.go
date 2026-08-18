@@ -43,30 +43,39 @@ func (r *InventoryRepository) GetMasterItems() ([]models.InventoryItem, error) {
 	items := []models.InventoryItem{}
 	for rows.Next() {
 		var i models.InventoryItem
-		var desc, imgURL, catID, catName, unit, createdBy sql.NullString
+		var itemCode, name, desc, imgURL, catID, catName, unit, createdBy sql.NullString
+		var isActive sql.NullBool
+		var createdAt, updatedAt sql.NullTime
+		
 		err := rows.Scan(
 			&i.ID,
-			&i.ItemCode,
-			&i.Name,
+			&itemCode,
+			&name,
 			&desc,
 			&catID,
 			&catName,
 			&unit,
 			&imgURL,
-			&i.IsActive,
+			&isActive,
 			&createdBy,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			&createdAt,
+			&updatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning master item: %v", err)
 		}
+		
+		if itemCode.Valid { i.ItemCode = itemCode.String }
+		if name.Valid { i.Name = name.String }
 		if desc.Valid { i.Description = &desc.String }
 		if imgURL.Valid { i.ImageURL = imgURL.String }
 		if catID.Valid { i.CategoryID = catID.String }
 		if catName.Valid { i.CategoryName = catName.String }
 		if unit.Valid { i.Unit = unit.String }
 		if createdBy.Valid { i.CreatedByAdminID = createdBy.String }
+		if isActive.Valid { i.IsActive = isActive.Bool }
+		if createdAt.Valid { i.CreatedAt = createdAt.Time }
+		if updatedAt.Valid { i.UpdatedAt = updatedAt.Time }
 		
 		items = append(items, i)
 	}
@@ -95,20 +104,23 @@ func (r *InventoryRepository) GetMasterItemByID(id string) (*models.InventoryIte
 	`
 
 	var i models.InventoryItem
-	var desc, imgURL, catID, catName, unit, createdBy sql.NullString
+	var itemCode, name, desc, imgURL, catID, catName, unit, createdBy sql.NullString
+	var isActive sql.NullBool
+	var createdAt, updatedAt sql.NullTime
+	
 	err := r.db.QueryRow(query, id).Scan(
 		&i.ID,
-		&i.ItemCode,
-		&i.Name,
+		&itemCode,
+		&name,
 		&desc,
 		&catID,
 		&catName,
 		&unit,
 		&imgURL,
-		&i.IsActive,
+		&isActive,
 		&createdBy,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+		&createdAt,
+		&updatedAt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -116,12 +128,18 @@ func (r *InventoryRepository) GetMasterItemByID(id string) (*models.InventoryIte
 		}
 		return nil, fmt.Errorf("error querying master item by ID: %v", err)
 	}
+	
+	if itemCode.Valid { i.ItemCode = itemCode.String }
+	if name.Valid { i.Name = name.String }
 	if desc.Valid { i.Description = &desc.String }
 	if imgURL.Valid { i.ImageURL = imgURL.String }
 	if catID.Valid { i.CategoryID = catID.String }
 	if catName.Valid { i.CategoryName = catName.String }
 	if unit.Valid { i.Unit = unit.String }
 	if createdBy.Valid { i.CreatedByAdminID = createdBy.String }
+	if isActive.Valid { i.IsActive = isActive.Bool }
+	if createdAt.Valid { i.CreatedAt = createdAt.Time }
+	if updatedAt.Valid { i.UpdatedAt = updatedAt.Time }
 	
 	return &i, nil
 }
