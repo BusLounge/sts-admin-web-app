@@ -1,0 +1,111 @@
+<div class="page-container">
+  <!-- Top nav -->
+  <div class="top-navigation-row">
+    <div class="app-branding">
+      <div class="logo-circle"><i class="fas fa-bus"></i></div>
+      <span class="app-name">BusLounge</span>
+    </div>
+    <app-navbar></app-navbar>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h2>Scheduled Trips</h2>
+      <p class="header-subtitle">View and start scheduled bus trips</p>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="date-filter">
+      <label for="dateFilter">Filter by Departure Date:</label>
+      <input
+        type="date"
+        id="dateFilter"
+        [(ngModel)]="selectedDate"
+        (change)="onDateChange()"
+        class="date-input"
+      />
+      <button *ngIf="selectedDate" class="clear-btn" (click)="clearDateFilter()">✕ Clear</button>
+    </div>
+    <button class="refresh-btn" (click)="loadTrips()">
+      <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="state-message loading">
+    <i class="fas fa-spinner fa-spin"></i> Loading trips...
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="!isLoading && errorMessage" class="state-message error">
+    <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && !errorMessage && trips.length === 0" class="state-message empty">
+    <i class="fas fa-calendar-times"></i>
+    <p>No scheduled trips found{{ selectedDate ? ' for the selected date' : '' }}.</p>
+  </div>
+
+  <!-- Trips table -->
+  <div *ngIf="!isLoading && trips.length > 0" class="table-wrapper">
+    <table class="trips-table">
+      <thead>
+        <tr>
+          <th>Departure Date & Time</th>
+          <th>Permit No.</th>
+          <th>Bus Reg. No.</th>
+          <th>Approved Fare</th>
+          <th>Base Fare</th>
+          <th>Duration (min)</th>
+          <th>Bookable</th>
+          <th>Permit Status</th>
+          <th>Trip Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let trip of trips">
+          <td>{{ formatDate(trip.departure_datetime) }}</td>
+          <td>{{ trip.permit_number || '—' }}</td>
+          <td>{{ trip.bus_registration_number || '—' }}</td>
+          <td>{{ trip.approved_fare | currency:'LKR':'symbol':'1.2-2' }}</td>
+          <td>{{ trip.base_fare | currency:'LKR':'symbol':'1.2-2' }}</td>
+          <td>{{ trip.estimated_duration_minutes }}</td>
+          <td>
+            <span [class]="trip.is_bookable ? 'badge-bookable' : 'badge-not-bookable'">
+              {{ trip.is_bookable ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td>{{ trip.permit_status || '—' }}</td>
+          <td>
+            <span [class]="'status-badge ' + getStatusClass(trip.status)">
+              {{ trip.status }}
+            </span>
+          </td>
+          <td>
+            <button
+              class="start-btn"
+              [class.disabled]="!canStart(trip)"
+              (click)="startTrip(trip)"
+              [title]="canStart(trip) ? 'Start this trip' : 'Trip cannot be started (status: ' + trip.status + ')'"
+            >
+              <i class="fas fa-play"></i> Start Trip
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Trip count summary -->
+  <div *ngIf="!isLoading && trips.length > 0" class="summary">
+    Showing {{ trips.length }} trip{{ trips.length !== 1 ? 's' : '' }}
+    <ng-container *ngIf="selectedDate"> for {{ selectedDate }}</ng-container>
+  </div>
+
+  <app-notification-panel *ngIf="showNotificationPanel" (close)="closeNotificationPanel()"></app-notification-panel>
+</div>

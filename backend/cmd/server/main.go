@@ -228,6 +228,14 @@ func main() {
 		// OTP Master endpoint
 		api.GET("/otp-master", handlers.GetOTPMasterData)
 
+		// Scheduled Trips (super admin only)
+		scheduledTrips := api.Group("/trips")
+		scheduledTrips.Use(handlers.RequireSuperAdmin)
+		{
+			scheduledTrips.GET("/scheduled", handlers.GetScheduledTrips)
+			scheduledTrips.PATCH("/scheduled/:id/start", handlers.StartTrip)
+		}
+
 		// System Settings
 		api.GET("/settings/notifications", handlers.GetNotificationSettings)
 		api.PUT("/settings/notifications", handlers.UpdateNotificationSettings)

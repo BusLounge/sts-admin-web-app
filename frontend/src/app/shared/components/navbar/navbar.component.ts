@@ -28,7 +28,8 @@ export class NavbarComponent implements OnInit {
       route: '/bus-management',
       children: [
         { label: 'Bus Owners', route: '/bus-owners' },
-        { label: 'Route Permits', route: '/bus-management' }
+        { label: 'Route Permits', route: '/bus-management' },
+        { label: 'Scheduled Trips', route: '/scheduled-trips' }
       ]
     },
     { label: 'Driver', icon: 'fas fa-user-tie', route: '/driver-management' },

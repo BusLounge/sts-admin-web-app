@@ -43,6 +43,7 @@ export const routes: Routes = [
   { path: 'bus-management', component: BusManagementComponent },
   { path: 'bus-owners', component: BusOwnersComponent },
   { path: 'bus-management/edit/:id', component: EditBusComponent },
+  { path: 'scheduled-trips', loadComponent: () => import('./pages/scheduled-trips/scheduled-trips.component').then(m => m.ScheduledTripsComponent) },
   { path: 'driver-management', component: DriverManagementComponent },
   { path: 'driver-management/add', component: AddDriverComponent },
   { path: 'driver-management/edit/:id', component: EditDriverComponent },
