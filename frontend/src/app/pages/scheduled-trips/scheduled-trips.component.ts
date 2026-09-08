@@ -159,7 +159,12 @@ export class ScheduledTripsComponent implements OnInit {
         this.loadTrips();
       },
       error: (err) => {
-        alert('Failed to end trip: ' + (err.error?.error || 'Unknown error'));
+        let msg = 'Unknown error';
+        if (typeof err.error === 'string') msg = err.error;
+        else if (err.error?.error) msg = err.error.error;
+        else if (err.message) msg = err.message;
+        
+        alert('Failed to end trip: ' + msg);
         this.cdr.detectChanges();
       }
     });

@@ -30,8 +30,10 @@ func GetAllScheduledTrips(date string) ([]models.ScheduledTripWithPermit, error)
 			COALESCE(mr.destination_city, '')
 		FROM scheduled_trips st
 		LEFT JOIN route_permits rp ON st.permit_id = rp.id
-		LEFT JOIN master_routes mr ON rp.master_route_id = mr.id
+		LEFT JOIN bus_owner_routes bor ON st.bus_owner_route_id = bor.id
+		LEFT JOIN master_routes mr ON mr.id = COALESCE(rp.master_route_id, bor.master_route_id)
 	`
+
 
 	var rows *sql.Rows
 	var err error
