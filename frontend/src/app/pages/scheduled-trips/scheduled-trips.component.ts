@@ -16,10 +16,21 @@ import { ScheduledTrip } from '../../core/models/scheduled-trip.model';
 })
 export class ScheduledTripsComponent implements OnInit {
   trips: ScheduledTrip[] = [];
+  filteredTrips: ScheduledTrip[] = [];
   isLoading = false;
   errorMessage = '';
   selectedDate = '';
+  statusFilter = 'all';
   showNotificationPanel = false;
+
+  readonly statusOptions = [
+    { value: 'all',         label: 'All Statuses' },
+    { value: 'scheduled',   label: 'Scheduled' },
+    { value: 'confirmed',   label: 'Confirmed' },
+    { value: 'in_progress', label: 'In Progress' },
+    { value: 'completed',   label: 'Completed' },
+    { value: 'cancelled',   label: 'Cancelled' },
+  ];
 
   constructor(
     private tripService: TripService,
@@ -38,6 +49,7 @@ export class ScheduledTripsComponent implements OnInit {
     this.tripService.getScheduledTrips(this.selectedDate || undefined).subscribe({
       next: (data) => {
         this.trips = data;
+        this.applyStatusFilter();
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -49,8 +61,21 @@ export class ScheduledTripsComponent implements OnInit {
     });
   }
 
+  applyStatusFilter(): void {
+    if (this.statusFilter === 'all') {
+      this.filteredTrips = this.trips;
+    } else {
+      this.filteredTrips = this.trips.filter(t => t.status === this.statusFilter);
+    }
+  }
+
   onDateChange(): void {
     this.loadTrips();
+  }
+
+  onStatusFilterChange(): void {
+    this.applyStatusFilter();
+    this.cdr.detectChanges();
   }
 
   clearDateFilter(): void {
@@ -58,14 +83,47 @@ export class ScheduledTripsComponent implements OnInit {
     this.loadTrips();
   }
 
-  startTrip(trip: ScheduledTrip): void {
-    // Guard: only allow trips in 'scheduled' status
+  // A trip can be started only if:
+  // 1. Its status is 'scheduled'
+  // 2. Its departure_datetime falls on today's local date
+  canStart(trip: ScheduledTrip): boolean {
+    if (trip.status !== 'scheduled') return false;
+    const today = new Date();
+    const dep = new Date(trip.departure_datetime);
+    return (
+      dep.getFullYear() === today.getFullYear() &&
+      dep.getMonth() === today.getMonth() &&
+      dep.getDate() === today.getDate()
+    );
+  }
+
+  // A trip can only be ended if it is currently in_progress
+  canEnd(trip: ScheduledTrip): boolean {
+    return trip.status === 'in_progress';
+  }
+
+  startTripDisabledReason(trip: ScheduledTrip): string {
     if (trip.status !== 'scheduled') {
-      alert(`Cannot start this trip. Current status is "${trip.status}". Only trips with status "scheduled" can be started.`);
+      return `Cannot start: trip status is "${trip.status}"`;
+    }
+    if (!this.canStart(trip)) {
+      return 'Can only start trips scheduled for today';
+    }
+    return '';
+  }
+
+  startTrip(trip: ScheduledTrip): void {
+    if (!this.canStart(trip)) {
+      const reason = this.startTripDisabledReason(trip);
+      alert(reason);
       return;
     }
 
-    if (!confirm(`Are you sure you want to start this trip?\n\nBus: ${trip.bus_registration_number || 'N/A'}\nPermit: ${trip.permit_number || 'N/A'}\nDeparture: ${this.formatDate(trip.departure_datetime)}`)) {
+    const route = trip.origin_city && trip.destination_city
+      ? `${trip.origin_city} → ${trip.destination_city}`
+      : trip.permit_number || 'N/A';
+
+    if (!confirm(`Are you sure you want to START this trip?\n\nRoute: ${route}\nBus: ${trip.bus_registration_number || 'N/A'}\nDeparture: ${this.formatDate(trip.departure_datetime)}`)) {
       return;
     }
 
@@ -76,6 +134,32 @@ export class ScheduledTripsComponent implements OnInit {
       },
       error: (err) => {
         alert('Failed to start trip: ' + (err.error?.error || 'Unknown error'));
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  endTrip(trip: ScheduledTrip): void {
+    if (!this.canEnd(trip)) {
+      alert(`Cannot end this trip. Current status is "${trip.status}". Only in-progress trips can be ended.`);
+      return;
+    }
+
+    const route = trip.origin_city && trip.destination_city
+      ? `${trip.origin_city} → ${trip.destination_city}`
+      : trip.permit_number || 'N/A';
+
+    if (!confirm(`Are you sure you want to END this trip?\n\nRoute: ${route}\nBus: ${trip.bus_registration_number || 'N/A'}\n\nThis will mark the trip as completed.`)) {
+      return;
+    }
+
+    this.tripService.endTrip(trip.id).subscribe({
+      next: () => {
+        alert('Trip ended successfully!');
+        this.loadTrips();
+      },
+      error: (err) => {
+        alert('Failed to end trip: ' + (err.error?.error || 'Unknown error'));
         this.cdr.detectChanges();
       }
     });
@@ -99,14 +183,11 @@ export class ScheduledTripsComponent implements OnInit {
   getStatusClass(status: string): string {
     switch (status?.toLowerCase()) {
       case 'scheduled':   return 'badge-scheduled';
+      case 'confirmed':   return 'badge-confirmed';
       case 'in_progress': return 'badge-in-progress';
       case 'completed':   return 'badge-completed';
       case 'cancelled':   return 'badge-cancelled';
       default:            return 'badge-default';
     }
-  }
-
-  canStart(trip: ScheduledTrip): boolean {
-    return trip.status === 'scheduled';
   }
 }

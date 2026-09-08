@@ -15,3 +15,9 @@ func GetAllScheduledTrips(date string) ([]models.ScheduledTripWithPermit, error)
 func StartTrip(tripID string) error {
 	return database.StartTrip(tripID)
 }
+
+// EndTrip marks a trip as completed. Returns an error if the trip is
+// not in 'in_progress' status.
+func EndTrip(tripID string) error {
+	return database.EndTrip(tripID)
+}

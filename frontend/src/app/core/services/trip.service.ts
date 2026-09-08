@@ -21,4 +21,8 @@ export class TripService {
   startTrip(id: string): Observable<{ message: string }> {
     return this.http.patch<{ message: string }>(`${this.apiUrl}/scheduled/${id}/start`, {});
   }
+
+  endTrip(id: string): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(`${this.apiUrl}/scheduled/${id}/end`, {});
+  }
 }

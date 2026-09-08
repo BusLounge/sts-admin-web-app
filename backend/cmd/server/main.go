@@ -234,6 +234,7 @@ func main() {
 		{
 			scheduledTrips.GET("/scheduled", handlers.GetScheduledTrips)
 			scheduledTrips.PATCH("/scheduled/:id/start", handlers.StartTrip)
+			scheduledTrips.PATCH("/scheduled/:id/end", handlers.EndTrip)
 		}
 
 		// System Settings

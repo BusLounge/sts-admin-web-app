@@ -17,4 +17,8 @@ export interface ScheduledTrip {
   approved_fare: number;
   permit_status: string;
   expiry_date: string;
+
+  // From master_routes (joined via route_permits.master_route_id)
+  origin_city: string;
+  destination_city: string;
 }

@@ -12,23 +12,37 @@
   <div class="page-header">
     <div class="header-content">
       <h2>Scheduled Trips</h2>
-      <p class="header-subtitle">View and start scheduled bus trips</p>
+      <p class="header-subtitle">View and manage all bus trips</p>
     </div>
   </div>
 
   <!-- Toolbar -->
   <div class="toolbar">
-    <div class="date-filter">
-      <label for="dateFilter">Filter by Departure Date:</label>
-      <input
-        type="date"
-        id="dateFilter"
-        [(ngModel)]="selectedDate"
-        (change)="onDateChange()"
-        class="date-input"
-      />
-      <button *ngIf="selectedDate" class="clear-btn" (click)="clearDateFilter()">✕ Clear</button>
+    <div class="filters">
+      <!-- Date filter -->
+      <div class="filter-group">
+        <label for="dateFilter">Date</label>
+        <div class="date-wrapper">
+          <input
+            type="date"
+            id="dateFilter"
+            [(ngModel)]="selectedDate"
+            (change)="onDateChange()"
+            class="date-input"
+          />
+          <button *ngIf="selectedDate" class="clear-btn" (click)="clearDateFilter()" title="Clear date filter">✕</button>
+        </div>
+      </div>
+
+      <!-- Status filter -->
+      <div class="filter-group">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()" class="status-select">
+          <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
     </div>
+
     <button class="refresh-btn" (click)="loadTrips()">
       <i class="fas fa-sync-alt"></i> Refresh
     </button>
@@ -45,66 +59,84 @@
   </div>
 
   <!-- Empty state -->
-  <div *ngIf="!isLoading && !errorMessage && trips.length === 0" class="state-message empty">
+  <div *ngIf="!isLoading && !errorMessage && filteredTrips.length === 0" class="state-message empty">
     <i class="fas fa-calendar-times"></i>
-    <p>No scheduled trips found{{ selectedDate ? ' for the selected date' : '' }}.</p>
+    <p>No trips found{{ selectedDate ? ' for ' + selectedDate : '' }}{{ statusFilter !== 'all' ? ' with status "' + statusFilter + '"' : '' }}.</p>
   </div>
 
   <!-- Trips table -->
-  <div *ngIf="!isLoading && trips.length > 0" class="table-wrapper">
+  <div *ngIf="!isLoading && filteredTrips.length > 0" class="table-wrapper">
     <table class="trips-table">
       <thead>
         <tr>
-          <th>Departure Date & Time</th>
+          <th>Route</th>
+          <th>Departure</th>
           <th>Permit No.</th>
           <th>Bus Reg. No.</th>
-          <th>Approved Fare</th>
-          <th>Base Fare</th>
-          <th>Duration (min)</th>
+          <th>Fare (Base)</th>
+          <th>Duration</th>
           <th>Bookable</th>
-          <th>Permit Status</th>
-          <th>Trip Status</th>
-          <th>Action</th>
+          <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let trip of trips">
-          <td>{{ formatDate(trip.departure_datetime) }}</td>
+        <tr *ngFor="let trip of filteredTrips">
+          <!-- Route: Origin → Destination -->
+          <td>
+            <div class="route-cell">
+              <span class="city origin">{{ trip.origin_city || '—' }}</span>
+              <span class="route-arrow">→</span>
+              <span class="city destination">{{ trip.destination_city || '—' }}</span>
+            </div>
+          </td>
+          <td class="nowrap">{{ formatDate(trip.departure_datetime) }}</td>
           <td>{{ trip.permit_number || '—' }}</td>
           <td>{{ trip.bus_registration_number || '—' }}</td>
-          <td>{{ trip.approved_fare | currency:'LKR':'symbol':'1.2-2' }}</td>
-          <td>{{ trip.base_fare | currency:'LKR':'symbol':'1.2-2' }}</td>
-          <td>{{ trip.estimated_duration_minutes }}</td>
+          <td class="nowrap">LKR {{ trip.base_fare | number:'1.2-2' }}</td>
+          <td class="nowrap">{{ trip.estimated_duration_minutes }} min</td>
           <td>
             <span [class]="trip.is_bookable ? 'badge-bookable' : 'badge-not-bookable'">
               {{ trip.is_bookable ? 'Yes' : 'No' }}
             </span>
           </td>
-          <td>{{ trip.permit_status || '—' }}</td>
           <td>
             <span [class]="'status-badge ' + getStatusClass(trip.status)">
-              {{ trip.status }}
+              {{ trip.status | titlecase }}
             </span>
           </td>
           <td>
-            <button
-              class="start-btn"
-              [class.disabled]="!canStart(trip)"
-              (click)="startTrip(trip)"
-              [title]="canStart(trip) ? 'Start this trip' : 'Trip cannot be started (status: ' + trip.status + ')'"
-            >
-              <i class="fas fa-play"></i> Start Trip
-            </button>
+            <div class="action-btns">
+              <!-- Start Trip -->
+              <button
+                class="action-btn start-btn"
+                [class.disabled]="!canStart(trip)"
+                (click)="startTrip(trip)"
+                [title]="canStart(trip) ? 'Start this trip' : startTripDisabledReason(trip)"
+              >
+                <i class="fas fa-play"></i> Start
+              </button>
+
+              <!-- End Trip -->
+              <button
+                class="action-btn end-btn"
+                [class.disabled]="!canEnd(trip)"
+                (click)="endTrip(trip)"
+                [title]="canEnd(trip) ? 'End this trip' : 'Only in-progress trips can be ended'"
+              >
+                <i class="fas fa-stop"></i> End
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- Trip count summary -->
-  <div *ngIf="!isLoading && trips.length > 0" class="summary">
-    Showing {{ trips.length }} trip{{ trips.length !== 1 ? 's' : '' }}
-    <ng-container *ngIf="selectedDate"> for {{ selectedDate }}</ng-container>
+  <!-- Summary -->
+  <div *ngIf="!isLoading && filteredTrips.length > 0" class="summary">
+    Showing {{ filteredTrips.length }} of {{ trips.length }} trip{{ trips.length !== 1 ? 's' : '' }}
+    <ng-container *ngIf="selectedDate"> — filtered by {{ selectedDate }}</ng-container>
   </div>
 
   <app-notification-panel *ngIf="showNotificationPanel" (close)="closeNotificationPanel()"></app-notification-panel>

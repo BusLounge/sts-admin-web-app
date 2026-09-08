@@ -6,7 +6,7 @@ import (
 	"sts-backend/internal/models"
 )
 
-// GetAllScheduledTrips fetches all scheduled trips joined with route_permits.
+// GetAllScheduledTrips fetches all scheduled trips joined with route_permits and master_routes.
 // If date is non-empty (format "YYYY-MM-DD"), results are filtered to that departure date.
 func GetAllScheduledTrips(date string) ([]models.ScheduledTripWithPermit, error) {
 	baseQuery := `
@@ -25,9 +25,12 @@ func GetAllScheduledTrips(date string) ([]models.ScheduledTripWithPermit, error)
 			COALESCE(rp.bus_registration_number, ''),
 			COALESCE(rp.approved_fare, 0),
 			COALESCE(rp.status::text, ''),
-			COALESCE(rp.expiry_date, '1970-01-01')
+			COALESCE(rp.expiry_date, '1970-01-01'),
+			COALESCE(mr.origin_city, ''),
+			COALESCE(mr.destination_city, '')
 		FROM scheduled_trips st
 		LEFT JOIN route_permits rp ON st.permit_id = rp.id
+		LEFT JOIN master_routes mr ON rp.master_route_id = mr.id
 	`
 
 	var rows *sql.Rows
@@ -66,6 +69,8 @@ func GetAllScheduledTrips(date string) ([]models.ScheduledTripWithPermit, error)
 			&t.ApprovedFare,
 			&t.PermitStatus,
 			&t.ExpiryDate,
+			&t.OriginCity,
+			&t.DestinationCity,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning scheduled trip: %w", err)
@@ -77,7 +82,6 @@ func GetAllScheduledTrips(date string) ([]models.ScheduledTripWithPermit, error)
 
 // StartTrip updates the status of a scheduled trip to 'in_progress'.
 // It only allows starting trips that are currently in 'scheduled' status.
-// Returns an error if the trip is not found or not in 'scheduled' status.
 func StartTrip(tripID string) error {
 	result, err := DB.Exec(
 		`UPDATE scheduled_trips SET status = 'in_progress', updated_at = NOW() WHERE id = $1 AND status = 'scheduled'`,
@@ -92,6 +96,26 @@ func StartTrip(tripID string) error {
 	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("trip cannot be started: either not found or not in 'scheduled' status")
+	}
+	return nil
+}
+
+// EndTrip updates the status of a trip to 'completed'.
+// It only allows ending trips that are currently in 'in_progress' status.
+func EndTrip(tripID string) error {
+	result, err := DB.Exec(
+		`UPDATE scheduled_trips SET status = 'completed', updated_at = NOW() WHERE id = $1 AND status = 'in_progress'`,
+		tripID,
+	)
+	if err != nil {
+		return fmt.Errorf("error updating trip status: %w", err)
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("trip cannot be ended: either not found or not currently in 'in_progress' status")
 	}
 	return nil
 }

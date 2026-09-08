@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// ScheduledTripWithPermit is the combined view of a scheduled trip joined with its route permit.
+// ScheduledTripWithPermit is the combined view of a scheduled trip joined with its route permit and master route.
 type ScheduledTripWithPermit struct {
 	// From scheduled_trips
 	ID                       string    `json:"id"`
@@ -22,4 +22,8 @@ type ScheduledTripWithPermit struct {
 	ApprovedFare          float64   `json:"approved_fare"`
 	PermitStatus          string    `json:"permit_status"`
 	ExpiryDate            time.Time `json:"expiry_date"`
+
+	// From master_routes (joined via route_permits.master_route_id)
+	OriginCity      string `json:"origin_city"`
+	DestinationCity string `json:"destination_city"`
 }
