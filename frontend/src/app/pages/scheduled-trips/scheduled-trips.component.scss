@@ -108,6 +108,26 @@
     gap: 0.4rem;
   }
 
+  .search-wrapper {
+    display: flex;
+    align-items: center;
+  }
+
+  .search-input {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    min-width: 220px;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+  }
+
   .date-input {
     padding: 0.4rem 0.75rem;
     border: 1px solid var(--border-color);

@@ -19,6 +19,21 @@
   <!-- Toolbar -->
   <div class="toolbar">
     <div class="filters">
+      <!-- Search -->
+      <div class="filter-group">
+        <label for="searchFilter">Search Route</label>
+        <div class="search-wrapper">
+          <input
+            type="text"
+            id="searchFilter"
+            [(ngModel)]="searchQuery"
+            (input)="onFilterChange()"
+            placeholder="Search route, permit, or bus..."
+            class="search-input"
+          />
+        </div>
+      </div>
+
       <!-- Date filter -->
       <div class="filter-group">
         <label for="dateFilter">Date</label>
@@ -37,11 +52,12 @@
       <!-- Status filter -->
       <div class="filter-group">
         <label for="statusFilter">Status</label>
-        <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()" class="status-select">
+        <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()" class="status-select">
           <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
         </select>
       </div>
     </div>
+
 
     <button class="refresh-btn" (click)="loadTrips()">
       <i class="fas fa-sync-alt"></i> Refresh

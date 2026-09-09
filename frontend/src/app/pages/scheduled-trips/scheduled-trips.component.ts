@@ -21,6 +21,7 @@ export class ScheduledTripsComponent implements OnInit {
   errorMessage = '';
   selectedDate = '';
   statusFilter = 'all';
+  searchQuery = '';
   showNotificationPanel = false;
 
   readonly statusOptions = [
@@ -49,7 +50,7 @@ export class ScheduledTripsComponent implements OnInit {
     this.tripService.getScheduledTrips(this.selectedDate || undefined).subscribe({
       next: (data) => {
         this.trips = data;
-        this.applyStatusFilter();
+        this.applyFilters();
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -61,20 +62,32 @@ export class ScheduledTripsComponent implements OnInit {
     });
   }
 
-  applyStatusFilter(): void {
-    if (this.statusFilter === 'all') {
-      this.filteredTrips = this.trips;
-    } else {
-      this.filteredTrips = this.trips.filter(t => t.status === this.statusFilter);
+  applyFilters(): void {
+    let result = this.trips;
+
+    if (this.statusFilter !== 'all') {
+      result = result.filter(t => t.status === this.statusFilter);
     }
+
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      result = result.filter(t => 
+        (t.origin_city && t.origin_city.toLowerCase().includes(q)) ||
+        (t.destination_city && t.destination_city.toLowerCase().includes(q)) ||
+        (t.permit_number && t.permit_number.toLowerCase().includes(q)) ||
+        (t.bus_registration_number && t.bus_registration_number.toLowerCase().includes(q))
+      );
+    }
+
+    this.filteredTrips = result;
   }
 
   onDateChange(): void {
     this.loadTrips();
   }
 
-  onStatusFilterChange(): void {
-    this.applyStatusFilter();
+  onFilterChange(): void {
+    this.applyFilters();
     this.cdr.detectChanges();
   }
 
