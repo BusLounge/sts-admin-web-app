@@ -243,7 +243,16 @@ func main() {
 
 		// Webhooks
 		api.POST("/webhooks/supabase", handlers.HandleSupabaseWebhook)
+		// Settlements
+		settlementHandler := handlers.NewSettlementHandler(database.DB)
+		api.GET("/settlements/overview", settlementHandler.GetOverview)
+		api.POST("/settlements/process-now", settlementHandler.ProcessNow)
 	}
+
+	// Initialize settlement scheduler (runs every 24 hours)
+	settlementScheduler := services.NewSettlementScheduler(database.DB, 24*time.Hour)
+	settlementScheduler.Start()
+	log.Println("✅ Settlement scheduler started")
 
 	log.Printf("Server starting on port %s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

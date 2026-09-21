@@ -1,0 +1,14 @@
+<div class="settlement-overview-container">
+  <h2>Settlement Overview</h2>
+  
+  <div class="actions">
+    <button (click)="processNow()" class="btn btn-primary">Trigger Midnight Process Now</button>
+  </div>
+
+  <div class="stats-cards" *ngIf="overview">
+    <div class="card">
+      <h3>Total Pending</h3>
+      <p>{{ overview.total_pending }}</p>
+    </div>
+  </div>
+</div>

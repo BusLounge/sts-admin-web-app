@@ -1,0 +1,326 @@
+package services
+
+import (
+	"database/sql"
+	"errors"
+	"log"
+	"sts-backend/internal/models"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type SettlementService struct {
+	db *sql.DB
+}
+
+func NewSettlementService(db *sql.DB) *SettlementService {
+	return &SettlementService{db: db}
+}
+
+func (s *SettlementService) GetConfigValue(tx *sql.Tx, key string, defaultValue float64) float64 {
+	var val float64
+	err := tx.QueryRow("SELECT config_value FROM public.settlement_config WHERE config_key = $1", key).Scan(&val)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return defaultValue
+		}
+		log.Printf("Error fetching config %s: %v", key, err)
+		return defaultValue
+	}
+	return val
+}
+
+// CreateBusSettlements is called when a bus trip completes.
+func (s *SettlementService) CreateBusSettlements(bookingID, scheduledTripID uuid.UUID, farePerSeat float64, totalPassengers int) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	totalRevenue := farePerSeat * float64(totalPassengers)
+
+	// Fetch configs
+	busOwnerShare := s.GetConfigValue(tx, "bus_owner_share_pct", 80.0) / 100
+	driverShare := s.GetConfigValue(tx, "driver_share_pct", 12.0) / 100
+	conductorShare := s.GetConfigValue(tx, "conductor_share_pct", 8.0) / 100
+
+	busOwnerCommission := s.GetConfigValue(tx, "bus_owner_commission_pct", 10.0) / 100
+	driverCommission := s.GetConfigValue(tx, "driver_commission_pct", 5.0) / 100
+	conductorCommission := s.GetConfigValue(tx, "conductor_commission_pct", 5.0) / 100
+
+	// Get payees
+	var driverUserID, conductorUserID, busOwnerUserID uuid.UUID
+	err = tx.QueryRow(`
+		SELECT 
+			d.user_id as driver_user_id,
+			c.user_id as conductor_user_id,
+			bo.user_id as bus_owner_user_id
+		FROM public.scheduled_trips st
+		LEFT JOIN public.bus_staff d ON st.assigned_driver_id = d.id
+		LEFT JOIN public.bus_staff c ON st.assigned_conductor_id = c.id
+		LEFT JOIN public.bus_owner_routes bor ON st.bus_owner_route_id = bor.id
+		LEFT JOIN public.bus_owners bo ON bor.bus_owner_id = bo.id
+		WHERE st.id = $1
+	`, scheduledTripID).Scan(&driverUserID, &conductorUserID, &busOwnerUserID)
+	if err != nil {
+		return err
+	}
+
+	today := time.Now().Truncate(24 * time.Hour)
+
+	// 1. Bus Owner
+	if busOwnerUserID != uuid.Nil {
+		ownerGross := totalRevenue * busOwnerShare
+		ownerComm := ownerGross * busOwnerCommission
+		ownerNet := ownerGross - ownerComm
+
+		err = s.insertSettlement(tx, models.PayeeTypeBusOwner, busOwnerUserID, &bookingID, &scheduledTripID, nil, ownerGross, busOwnerCommission, ownerComm, ownerNet, today)
+		if err != nil {
+			return err
+		}
+	}
+
+	// 2. Driver
+	if driverUserID != uuid.Nil {
+		driverGross := totalRevenue * driverShare
+		driverComm := driverGross * driverCommission
+		driverNet := driverGross - driverComm
+
+		err = s.insertSettlement(tx, models.PayeeTypeDriver, driverUserID, &bookingID, &scheduledTripID, nil, driverGross, driverCommission, driverComm, driverNet, today)
+		if err != nil {
+			return err
+		}
+	}
+
+	// 3. Conductor
+	if conductorUserID != uuid.Nil {
+		conductorGross := totalRevenue * conductorShare
+		conductorComm := conductorGross * conductorCommission
+		conductorNet := conductorGross - conductorComm
+
+		err = s.insertSettlement(tx, models.PayeeTypeConductor, conductorUserID, &bookingID, &scheduledTripID, nil, conductorGross, conductorCommission, conductorComm, conductorNet, today)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func (s *SettlementService) insertSettlement(
+	tx *sql.Tx,
+	payeeType models.PayeeType,
+	payeeUserID uuid.UUID,
+	bookingID *uuid.UUID,
+	scheduledTripID *uuid.UUID,
+	loungeBookingID *uuid.UUID,
+	gross float64,
+	commRate float64,
+	commAmount float64,
+	net float64,
+	earningDate time.Time,
+) error {
+
+	_, err := tx.Exec(`
+		INSERT INTO public.settlements (
+			payee_type, payee_user_id, booking_id, scheduled_trip_id, lounge_booking_id,
+			gross_amount, commission_rate, commission_amount, net_amount, earning_date, status
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'pending')
+	`, payeeType, payeeUserID, bookingID, scheduledTripID, loungeBookingID, gross, commRate, commAmount, net, earningDate)
+	if err != nil {
+		return err
+	}
+
+	// Ensure payout_tracker exists
+	_, err = tx.Exec(`
+		INSERT INTO public.payout_tracker (payee_user_id, payee_type, payout_frequency_days)
+		VALUES ($1, $2, 14)
+		ON CONFLICT (payee_user_id, payee_type) DO NOTHING
+	`, payeeUserID, payeeType)
+	return err
+}
+
+func (s *SettlementService) RunMidnightProcess() error {
+	today := time.Now().Truncate(24 * time.Hour)
+	log.Printf("Starting midnight settlement process for %v", today)
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Step 1: Mark pending as accounted
+	_, err = tx.Exec(`
+		UPDATE public.settlements 
+		SET status = 'accounted', updated_at = now()
+		WHERE status = 'pending' AND earning_date <= $1
+	`, today)
+	if err != nil {
+		return err
+	}
+
+	// Step 2: Process Trackers
+	rows, err := tx.Query(`
+		SELECT id, payee_user_id, payee_type, payout_frequency_days, last_payout_date 
+		FROM public.payout_tracker WHERE is_active = true
+	`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var trackers []models.PayoutTracker
+	for rows.Next() {
+		var t models.PayoutTracker
+		err := rows.Scan(&t.ID, &t.PayeeUserID, &t.PayeeType, &t.PayoutFrequencyDays, &t.LastPayoutDate)
+		if err != nil {
+			return err
+		}
+		trackers = append(trackers, t)
+	}
+	rows.Close() // Close before running queries in the loop
+
+	for _, t := range trackers {
+		var daysSince int
+		var periodStart time.Time
+
+		if t.LastPayoutDate == nil {
+			// Find cycle start
+			var cycleStart sql.NullTime
+			err := tx.QueryRow(`
+				SELECT MIN(earning_date) FROM public.settlements 
+				WHERE payee_user_id = $1 AND status = 'accounted'
+			`, t.PayeeUserID).Scan(&cycleStart)
+			if err != nil {
+				continue // could be no rows, just continue
+			}
+			if !cycleStart.Valid {
+				continue
+			}
+			daysSince = int(today.Sub(cycleStart.Time).Hours() / 24)
+			periodStart = cycleStart.Time
+		} else {
+			daysSince = int(today.Sub(*t.LastPayoutDate).Hours() / 24)
+			periodStart = t.LastPayoutDate.AddDate(0, 0, 1)
+		}
+
+		_, err = tx.Exec(`UPDATE public.payout_tracker SET days_accumulated = $1 WHERE id = $2`, daysSince, t.ID)
+		if err != nil {
+			log.Printf("Error updating days_accumulated for %s: %v", t.ID, err)
+			continue
+		}
+
+		if daysSince >= t.PayoutFrequencyDays {
+			periodEnd := today
+
+			// Aggregate
+			var totalGross, totalComm, totalNet float64
+			var recordCount int
+			err := tx.QueryRow(`
+				SELECT COALESCE(SUM(gross_amount), 0), COALESCE(SUM(commission_amount), 0), COALESCE(SUM(net_amount), 0), COUNT(id)
+				FROM public.settlements
+				WHERE payee_user_id = $1 AND payee_type = $2 AND status = 'accounted'
+				AND earning_date >= $3 AND earning_date <= $4
+			`, t.PayeeUserID, t.PayeeType, periodStart, periodEnd).Scan(&totalGross, &totalComm, &totalNet, &recordCount)
+
+			if err != nil || recordCount == 0 {
+				continue
+			}
+
+			// Create Batch
+			var batchID uuid.UUID
+			err = tx.QueryRow(`
+				INSERT INTO public.settlement_batches (
+					payee_user_id, payee_type, period_start, period_end, total_days,
+					total_settlements, total_gross_amount, total_commission, total_net_amount
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id
+			`, t.PayeeUserID, t.PayeeType, periodStart, periodEnd, daysSince, recordCount, totalGross, totalComm, totalNet).Scan(&batchID)
+			if err != nil {
+				log.Printf("Error inserting batch: %v", err)
+				continue
+			}
+
+			// Get Wallet ID and Balance
+			var walletID uuid.UUID
+			err = tx.QueryRow(`SELECT wallet_id FROM public.users WHERE id = $1`, t.PayeeUserID).Scan(&walletID)
+			if err != nil {
+				log.Printf("Error getting wallet_id: %v", err)
+				continue
+			}
+
+			var currentBalance float64
+			err = tx.QueryRow(`
+				SELECT COALESCE(
+					(SELECT balance_after FROM public.wallet_transactions 
+					WHERE wallet_id = $1 ORDER BY created_at DESC LIMIT 1), 
+				0)
+			`, walletID).Scan(&currentBalance)
+			if err != nil {
+				log.Printf("Error getting balance: %v", err)
+				continue
+			}
+
+			// Wallet Transaction
+			var txnID uuid.UUID
+			desc := "Settlement payout"
+			err = tx.QueryRow(`
+				INSERT INTO public.wallet_transactions (
+					wallet_id, amount, transaction_type, reference_type, reference_id,
+					balance_before, balance_after, description
+				) VALUES ($1, $2, 'credit', 'settlement', $3, $4, $5, $6) RETURNING id
+			`, walletID, totalNet, batchID, currentBalance, currentBalance+totalNet, desc).Scan(&txnID)
+			if err != nil {
+				log.Printf("Error inserting txn: %v", err)
+				continue
+			}
+
+			// Mark as Paid
+			_, err = tx.Exec(`
+				UPDATE public.settlements 
+				SET status = 'paid', is_paid = true, paid_at = now(), settlement_batch_id = $1
+				WHERE payee_user_id = $2 AND payee_type = $3 AND status = 'accounted'
+				AND earning_date >= $4 AND earning_date <= $5
+			`, batchID, t.PayeeUserID, t.PayeeType, periodStart, periodEnd)
+			if err != nil {
+				log.Printf("Error marking paid: %v", err)
+				continue
+			}
+
+			// Update Batch
+			_, err = tx.Exec(`
+				UPDATE public.settlement_batches 
+				SET status = 'completed', wallet_transaction_id = $1
+				WHERE id = $2
+			`, txnID, batchID)
+			if err != nil {
+				log.Printf("Error updating batch: %v", err)
+				continue
+			}
+
+			// Update Tracker
+			nextPayoutDate := today.AddDate(0, 0, t.PayoutFrequencyDays)
+			_, err = tx.Exec(`
+				UPDATE public.payout_tracker 
+				SET last_payout_date = $1, next_payout_date = $2, days_accumulated = 0, updated_at = now()
+				WHERE id = $3
+			`, today, nextPayoutDate, t.ID)
+			if err != nil {
+				log.Printf("Error updating tracker: %v", err)
+				continue
+			}
+
+			log.Printf("✅ PAID %s %s: %f LKR", t.PayeeType, t.PayeeUserID, totalNet)
+		}
+	}
+
+	return tx.Commit()
+}
+
+// GetSettlementOverview fetches summary stats for the dashboard.
+func (s *SettlementService) GetSettlementOverview() (map[string]interface{}, error) {
+	// Simplified overview fetching
+	return map[string]interface{}{"total_pending": 0}, nil
+}

@@ -43,6 +43,14 @@ export class NavbarComponent implements OnInit {
     { label: 'Routes', icon: 'fas fa-map', route: '/route-management' },
     { label: 'OTP Master', icon: 'fas fa-key', route: '/otp-management' },
     { 
+      label: 'Settlements', 
+      icon: 'fas fa-file-invoice-dollar', 
+      route: '/settlements',
+      children: [
+        { label: 'Settlement Overview', route: '/settlements' }
+      ]
+    },
+    { 
       label: 'Support', 
       icon: 'fas fa-headset', 
       route: '/support', 

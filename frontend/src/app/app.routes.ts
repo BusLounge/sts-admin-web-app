@@ -70,5 +70,6 @@ export const routes: Routes = [
   { path: 'advertisement-management', component: AdvertisementManagementComponent },
   { path: 'route-management', component: RouteManagementComponent },
   { path: 'otp-management', component: OtpManagementComponent },
+  { path: 'settlements', loadComponent: () => import('./pages/settlement-management/settlement-overview/settlement-overview.component').then(m => m.SettlementOverviewComponent) },
   { path: '**', redirectTo: '' }
 ];
