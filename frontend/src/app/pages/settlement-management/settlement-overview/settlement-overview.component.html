@@ -1,14 +1,123 @@
 <div class="settlement-overview-container">
-  <h2>Settlement Overview</h2>
-  
-  <div class="actions">
-    <button (click)="processNow()" class="btn btn-primary">Trigger Midnight Process Now</button>
+  <div class="header-section">
+    <h2>Settlements & Payments Dashboard</h2>
+    <button (click)="processNow()" class="btn-primary">
+      <i class="fas fa-play"></i> Trigger Midnight Process Now
+    </button>
   </div>
 
-  <div class="stats-cards" *ngIf="overview">
-    <div class="card">
-      <h3>Total Pending</h3>
-      <p>{{ overview.total_pending }}</p>
+  <div *ngIf="overview" class="dashboard-content">
+    
+    <!-- 1. Quick Stats -->
+    <div class="quick-stats-grid">
+      <div class="stat-card pending">
+        <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+        <div class="stat-info">
+          <h4>Total Pending</h4>
+          <h2>{{ overview.quick_stats.total_pending | currency:'LKR ':'symbol':'1.2-2' }}</h2>
+        </div>
+      </div>
+      
+      <div class="stat-card paid">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+          <h4>Paid This Month</h4>
+          <h2>{{ overview.quick_stats.paid_this_month | currency:'LKR ':'symbol':'1.2-2' }}</h2>
+        </div>
+      </div>
+      
+      <div class="stat-card profit">
+        <div class="stat-icon"><i class="fas fa-building"></i></div>
+        <div class="stat-info">
+          <h4>Company Profit (Commission)</h4>
+          <h2>{{ overview.quick_stats.company_profit | currency:'LKR ':'symbol':'1.2-2' }}</h2>
+        </div>
+      </div>
+
+      <div class="stat-card date">
+        <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+        <div class="stat-info">
+          <h4>Next Big Payout Date</h4>
+          <h2>{{ overview.quick_stats.next_payout_date | date:'MMM d, y' }}</h2>
+        </div>
+      </div>
     </div>
+
+    <!-- 4. Special Requests Alert -->
+    <div class="alert-box" *ngIf="overview.special_requests_count > 0">
+      <i class="fas fa-bell"></i>
+      <span>You have <strong>{{ overview.special_requests_count }}</strong> pending requests for 7-day payout cycles.</span>
+      <button class="btn-secondary">Review Requests</button>
+    </div>
+
+    <div class="tables-grid">
+      <!-- 2. Upcoming Payouts -->
+      <div class="table-card">
+        <h3>Upcoming Payouts</h3>
+        <p class="subtitle">Payees nearing their 14-day cycle</p>
+        
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Payee</th>
+              <th>Role</th>
+              <th>Amount Accumulated</th>
+              <th>Progress</th>
+              <th>Expected Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of overview.upcoming_payouts">
+              <td>{{ item.payee_name }}</td>
+              <td><span class="badge">{{ item.role }}</span></td>
+              <td><strong>{{ item.amount_accumulated | currency:'LKR ':'symbol':'1.2-2' }}</strong></td>
+              <td>
+                <div class="progress-container">
+                  <div class="progress-bar" [style.width]="(item.days_accumulated / item.frequency_days) * 100 + '%'"></div>
+                </div>
+                <small>{{ item.days_accumulated }} / {{ item.frequency_days }} days</small>
+              </td>
+              <td>{{ item.expected_payout_date | date:'shortDate' }}</td>
+            </tr>
+            <tr *ngIf="overview.upcoming_payouts.length === 0">
+              <td colspan="5" class="empty-state">No upcoming payouts tracked yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 3. Recent Payouts -->
+      <div class="table-card">
+        <h3>Recent Payout Batches</h3>
+        <p class="subtitle">History of midnight process executions</p>
+        
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Date Paid</th>
+              <th>Total People Paid</th>
+              <th>Total Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let batch of overview.recent_payouts">
+              <td>{{ batch.date_paid | date:'medium' }}</td>
+              <td>{{ batch.total_people }} payees</td>
+              <td class="success-text"><strong>{{ batch.total_amount | currency:'LKR ':'symbol':'1.2-2' }}</strong></td>
+              <td><button class="btn-text">View</button></td>
+            </tr>
+            <tr *ngIf="overview.recent_payouts.length === 0">
+              <td colspan="4" class="empty-state">No payouts have been processed yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!overview" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading settlement data...</p>
   </div>
 </div>

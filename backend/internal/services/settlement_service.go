@@ -320,6 +320,110 @@ func (s *SettlementService) RunMidnightProcess() error {
 
 // GetSettlementOverview fetches summary stats for the dashboard.
 func (s *SettlementService) GetSettlementOverview() (map[string]interface{}, error) {
-	// Simplified overview fetching
-	return map[string]interface{}{"total_pending": 0}, nil
+	// 1. Quick Stats
+	var totalPending, paidThisMonth, companyProfit float64
+	var nextPayoutDate sql.NullTime
+
+	// Total Pending (sum of net_amount where status = pending or accounted)
+	s.db.QueryRow(`SELECT COALESCE(SUM(net_amount), 0) FROM public.settlements WHERE status IN ('pending', 'accounted')`).Scan(&totalPending)
+	
+	// Paid This Month (sum of total_net_amount from batches created this month)
+	s.db.QueryRow(`
+		SELECT COALESCE(SUM(total_net_amount), 0) FROM public.settlement_batches 
+		WHERE date_trunc('month', processed_at) = date_trunc('month', current_date)
+	`).Scan(&paidThisMonth)
+
+	// Company Profit (sum of commission_amount from settlements created this month)
+	s.db.QueryRow(`
+		SELECT COALESCE(SUM(commission_amount), 0) FROM public.settlements 
+		WHERE date_trunc('month', earning_date) = date_trunc('month', current_date)
+	`).Scan(&companyProfit)
+
+	// Next Payout Date
+	s.db.QueryRow(`SELECT MIN(next_payout_date) FROM public.payout_tracker WHERE next_payout_date > current_date`).Scan(&nextPayoutDate)
+
+	// 2. Upcoming Payouts
+	upcomingRows, err := s.db.Query(`
+		SELECT 
+			u.first_name || ' ' || u.last_name as payee_name,
+			t.payee_type as role,
+			t.days_accumulated,
+			t.payout_frequency_days as frequency_days,
+			COALESCE(t.next_payout_date, current_date + interval '14 days') as expected_payout_date,
+			(SELECT COALESCE(SUM(net_amount), 0) FROM public.settlements s WHERE s.payee_user_id = t.payee_user_id AND s.status IN ('pending', 'accounted')) as amount_accumulated
+		FROM public.payout_tracker t
+		JOIN public.users u ON t.payee_user_id = u.id
+		WHERE t.is_active = true
+		ORDER BY t.days_accumulated DESC
+		LIMIT 5
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer upcomingRows.Close()
+
+	upcomingPayouts := []map[string]interface{}{}
+	for upcomingRows.Next() {
+		var name, role string
+		var daysAcc, freq int
+		var expDate time.Time
+		var amount float64
+		upcomingRows.Scan(&name, &role, &daysAcc, &freq, &expDate, &amount)
+		upcomingPayouts = append(upcomingPayouts, map[string]interface{}{
+			"payee_name": name,
+			"role": role,
+			"days_accumulated": daysAcc,
+			"frequency_days": freq,
+			"expected_payout_date": expDate,
+			"amount_accumulated": amount,
+		})
+	}
+
+	// 3. Recent Payouts
+	recentRows, err := s.db.Query(`
+		SELECT 
+			id,
+			processed_at as date_paid,
+			total_settlements as total_people, -- Approximation for display
+			total_net_amount as total_amount
+		FROM public.settlement_batches
+		ORDER BY processed_at DESC
+		LIMIT 5
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer recentRows.Close()
+
+	recentPayouts := []map[string]interface{}{}
+	for recentRows.Next() {
+		var id string
+		var datePaid time.Time
+		var totalPeople int
+		var totalAmount float64
+		recentRows.Scan(&id, &datePaid, &totalPeople, &totalAmount)
+		recentPayouts = append(recentPayouts, map[string]interface{}{
+			"batch_id": id,
+			"date_paid": datePaid,
+			"total_people": totalPeople,
+			"total_amount": totalAmount,
+		})
+	}
+
+	// 4. Special Requests (Count)
+	var specialRequestsCount int
+	s.db.QueryRow(`SELECT COUNT(*) FROM public.payout_tracker WHERE has_special_request = true`).Scan(&specialRequestsCount)
+
+	return map[string]interface{}{
+		"quick_stats": map[string]interface{}{
+			"total_pending": totalPending,
+			"paid_this_month": paidThisMonth,
+			"company_profit": companyProfit,
+			"next_payout_date": nextPayoutDate.Time,
+		},
+		"upcoming_payouts": upcomingPayouts,
+		"recent_payouts": recentPayouts,
+		"special_requests_count": specialRequestsCount,
+	}, nil
 }
+

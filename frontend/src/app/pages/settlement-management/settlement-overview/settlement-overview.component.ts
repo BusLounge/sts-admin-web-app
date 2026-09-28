@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SettlementService } from '../../../core/services/settlement.service';
 
+import { SettlementOverview } from '../../../core/models/settlement.model';
+
 @Component({
   selector: 'app-settlement-overview',
   standalone: true,
@@ -10,7 +12,7 @@ import { SettlementService } from '../../../core/services/settlement.service';
   styleUrls: ['./settlement-overview.component.scss']
 })
 export class SettlementOverviewComponent implements OnInit {
-  overview: any = null;
+  overview: SettlementOverview | null = null;
 
   constructor(private settlementService: SettlementService) {}
 
@@ -33,6 +35,7 @@ export class SettlementOverviewComponent implements OnInit {
     this.settlementService.processNow().subscribe({
       next: (res) => {
         alert('Process triggered successfully!');
+        this.loadOverview(); // Refresh the data
       },
       error: (err) => {
         console.error('Error triggering process', err);
