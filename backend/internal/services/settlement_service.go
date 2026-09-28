@@ -41,14 +41,11 @@ func (s *SettlementService) CreateBusSettlements(bookingID, scheduledTripID uuid
 
 	totalRevenue := farePerSeat * float64(totalPassengers)
 
-	// Fetch configs
-	busOwnerShare := s.GetConfigValue(tx, "bus_owner_share_pct", 80.0) / 100
-	driverShare := s.GetConfigValue(tx, "driver_share_pct", 12.0) / 100
-	conductorShare := s.GetConfigValue(tx, "conductor_share_pct", 8.0) / 100
-
-	busOwnerCommission := s.GetConfigValue(tx, "bus_owner_commission_pct", 10.0) / 100
-	driverCommission := s.GetConfigValue(tx, "driver_commission_pct", 5.0) / 100
-	conductorCommission := s.GetConfigValue(tx, "conductor_commission_pct", 5.0) / 100
+	// Fetch new simplified configs
+	busOwnerSharePct := s.GetConfigValue(tx, "bus_owner_share_pct", 70.0) / 100
+	driverSharePct := s.GetConfigValue(tx, "driver_share_pct", 15.0) / 100
+	conductorSharePct := s.GetConfigValue(tx, "conductor_share_pct", 10.0) / 100
+	companyCommissionPct := s.GetConfigValue(tx, "company_commission_pct", 5.0) / 100
 
 	// Get payees
 	var driverUserID, conductorUserID, busOwnerUserID uuid.UUID
@@ -70,37 +67,39 @@ func (s *SettlementService) CreateBusSettlements(bookingID, scheduledTripID uuid
 
 	today := time.Now().Truncate(24 * time.Hour)
 
-	// 1. Bus Owner
+	// 1. Bus Owner (Receives 70% net, but we attach the company's 5% cut here for tracking)
 	if busOwnerUserID != uuid.Nil {
-		ownerGross := totalRevenue * busOwnerShare
-		ownerComm := ownerGross * busOwnerCommission
-		ownerNet := ownerGross - ownerComm
+		ownerGross := totalRevenue * (busOwnerSharePct + companyCommissionPct)
+		ownerComm := totalRevenue * companyCommissionPct
+		ownerNet := totalRevenue * busOwnerSharePct
 
-		err = s.insertSettlement(tx, models.PayeeTypeBusOwner, busOwnerUserID, &bookingID, &scheduledTripID, nil, ownerGross, busOwnerCommission, ownerComm, ownerNet, today)
+		// Commission Rate field can just represent the effective rate out of their gross for tracking
+		var effectiveCommRate float64 = 0
+		if ownerGross > 0 {
+			effectiveCommRate = ownerComm / ownerGross
+		}
+
+		err = s.insertSettlement(tx, models.PayeeTypeBusOwner, busOwnerUserID, &bookingID, &scheduledTripID, nil, ownerGross, effectiveCommRate, ownerComm, ownerNet, today)
 		if err != nil {
 			return err
 		}
 	}
 
-	// 2. Driver
+	// 2. Driver (Receives flat 15%, no individual commission deducted)
 	if driverUserID != uuid.Nil {
-		driverGross := totalRevenue * driverShare
-		driverComm := driverGross * driverCommission
-		driverNet := driverGross - driverComm
+		driverNet := totalRevenue * driverSharePct
 
-		err = s.insertSettlement(tx, models.PayeeTypeDriver, driverUserID, &bookingID, &scheduledTripID, nil, driverGross, driverCommission, driverComm, driverNet, today)
+		err = s.insertSettlement(tx, models.PayeeTypeDriver, driverUserID, &bookingID, &scheduledTripID, nil, driverNet, 0, 0, driverNet, today)
 		if err != nil {
 			return err
 		}
 	}
 
-	// 3. Conductor
+	// 3. Conductor (Receives flat 10%, no individual commission deducted)
 	if conductorUserID != uuid.Nil {
-		conductorGross := totalRevenue * conductorShare
-		conductorComm := conductorGross * conductorCommission
-		conductorNet := conductorGross - conductorComm
+		conductorNet := totalRevenue * conductorSharePct
 
-		err = s.insertSettlement(tx, models.PayeeTypeConductor, conductorUserID, &bookingID, &scheduledTripID, nil, conductorGross, conductorCommission, conductorComm, conductorNet, today)
+		err = s.insertSettlement(tx, models.PayeeTypeConductor, conductorUserID, &bookingID, &scheduledTripID, nil, conductorNet, 0, 0, conductorNet, today)
 		if err != nil {
 			return err
 		}
