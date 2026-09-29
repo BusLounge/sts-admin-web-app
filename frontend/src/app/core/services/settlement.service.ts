@@ -8,7 +8,7 @@ import { SettlementOverview } from '../models/settlement.model';
   providedIn: 'root'
 })
 export class SettlementService {
-  private apiUrl = `${environment.apiUrl}/api/settlements`;
+  private apiUrl = `${environment.apiUrl}/settlements`;
 
   constructor(private http: HttpClient) {}
 
