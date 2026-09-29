@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SettlementService } from '../../../core/services/settlement.service';
 import { SettlementOverview } from '../../../core/models/settlement.model';
-import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
-import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
+import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
+import { NotificationPanelComponent } from '../../../shared/components/notification-panel/notification-panel.component';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
