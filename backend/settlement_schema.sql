@@ -166,8 +166,8 @@ INSERT INTO public.settlement_config (config_key, config_value, description) VAL
   ('driver_share_pct', 15.00, 'Driver share of bus fare (%)'),
   ('conductor_share_pct', 10.00, 'Conductor share of bus fare (%)'),
   ('company_commission_pct', 5.00, 'Company commission taken from total bus fare (%)'),
-  ('lounge_owner_share_pct', 90.00, 'Lounge owner share of lounge fare (%)'),
-  ('lounge_owner_commission_pct', 10.00, 'Commission charged to lounge owner (%)'),
+  ('lounge_owner_share_pct', 95.00, 'Lounge owner share of lounge fare (%)'),
+  ('lounge_owner_commission_pct', 5.00, 'Commission charged to lounge owner (%)'),
   ('default_payout_frequency_days', 14, 'Default payout cycle in days'),
   ('special_request_frequency_days', 7, 'Special request payout cycle in days')
 ON CONFLICT (config_key) DO UPDATE SET config_value = EXCLUDED.config_value;

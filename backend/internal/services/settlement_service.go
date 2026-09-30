@@ -108,6 +108,58 @@ func (s *SettlementService) CreateBusSettlements(bookingID, scheduledTripID uuid
 	return tx.Commit()
 }
 
+// CreateLoungeSettlements processes the earnings for a lounge booking
+func (s *SettlementService) CreateLoungeSettlements(loungeBookingID uuid.UUID, loungeName string, totalRevenue float64) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Get percentages
+	loungeOwnerSharePct := s.GetConfigValue(tx, "lounge_owner_share_pct", 95.00) / 100.0
+	companyCommissionPct := s.GetConfigValue(tx, "lounge_owner_commission_pct", 5.00) / 100.0
+
+	// Find the lounge owner's user_id
+	var loungeOwnerUserID uuid.UUID
+	err = tx.QueryRow(`
+		SELECT lo.user_id 
+		FROM public.lounges l
+		JOIN public.lounge_owners lo ON l.owner_id = lo.id
+		WHERE l.lounge_name = $1
+		LIMIT 1
+	`, loungeName).Scan(&loungeOwnerUserID)
+	
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	
+	// If the lounge doesn't have an owner linked to a user, we can't settle
+	if err == sql.ErrNoRows || loungeOwnerUserID == uuid.Nil {
+		log.Printf("Warning: Could not find owner for lounge '%s' to settle booking %v", loungeName, loungeBookingID)
+		return nil
+	}
+
+	today := time.Now().Truncate(24 * time.Hour)
+	
+	ownerGross := totalRevenue * (loungeOwnerSharePct + companyCommissionPct)
+	ownerComm := totalRevenue * companyCommissionPct
+	ownerNet := totalRevenue * loungeOwnerSharePct
+
+	var effectiveCommRate float64 = 0
+	if ownerGross > 0 {
+		effectiveCommRate = ownerComm / ownerGross
+	}
+
+	// insert settlement
+	err = s.insertSettlement(tx, models.PayeeTypeLoungeOwner, loungeOwnerUserID, nil, nil, &loungeBookingID, ownerGross, effectiveCommRate, ownerComm, ownerNet, today)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (s *SettlementService) insertSettlement(
 	tx *sql.Tx,
 	payeeType models.PayeeType,
