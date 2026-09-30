@@ -34,10 +34,17 @@
   </div>
 
   <div class="header-section">
-    <h2>Settlements & Payments Dashboard</h2>
-    <button (click)="processNow()" class="btn-primary">
-      <i class="fas fa-play"></i> Trigger Midnight Process Now
-    </button>
+    <div class="title-area">
+      <h2>Settlements & Payments Dashboard</h2>
+    </div>
+    <div class="action-area">
+      <div class="notice-text">
+        <i class="fas fa-info-circle"></i> This process runs automatically every midnight.
+      </div>
+      <button (click)="processNow()" class="btn-primary">
+        <i class="fas fa-play"></i> Trigger Midnight Process Now
+      </button>
+    </div>
   </div>
 
   <div *ngIf="overview" class="dashboard-content">
@@ -128,6 +135,7 @@
         <table class="dashboard-table">
           <thead>
             <tr>
+              <th>Batch ID</th>
               <th>Date Paid</th>
               <th>Total People Paid</th>
               <th>Total Amount</th>
@@ -136,13 +144,14 @@
           </thead>
           <tbody>
             <tr *ngFor="let batch of overview.recent_payouts">
+              <td class="batch-id">#{{ batch.batch_id | slice:0:8 }}</td>
               <td>{{ batch.date_paid | date:'medium' }}</td>
               <td>{{ batch.total_people }} payees</td>
               <td class="success-text"><strong>{{ batch.total_amount | currency:'LKR ':'symbol':'1.2-2' }}</strong></td>
               <td><button class="btn-text">View</button></td>
             </tr>
             <tr *ngIf="overview.recent_payouts.length === 0">
-              <td colspan="4" class="empty-state">No payouts have been processed yet.</td>
+              <td colspan="5" class="empty-state">No payouts have been processed yet.</td>
             </tr>
           </tbody>
         </table>
