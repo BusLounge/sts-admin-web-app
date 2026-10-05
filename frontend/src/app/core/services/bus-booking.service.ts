@@ -13,9 +13,6 @@ export class BusBookingService {
   readonly bookings$ = this._bookings$.asObservable();
 
   constructor(private http: HttpClient) {
-    this.loadBookings().subscribe({
-      error: (err) => console.error('Error loading initial bookings:', err)
-    });
   }
 
   get bookings(): BusBooking[] { return this._bookings$.getValue(); }

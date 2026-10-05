@@ -12,7 +12,6 @@ export class ConductorService {
   readonly conductors$ = this._conductors$.asObservable();
 
   constructor(private http: HttpClient) {
-    this.loadConductors();
   }
 
   loadConductors(): void {

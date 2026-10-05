@@ -11,7 +11,6 @@ export class LoungeService {
   private apiUrl = `${environment.apiUrl}/lounges`;
 
   constructor(private http: HttpClient) {
-    this.loadLounges().subscribe();
   }
 
   get lounges(): Lounge[] { return this._lounges$.getValue(); }

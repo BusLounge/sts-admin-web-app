@@ -11,7 +11,6 @@ export class BusService {
   readonly buses$ = this._buses$.asObservable();
 
   constructor(private http: HttpClient) {
-    this.loadBuses().subscribe();
   }
 
   get buses(): Bus[] {

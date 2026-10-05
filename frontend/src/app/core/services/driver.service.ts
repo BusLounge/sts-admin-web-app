@@ -12,7 +12,6 @@ export class DriverService {
   readonly drivers$ = this._drivers$.asObservable();
 
   constructor(private http: HttpClient) {
-    this.loadDrivers();
   }
 
   loadDrivers(): void {
