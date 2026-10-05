@@ -113,6 +113,7 @@ export class BusBookingComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.svc.loadBookings().subscribe();
     // Subscribe to bookings observable for reactive updates
     this.svc.bookings$.subscribe(bs => {
       console.log('Bookings updated in component:', bs.length);

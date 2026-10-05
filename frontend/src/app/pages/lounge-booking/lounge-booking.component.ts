@@ -131,6 +131,7 @@ export class LoungeBookingComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.svc.loadBookings().subscribe();
     this.svc.bookings$.subscribe(bs => {
       this.bookings = bs;
       this.applyFilters();

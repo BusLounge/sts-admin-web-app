@@ -61,6 +61,7 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.conductorService.loadConductors();
     this.conductorService.conductors$.subscribe(conductors => {
       this.conductors = conductors;
       this.filteredConductors = conductors;

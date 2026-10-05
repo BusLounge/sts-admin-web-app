@@ -126,6 +126,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.busService.loadBuses().subscribe();
+    this.loungeService.loadLounges().subscribe();
+    this.driverService.loadDrivers();
+    this.conductorService.loadConductors();
+    this.busBookingService.loadBookings().subscribe();
+    this.loungeBookingService.loadBookings().subscribe();
+
     this.refreshPendingNotifications();
     this.pendingNotificationsRefreshId = setInterval(() => {
       this.refreshPendingNotifications();

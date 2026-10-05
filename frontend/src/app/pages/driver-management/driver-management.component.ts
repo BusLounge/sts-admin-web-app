@@ -60,6 +60,7 @@ export class DriverManagementComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.driverService.loadDrivers();
     if (this.isBrowser) {
       Chart.register(...registerables);
     }
