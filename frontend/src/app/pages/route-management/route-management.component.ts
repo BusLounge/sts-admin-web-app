@@ -58,6 +58,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
   private multiPolylinesLayer: any = null;
   private multiMarkersLayer: any[] = [];
   private isBrowser = false;
+  private leafletStyleLink: HTMLLinkElement | null = null;
 
   // ── Multi-route view ──────────────────────────────────────────────────
   selectedRoutesForView: MasterRoute[] = [];
@@ -137,6 +138,13 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngOnInit(): void {
+    if (this.isBrowser) {
+      this.leafletStyleLink = document.createElement('link');
+      this.leafletStyleLink.rel = 'stylesheet';
+      this.leafletStyleLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(this.leafletStyleLink);
+    }
+    this.loungeService.loadLounges().subscribe();
     this.loadRoutes();
     this.loungeService.lounges$.subscribe((lounges) => {
       this.lounges = lounges;
@@ -152,6 +160,10 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngOnDestroy(): void {
+    if (this.leafletStyleLink) {
+      document.head.removeChild(this.leafletStyleLink);
+      this.leafletStyleLink = null;
+    }
     if (this.map) {
       this.map.remove();
     }

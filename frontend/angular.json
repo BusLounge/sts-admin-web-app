@@ -32,7 +32,6 @@
               }
             ],
             "styles": [
-              "node_modules/leaflet/dist/leaflet.css",
               "node_modules/primeicons/primeicons.css",
               "src/styles.scss"
             ],
@@ -105,7 +104,6 @@
               }
             ],
             "styles": [
-              "node_modules/leaflet/dist/leaflet.css",
               "node_modules/primeicons/primeicons.css",
               "src/styles.scss"
             ]
@@ -118,3 +116,4 @@
     "analytics": "aee3b8a2-4281-483c-9601-e0023c87a3ac"
   }
 }
+
