@@ -41,8 +41,9 @@
       <div class="notice-text">
         <i class="fas fa-info-circle"></i> This process runs automatically every midnight.
       </div>
-      <button (click)="processNow()" class="btn-primary">
-        <i class="fas fa-play"></i> Trigger Midnight Process Now
+      <button (click)="processNow()" class="btn-primary" [disabled]="isProcessing">
+        <i class="fas" [ngClass]="{'fa-play': !isProcessing, 'fa-spinner fa-spin': isProcessing}"></i> 
+        {{ isProcessing ? 'Process is Running, please wait...' : 'Trigger Midnight Process Now' }}
       </button>
     </div>
   </div>

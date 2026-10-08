@@ -48,6 +48,8 @@ export class SettlementOverviewComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  isProcessing = false;
+
   loadOverview() {
     this.settlementService.getOverview().subscribe({
       next: (data) => {
@@ -60,14 +62,19 @@ export class SettlementOverviewComponent implements OnInit {
   }
 
   processNow() {
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+    
     this.settlementService.processNow().subscribe({
       next: (res) => {
-        alert('Process triggered successfully!');
+        this.isProcessing = false;
+        alert('Process triggered successfully! The background engine has finished syncing bookings and updating settlements.');
         this.loadOverview(); // Refresh the data
       },
       error: (err) => {
+        this.isProcessing = false;
         console.error('Error triggering process', err);
-        alert('Error triggering process');
+        alert('Error triggering process. Please check the console logs.');
       }
     });
   }
