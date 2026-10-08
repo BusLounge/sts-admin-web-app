@@ -200,6 +200,7 @@ func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
 	// Pre-fetch configs to avoid querying inside a loop
 	loungeOwnerSharePct := s.GetConfigValue(tx, "lounge_owner_share_pct", 95.00) / 100.0
 	loungeCommissionPct := s.GetConfigValue(tx, "lounge_owner_commission_pct", 5.00) / 100.0
+	
 	busOwnerSharePct := s.GetConfigValue(tx, "bus_owner_share_pct", 70.00) / 100.0
 	driverSharePct := s.GetConfigValue(tx, "driver_share_pct", 15.00) / 100.0
 	conductorSharePct := s.GetConfigValue(tx, "conductor_share_pct", 10.00) / 100.0
@@ -305,9 +306,11 @@ func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
 			
 			if busOwnerUserID.Valid {
 				ownerID, _ := uuid.Parse(busOwnerUserID.String)
-				ownerGross := bb.Fare * (busOwnerSharePct + busCompanyCommissionPct)
-				ownerComm := bb.Fare * busCompanyCommissionPct
-				ownerNet := bb.Fare * busOwnerSharePct
+				// The platform takes its 5% commission from the Bus Owner's record to account for it.
+				ownerGross := bb.Fare * (busOwnerSharePct + busCompanyCommissionPct) // 75%
+				ownerComm := bb.Fare * busCompanyCommissionPct                       // 5%
+				ownerNet := bb.Fare * busOwnerSharePct                               // 70%
+				
 				var effectiveCommRate float64 = 0
 				if ownerGross > 0 { effectiveCommRate = ownerComm / ownerGross }
 				err := s.insertSettlement(tx, models.PayeeTypeBusOwner, ownerID, &bb.BookingID, &bb.TripID, nil, ownerGross, effectiveCommRate, ownerComm, ownerNet, today)
@@ -315,13 +318,13 @@ func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
 			}
 			if driverUserID.Valid {
 				dID, _ := uuid.Parse(driverUserID.String)
-				driverNet := bb.Fare * driverSharePct
+				driverNet := bb.Fare * driverSharePct // 15%
 				err := s.insertSettlement(tx, models.PayeeTypeDriver, dID, &bb.BookingID, &bb.TripID, nil, driverNet, 0, 0, driverNet, today)
 				if err != nil { log.Printf("Error inserting driver settlement: %v", err) }
 			}
 			if conductorUserID.Valid {
 				cID, _ := uuid.Parse(conductorUserID.String)
-				conductorNet := bb.Fare * conductorSharePct
+				conductorNet := bb.Fare * conductorSharePct // 10%
 				err := s.insertSettlement(tx, models.PayeeTypeConductor, cID, &bb.BookingID, &bb.TripID, nil, conductorNet, 0, 0, conductorNet, today)
 				if err != nil { log.Printf("Error inserting conductor settlement: %v", err) }
 			}
