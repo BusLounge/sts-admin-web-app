@@ -193,6 +193,146 @@ func (s *SettlementService) insertSettlement(
 	return err
 }
 
+// SyncBookingsToSettlements scans the bookings table and creates settlements for any completed bookings that haven't been settled yet.
+func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
+	log.Printf("Syncing completed bookings into settlements table...")
+
+	// Pre-fetch configs to avoid querying inside a loop
+	loungeOwnerSharePct := s.GetConfigValue(tx, "lounge_owner_share_pct", 95.00) / 100.0
+	loungeCommissionPct := s.GetConfigValue(tx, "lounge_owner_commission_pct", 5.00) / 100.0
+	busOwnerSharePct := s.GetConfigValue(tx, "bus_owner_share_pct", 70.00) / 100.0
+	driverSharePct := s.GetConfigValue(tx, "driver_share_pct", 15.00) / 100.0
+	conductorSharePct := s.GetConfigValue(tx, "conductor_share_pct", 10.00) / 100.0
+	busCompanyCommissionPct := s.GetConfigValue(tx, "company_commission_pct", 5.00) / 100.0
+
+	// 1. Process Lounge Bookings
+	type LoungeBooking struct {
+		ID uuid.UUID
+		Name string
+		Amount float64
+	}
+	var lBookings []LoungeBooking
+
+	loungeRows, err := tx.Query(`
+		SELECT lb.id, lb.lounge_name, lb.total_amount
+		FROM public.lounge_bookings lb
+		JOIN public.bookings b ON (lb.master_booking_id = b.id OR lb.bus_booking_id = b.id)
+		WHERE b.payment_status = 'paid' 
+		  AND lb.total_amount > 0
+		  AND NOT EXISTS (
+			  SELECT 1 FROM public.settlements s WHERE s.lounge_booking_id = lb.id
+		  )
+	`)
+	if err != nil {
+		return err
+	}
+	for loungeRows.Next() {
+		var lb LoungeBooking
+		if err := loungeRows.Scan(&lb.ID, &lb.Name, &lb.Amount); err == nil {
+			lBookings = append(lBookings, lb)
+		}
+	}
+	loungeRows.Close()
+
+	for _, lb := range lBookings {
+		var loungeOwnerUserID sql.NullString
+		err = tx.QueryRow(`
+			SELECT lo.user_id FROM public.lounges l
+			JOIN public.lounge_owners lo ON l.owner_id = lo.id
+			WHERE l.lounge_name = $1 LIMIT 1
+		`, lb.Name).Scan(&loungeOwnerUserID)
+		
+		if err == nil && loungeOwnerUserID.Valid {
+			ownerID, _ := uuid.Parse(loungeOwnerUserID.String)
+			ownerGross := lb.Amount * (loungeOwnerSharePct + loungeCommissionPct)
+			ownerComm := lb.Amount * loungeCommissionPct
+			ownerNet := lb.Amount * loungeOwnerSharePct
+			var effectiveCommRate float64 = 0
+			if ownerGross > 0 { effectiveCommRate = ownerComm / ownerGross }
+			err := s.insertSettlement(tx, models.PayeeTypeLoungeOwner, ownerID, nil, nil, &lb.ID, ownerGross, effectiveCommRate, ownerComm, ownerNet, time.Now())
+			if err != nil { log.Printf("Error inserting lounge owner settlement: %v", err) }
+		} else if err != nil {
+			log.Printf("QueryRow for lounge owner failed: %v", err)
+		}
+	}
+
+	// 2. Process Bus Bookings
+	type BusBooking struct {
+		BookingID uuid.UUID
+		TripID uuid.UUID
+		Fare float64
+	}
+	var bBookings []BusBooking
+
+	busRows, err := tx.Query(`
+		SELECT bb.booking_id, bb.scheduled_trip_id, bb.total_fare
+		FROM public.bus_bookings bb
+		JOIN public.bookings b ON bb.booking_id = b.id
+		WHERE b.payment_status = 'paid'
+		  AND bb.total_fare > 0
+		  AND NOT EXISTS (
+			  SELECT 1 FROM public.settlements s WHERE s.booking_id = bb.booking_id
+		  )
+	`)
+	if err != nil {
+		return err
+	}
+	for busRows.Next() {
+		var bb BusBooking
+		if err := busRows.Scan(&bb.BookingID, &bb.TripID, &bb.Fare); err == nil {
+			bBookings = append(bBookings, bb)
+		}
+	}
+	busRows.Close()
+
+	for _, bb := range bBookings {
+		var busOwnerUserID, driverUserID, conductorUserID sql.NullString
+		err = tx.QueryRow(`
+			SELECT 
+				bo.user_id as bus_owner,
+				d.user_id as driver,
+				c.user_id as conductor
+			FROM public.scheduled_trips st
+			LEFT JOIN public.bus_owner_routes bor ON st.bus_owner_route_id = bor.id
+			LEFT JOIN public.bus_owners bo ON bor.bus_owner_id = bo.id
+			LEFT JOIN public.bus_staff d ON st.assigned_driver_id = d.id
+			LEFT JOIN public.bus_staff c ON st.assigned_conductor_id = c.id
+			WHERE st.id = $1
+		`, bb.TripID).Scan(&busOwnerUserID, &driverUserID, &conductorUserID)
+		
+		if err == nil {
+			today := time.Now().Truncate(24 * time.Hour)
+			
+			if busOwnerUserID.Valid {
+				ownerID, _ := uuid.Parse(busOwnerUserID.String)
+				ownerGross := bb.Fare * (busOwnerSharePct + busCompanyCommissionPct)
+				ownerComm := bb.Fare * busCompanyCommissionPct
+				ownerNet := bb.Fare * busOwnerSharePct
+				var effectiveCommRate float64 = 0
+				if ownerGross > 0 { effectiveCommRate = ownerComm / ownerGross }
+				err := s.insertSettlement(tx, models.PayeeTypeBusOwner, ownerID, &bb.BookingID, &bb.TripID, nil, ownerGross, effectiveCommRate, ownerComm, ownerNet, today)
+				if err != nil { log.Printf("Error inserting bus owner settlement: %v", err) }
+			}
+			if driverUserID.Valid {
+				dID, _ := uuid.Parse(driverUserID.String)
+				driverNet := bb.Fare * driverSharePct
+				err := s.insertSettlement(tx, models.PayeeTypeDriver, dID, &bb.BookingID, &bb.TripID, nil, driverNet, 0, 0, driverNet, today)
+				if err != nil { log.Printf("Error inserting driver settlement: %v", err) }
+			}
+			if conductorUserID.Valid {
+				cID, _ := uuid.Parse(conductorUserID.String)
+				conductorNet := bb.Fare * conductorSharePct
+				err := s.insertSettlement(tx, models.PayeeTypeConductor, cID, &bb.BookingID, &bb.TripID, nil, conductorNet, 0, 0, conductorNet, today)
+				if err != nil { log.Printf("Error inserting conductor settlement: %v", err) }
+			}
+		} else {
+			log.Printf("QueryRow for staff failed: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func (s *SettlementService) RunMidnightProcess() error {
 	today := time.Now().Truncate(24 * time.Hour)
 	log.Printf("Starting midnight settlement process for %v", today)
@@ -202,6 +342,13 @@ func (s *SettlementService) RunMidnightProcess() error {
 		return err
 	}
 	defer tx.Rollback()
+
+	// Step 0: Scan bookings table to sync any completed bookings into the settlements table
+	err = s.SyncBookingsToSettlements(tx)
+	if err != nil {
+		log.Printf("Error syncing bookings to settlements: %v", err)
+		// We can still continue with the process for existing settlements
+	}
 
 	// Step 1: Mark pending as accounted
 	_, err = tx.Exec(`
