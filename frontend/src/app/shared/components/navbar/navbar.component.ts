@@ -45,10 +45,7 @@ export class NavbarComponent implements OnInit {
     { 
       label: 'Settlements', 
       icon: 'fas fa-file-invoice-dollar', 
-      route: '/settlements',
-      children: [
-        { label: 'Settlement Overview', route: '/settlements' }
-      ]
+      route: '/settlements'
     },
     { 
       label: 'Support', 

@@ -13,7 +13,8 @@ export class SettlementService {
   constructor(private http: HttpClient) {}
 
   getOverview(): Observable<SettlementOverview> {
-    return this.http.get<SettlementOverview>(`${this.apiUrl}/overview`);
+    const timestamp = new Date().getTime();
+    return this.http.get<SettlementOverview>(`${this.apiUrl}/overview?t=${timestamp}`);
   }
 
   processNow(): Observable<any> {

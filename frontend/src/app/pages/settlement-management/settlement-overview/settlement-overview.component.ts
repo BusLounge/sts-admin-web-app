@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SettlementService } from '../../../core/services/settlement.service';
@@ -22,7 +22,8 @@ export class SettlementOverviewComponent implements OnInit {
   constructor(
     private settlementService: SettlementService,
     public notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -54,6 +55,7 @@ export class SettlementOverviewComponent implements OnInit {
     this.settlementService.getOverview().subscribe({
       next: (data) => {
         this.overview = data;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading overview', error);
@@ -64,15 +66,18 @@ export class SettlementOverviewComponent implements OnInit {
   processNow() {
     if (this.isProcessing) return;
     this.isProcessing = true;
+    this.cdr.detectChanges();
     
     this.settlementService.processNow().subscribe({
       next: (res) => {
         this.isProcessing = false;
+        this.cdr.detectChanges();
         alert('Process triggered successfully! The background engine has finished syncing bookings and updating settlements.');
         this.loadOverview(); // Refresh the data
       },
       error: (err) => {
         this.isProcessing = false;
+        this.cdr.detectChanges();
         console.error('Error triggering process', err);
         alert('Error triggering process. Please check the console logs.');
       }
