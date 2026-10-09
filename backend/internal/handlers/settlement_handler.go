@@ -37,3 +37,13 @@ func (h *SettlementHandler) GetOverview(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, overview)
 }
+
+// GetWallet returns the company wallet and transaction history
+func (h *SettlementHandler) GetWallet(c *gin.Context) {
+	walletData, err := h.service.GetCompanyWalletData()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, walletData)
+}

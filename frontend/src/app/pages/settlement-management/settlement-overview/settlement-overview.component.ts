@@ -16,8 +16,11 @@ import { NotificationService } from '../../../core/services/notification.service
 })
 export class SettlementOverviewComponent implements OnInit {
   overview: SettlementOverview | null = null;
+  walletData: any = null;
+  activeTab: 'overview' | 'wallet' = 'overview';
   showNotificationPanel = false;
   showProfileMenu = false;
+  isProcessing = false;
 
   constructor(
     private settlementService: SettlementService,
@@ -49,8 +52,6 @@ export class SettlementOverviewComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  isProcessing = false;
-
   loadOverview() {
     this.settlementService.getOverview().subscribe({
       next: (data) => {
@@ -61,6 +62,27 @@ export class SettlementOverviewComponent implements OnInit {
         console.error('Error loading overview', error);
       }
     });
+  }
+
+  loadWallet() {
+    this.settlementService.getWallet().subscribe({
+      next: (data) => {
+        this.walletData = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading wallet', err);
+      }
+    });
+  }
+
+  switchTab(tab: 'overview' | 'wallet') {
+    this.activeTab = tab;
+    if (tab === 'overview' && !this.overview) {
+      this.loadOverview();
+    } else if (tab === 'wallet' && !this.walletData) {
+      this.loadWallet();
+    }
   }
 
   processNow() {

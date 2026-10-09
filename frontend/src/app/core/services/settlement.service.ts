@@ -17,6 +17,11 @@ export class SettlementService {
     return this.http.get<SettlementOverview>(`${this.apiUrl}/overview?t=${timestamp}`);
   }
 
+  getWallet(): Observable<any> {
+    const timestamp = new Date().getTime();
+    return this.http.get<any>(`${this.apiUrl}/wallet?t=${timestamp}`);
+  }
+
   processNow(): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/process-now`, {});
   }

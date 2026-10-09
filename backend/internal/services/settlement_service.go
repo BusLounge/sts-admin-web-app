@@ -3,6 +3,7 @@ package services
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"sts-backend/internal/models"
 	"time"
@@ -12,10 +13,14 @@ import (
 
 type SettlementService struct {
 	db *sql.DB
+	payHere *PayHereService
 }
 
 func NewSettlementService(db *sql.DB) *SettlementService {
-	return &SettlementService{db: db}
+	return &SettlementService{
+		db: db,
+		payHere: NewPayHereService(),
+	}
 }
 
 func (s *SettlementService) GetConfigValue(tx *sql.Tx, key string, defaultValue float64) float64 {
@@ -182,6 +187,37 @@ func (s *SettlementService) insertSettlement(
 	`, payeeType, payeeUserID, bookingID, scheduledTripID, loungeBookingID, gross, commRate, commAmount, net, earningDate)
 	if err != nil {
 		return err
+	}
+
+	// If there is a commission, immediately credit the company wallet!
+	if commAmount > 0 {
+		var cwID uuid.UUID
+		var balBefore, balAfter float64
+		err = tx.QueryRow(`
+			UPDATE public.company_wallet 
+			SET balance = balance + $1, updated_at = now() 
+			RETURNING id, balance - $1, balance
+		`, commAmount).Scan(&cwID, &balBefore, &balAfter)
+		
+		if err == nil {
+			// Find the best reference ID for the transaction
+			var refID *uuid.UUID = bookingID
+			if refID == nil {
+				refID = loungeBookingID
+			}
+
+			_, err = tx.Exec(`
+				INSERT INTO public.wallet_transactions (
+					wallet_id, amount, transaction_type, reference_type, reference_id,
+					balance_before, balance_after, description, status
+				) VALUES ($1, $2, 'credit', 'settlement', $3, $4, $5, 'Commission Earned', 'completed')
+			`, cwID, commAmount, refID, balBefore, balAfter)
+			if err != nil {
+				log.Printf("Error tracking company wallet transaction: %v", err)
+			}
+		} else {
+			log.Printf("Error updating company wallet balance: %v", err)
+		}
 	}
 
 	// Ensure payout_tracker exists
@@ -444,41 +480,55 @@ func (s *SettlementService) RunMidnightProcess() error {
 				continue
 			}
 
-			// Get Wallet ID and Balance
-			var walletID uuid.UUID
-			err = tx.QueryRow(`SELECT wallet_id FROM public.users WHERE id = $1`, t.PayeeUserID).Scan(&walletID)
+			// --- START PAYOUT PROCESS ---
+			// 1. Check Company Wallet Reserve Threshold
+			var cwID uuid.UUID
+			var cwBalance, cwReserve float64
+			err = tx.QueryRow(`SELECT id, balance, reserve_threshold FROM public.company_wallet LIMIT 1`).Scan(&cwID, &cwBalance, &cwReserve)
 			if err != nil {
-				log.Printf("Error getting wallet_id: %v", err)
+				log.Printf("Error fetching company wallet: %v", err)
 				continue
 			}
 
-			var currentBalance float64
-			err = tx.QueryRow(`
-				SELECT COALESCE(
-					(SELECT balance_after FROM public.wallet_transactions 
-					WHERE wallet_id = $1 ORDER BY created_at DESC LIMIT 1), 
-				0)
-			`, walletID).Scan(&currentBalance)
-			if err != nil {
-				log.Printf("Error getting balance: %v", err)
+			if (cwBalance - totalNet) < cwReserve {
+				log.Printf("Safety Triggered: Cannot payout %f to %s. Wallet balance %f would fall below reserve %f", totalNet, t.PayeeUserID, cwBalance, cwReserve)
+				// We update the batch to 'pending' so it can be re-tried tomorrow or manually
+				_, _ = tx.Exec(`UPDATE public.settlement_batches SET status = 'pending' WHERE id = $1`, batchID)
+				continue // Skip payout for this user
+			}
+
+			// 2. Next step: Implement PayHere Automated Payouts!
+			var accountName, acctNo, bankCode, branchCode string
+			accountName = "Mock User"
+			acctNo = "1234567890"
+			bankCode = "7010" // BOC
+			branchCode = "001"
+
+			// TODO: In a fully production environment, we will fetch exact bank details from 
+			// staff_bank_details or bus_owners tables based on t.PayeeType here.
+
+			payoutID, payErr := s.payHere.ExecutePayout(accountName, acctNo, bankCode, branchCode, totalNet, batchID.String())
+			if payErr != nil {
+				log.Printf("PayHere API Failed for %s: %v", t.PayeeUserID, payErr)
+				_, _ = tx.Exec(`UPDATE public.settlement_batches SET status = 'pending' WHERE id = $1`, batchID)
 				continue
 			}
 
-			// Wallet Transaction
-			var txnID uuid.UUID
-			desc := "Settlement payout"
-			err = tx.QueryRow(`
+			// Credit/Debit the Company Wallet Ledger
+			_, err = tx.Exec(`
+				UPDATE public.company_wallet 
+				SET balance = balance - $1, updated_at = now() 
+			`, totalNet)
+			
+			desc := fmt.Sprintf("PayHere Payout Sent to %s", t.PayeeType)
+			_, err = tx.Exec(`
 				INSERT INTO public.wallet_transactions (
 					wallet_id, amount, transaction_type, reference_type, reference_id,
-					balance_before, balance_after, description
-				) VALUES ($1, $2, 'credit', 'settlement', $3, $4, $5, $6) RETURNING id
-			`, walletID, totalNet, batchID, currentBalance, currentBalance+totalNet, desc).Scan(&txnID)
-			if err != nil {
-				log.Printf("Error inserting txn: %v", err)
-				continue
-			}
+					payhere_payout_id, description, status
+				) VALUES ($1, $2, 'debit', 'payout', $3, $4, $5, 'completed')
+			`, cwID, totalNet, batchID, payoutID, desc)
 
-			// Mark as Paid
+			// 3. Mark as Paid
 			_, err = tx.Exec(`
 				UPDATE public.settlements 
 				SET status = 'paid', is_paid = true, paid_at = now(), settlement_batch_id = $1
@@ -493,9 +543,9 @@ func (s *SettlementService) RunMidnightProcess() error {
 			// Update Batch
 			_, err = tx.Exec(`
 				UPDATE public.settlement_batches 
-				SET status = 'completed', wallet_transaction_id = $1
-				WHERE id = $2
-			`, txnID, batchID)
+				SET status = 'completed'
+				WHERE id = $1
+			`, batchID)
 			if err != nil {
 				log.Printf("Error updating batch: %v", err)
 				continue

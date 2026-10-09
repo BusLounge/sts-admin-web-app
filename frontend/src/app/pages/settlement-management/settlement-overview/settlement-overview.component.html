@@ -48,7 +48,17 @@
     </div>
   </div>
 
-  <div *ngIf="overview" class="dashboard-content">
+  <div class="tabs-container">
+    <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="switchTab('overview')">
+      <i class="fas fa-chart-pie"></i> Settlements Overview
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'wallet'" (click)="switchTab('wallet')">
+      <i class="fas fa-wallet"></i> Company Wallet
+    </button>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div *ngIf="activeTab === 'overview' && overview" class="dashboard-content">
     
     <!-- 1. Quick Stats -->
     <div class="quick-stats-grid">
@@ -160,7 +170,89 @@
     </div>
   </div>
 
-  <div *ngIf="!overview" class="loading-state">
+  <!-- WALLET TAB -->
+  <div *ngIf="activeTab === 'wallet' && walletData" class="dashboard-content">
+    
+    <!-- Wallet Metrics -->
+    <div class="quick-stats-grid">
+      <div class="stat-card pending">
+        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+        <div class="stat-info">
+          <h4>Total Company Balance</h4>
+          <h2>{{ walletData.balance | currency:'LKR ':'symbol':'1.2-2' }}</h2>
+        </div>
+      </div>
+      <div class="stat-card payout">
+        <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+        <div class="stat-info">
+          <h4>Reserve Threshold</h4>
+          <h2>{{ walletData.reserve_threshold | currency:'LKR ':'symbol':'1.2-2' }}</h2>
+        </div>
+      </div>
+      <div class="stat-card profit">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+          <h4>Available For Payouts</h4>
+          <h2 [class.danger-text]="walletData.available_balance < walletData.pending_payouts">
+            {{ walletData.available_balance | currency:'LKR ':'symbol':'1.2-2' }}
+          </h2>
+        </div>
+      </div>
+      <div class="stat-card pending" style="border-left-color: #ff9800;">
+        <div class="stat-icon" style="color: #ff9800; background: rgba(255, 152, 0, 0.1);"><i class="fas fa-hourglass-start"></i></div>
+        <div class="stat-info">
+          <h4>Pending Payout Batch</h4>
+          <h2>{{ walletData.pending_payouts | currency:'LKR ':'symbol':'1.2-2' }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warning if reserve is threatened -->
+    <div *ngIf="walletData.available_balance < walletData.pending_payouts && walletData.pending_payouts > 0" class="alert-banner warning">
+      <i class="fas fa-exclamation-triangle"></i> 
+      <strong>Warning:</strong> You do not have enough available balance to cover the pending payouts without dipping into the reserve threshold. The Midnight Process will automatically halt these payouts until the balance increases.
+    </div>
+
+    <!-- Recent Transactions Ledger -->
+    <div class="data-section mt-4">
+      <div class="section-header">
+        <h3><i class="fas fa-list-alt"></i> Company Ledger (Recent Transactions)</h3>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Reference</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let txn of walletData.recent_transactions">
+              <td>{{ txn.created_at | date:'MMM d, y, h:mm a' }}</td>
+              <td>{{ txn.description }}</td>
+              <td>
+                <span class="badge" [ngClass]="{'badge-success': txn.type === 'credit', 'badge-danger': txn.type === 'debit'}">
+                  {{ txn.type | uppercase }}
+                </span>
+              </td>
+              <td class="text-muted">{{ txn.reference_type }}</td>
+              <td [ngClass]="{'success-text': txn.type === 'credit', 'danger-text': txn.type === 'debit'}">
+                <strong>{{ txn.type === 'credit' ? '+' : '-' }}{{ txn.amount | currency:'LKR ':'symbol':'1.2-2' }}</strong>
+              </td>
+            </tr>
+            <tr *ngIf="!walletData.recent_transactions || walletData.recent_transactions.length === 0">
+              <td colspan="5" class="empty-state">No transactions in the ledger yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'overview' && !overview || activeTab === 'wallet' && !walletData" class="loading-state">
     <div class="spinner"></div>
     <p>Loading settlement data...</p>
   </div>

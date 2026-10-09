@@ -246,6 +246,7 @@ func main() {
 		// Settlements
 		settlementHandler := handlers.NewSettlementHandler(database.DB)
 		api.GET("/settlements/overview", settlementHandler.GetOverview)
+		api.GET("/settlements/wallet", settlementHandler.GetWallet)
 		api.POST("/settlements/process-now", settlementHandler.ProcessNow)
 	}
 

@@ -1,4 +1,4 @@
-.settlement-overview-container {
+﻿.settlement-overview-container {
   padding: 24px;
   background-color: var(--bg-primary, #f8f9fa);
   color: var(--text-primary, #333);
@@ -376,7 +376,60 @@
 }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* Tabs */
+.tabs-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    
+    i {
+      margin-right: 8px;
+    }
+
+    &:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    &.active {
+      color: #4f46e5;
+      background: #eef2ff;
+      border-bottom: 3px solid #4f46e5;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+}
+
+.alert-banner {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  &.warning {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    color: #b45309;
+    
+    i {
+      font-size: 1.25rem;
+      color: #f59e0b;
+    }
+  }
 }
