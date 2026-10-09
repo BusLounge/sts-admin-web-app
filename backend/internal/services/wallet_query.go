@@ -50,11 +50,35 @@ func (s *SettlementService) GetCompanyWalletData() (map[string]interface{}, erro
 		}
 	}
 
+	// 4. Get Daily Income for Chart (Last 14 days)
+	chartRows, err := s.db.Query(`
+		SELECT date_trunc('day', created_at) AS day, SUM(amount) AS daily_income
+		FROM public.wallet_transactions
+		WHERE transaction_type = 'credit' AND created_at >= (CURRENT_DATE - INTERVAL '14 days')
+		GROUP BY 1
+		ORDER BY 1 ASC
+	`)
+	var incomeHistory []map[string]interface{}
+	if err == nil {
+		defer chartRows.Close()
+		for chartRows.Next() {
+			var day time.Time
+			var dailyIncome float64
+			if err := chartRows.Scan(&day, &dailyIncome); err == nil {
+				incomeHistory = append(incomeHistory, map[string]interface{}{
+					"date": day.Format("2006-01-02"),
+					"income": dailyIncome,
+				})
+			}
+		}
+	}
+
 	return map[string]interface{}{
 		"balance": balance,
 		"available_balance": balance - reserve,
 		"reserve_threshold": reserve,
 		"pending_payouts": totalPending,
 		"recent_transactions": transactions,
+		"income_history": incomeHistory,
 	}, nil
 }

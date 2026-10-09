@@ -213,6 +213,20 @@
       <strong>Warning:</strong> You do not have enough available balance to cover the pending payouts without dipping into the reserve threshold. The Midnight Process will automatically halt these payouts until the balance increases.
     </div>
 
+    <!-- Income Analytics Chart -->
+    <div class="data-section mt-4">
+      <div class="section-header">
+        <h3><i class="fas fa-chart-line"></i> Company Income Flow (Last 14 Days)</h3>
+      </div>
+      <div class="chart-container" style="position: relative; height:300px; width:100%; margin-top: 16px;">
+        <canvas baseChart
+          [data]="lineChartData"
+          [options]="lineChartOptions"
+          [type]="'line'">
+        </canvas>
+      </div>
+    </div>
+
     <!-- Recent Transactions Ledger -->
     <div class="data-section mt-4">
       <div class="section-header">
