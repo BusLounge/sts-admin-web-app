@@ -6,6 +6,7 @@ import {
   NgZone,
   PLATFORM_ID,
   Inject,
+  ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -132,6 +133,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
     private routeService: RouteService,
     private loungeService: LoungeService,
     private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -149,6 +151,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
     this.loungeService.lounges$.subscribe((lounges) => {
       this.lounges = lounges;
       this.renderLounges();
+      this.cdr.detectChanges();
     });
   }
 
@@ -391,10 +394,12 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
         this.routes = routes;
         this.applyFilter();
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.errorMsg = 'Failed to load routes: ' + (err.message || 'Unknown error');
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -412,6 +417,7 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
           r.destination_city.toLowerCase().includes(q)
       );
     }
+    this.cdr.detectChanges();
   }
 
   // ── View route on map ─────────────────────────────────────────────────
@@ -1157,11 +1163,19 @@ export class RouteManagementComponent implements OnInit, OnDestroy, AfterViewIni
 
   private showError(msg: string): void {
     this.errorMsg = msg;
-    setTimeout(() => (this.errorMsg = ''), 5000);
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.errorMsg = '';
+      this.cdr.detectChanges();
+    }, 5000);
   }
 
   private showSuccess(msg: string): void {
     this.successMsg = msg;
-    setTimeout(() => (this.successMsg = ''), 4000);
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.successMsg = '';
+      this.cdr.detectChanges();
+    }, 4000);
   }
 }
