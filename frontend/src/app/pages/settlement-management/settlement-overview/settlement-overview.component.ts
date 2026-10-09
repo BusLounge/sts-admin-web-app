@@ -6,13 +6,13 @@ import { SettlementOverview } from '../../../core/models/settlement.model';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { NotificationPanelComponent } from '../../../shared/components/notification-panel/notification-panel.component';
 import { NotificationService } from '../../../core/services/notification.service';
-import { NgChartsModule } from 'ng2-charts';
+import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 
 @Component({
   selector: 'app-settlement-overview',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent, NotificationPanelComponent, NgChartsModule],
+  imports: [CommonModule, RouterModule, NavbarComponent, NotificationPanelComponent, BaseChartDirective],
   templateUrl: './settlement-overview.component.html',
   styleUrls: ['./settlement-overview.component.scss']
 })
