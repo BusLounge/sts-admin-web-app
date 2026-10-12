@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -56,7 +56,7 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
   @ViewChild('barChartCanvas', { static: false }) barChartCanvas!: ElementRef<HTMLCanvasElement>;
   chart: Chart | null = null;
 
-  constructor(private router: Router, private conductorService: ConductorService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
+  constructor(private router: Router, private conductorService: ConductorService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService, private cdr: ChangeDetectorRef) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -72,6 +72,7 @@ export class ConductorManagementComponent implements OnInit, AfterViewInit {
       if (this.sortColumn) {
         this.applySorting();
       }
+      this.cdr.detectChanges();
     });
   }
 

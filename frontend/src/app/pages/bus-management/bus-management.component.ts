@@ -81,6 +81,7 @@ export class BusManagementComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.busService.loadBuses().subscribe();
     if (this.isBrowser) {
       Chart.register(...registerables);
     }

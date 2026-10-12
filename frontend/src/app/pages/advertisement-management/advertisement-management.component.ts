@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -151,7 +151,8 @@ export class AdvertisementManagementComponent implements OnInit, OnDestroy {
     private loungeService: LoungeService,
     public notificationService: NotificationService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -193,10 +194,12 @@ export class AdvertisementManagementComponent implements OnInit, OnDestroy {
           status: this.capitalize(ad.status || 'active'),
           originalData: ad
         }));
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading advertisements:', err);
         this.advertisements = [];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -206,10 +209,12 @@ export class AdvertisementManagementComponent implements OnInit, OnDestroy {
       next: (groups) => {
         this.advertisementGroups = groups;
         this.availableGroups = groups.map(g => g.groupName);
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading groups:', err);
         this.advertisementGroups = [];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -222,6 +227,7 @@ export class AdvertisementManagementComponent implements OnInit, OnDestroy {
         if (this.lounges.length > 0 && !this.selectedLoungeId) {
           this.selectLounge(this.lounges[0].lounge_id);
         }
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error loading lounges:', err)
     });

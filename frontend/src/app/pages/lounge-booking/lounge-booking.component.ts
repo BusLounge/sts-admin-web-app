@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -123,7 +123,7 @@ export class LoungeBookingComponent implements OnInit {
   //   return this.colors[index % this.colors.length];
   // }
 
-  constructor(private router: Router, private svc: LoungeBookingService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
+  constructor(private router: Router, private svc: LoungeBookingService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService, private cdr: ChangeDetectorRef) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       Chart.register(...registerables);
@@ -138,6 +138,7 @@ export class LoungeBookingComponent implements OnInit {
       this.refreshCharts();
       this.refreshRevenueByLounge();
       this.updateChartData();
+      this.cdr.detectChanges();
     });
   }
 

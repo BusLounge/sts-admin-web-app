@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -84,7 +84,8 @@ export class PassengerManagementComponent implements OnInit {
     private busBookingService: BusBookingService,
     private loungeBookingService: LoungeBookingService,
     public notificationService: NotificationService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
@@ -93,10 +94,14 @@ export class PassengerManagementComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.busBookingService.loadBookings().subscribe();
+    this.loungeBookingService.loadBookings().subscribe();
+
     this.passengerService.passengers$.subscribe(ps => {
       this.passengers = ps;
       this.filteredPassengers = ps;
       this.refreshChart();
+      this.cdr.detectChanges();
     });
 
     // Subscribe to bus bookings and update passenger service
@@ -104,12 +109,14 @@ export class PassengerManagementComponent implements OnInit {
       this.passengerService.setBusBookingsData(bookings);
       this.refreshChart();
       this.refreshRouteChart();
+      this.cdr.detectChanges();
     });
 
     // Subscribe to lounge bookings and update passenger service
     this.loungeBookingService.bookings$.subscribe(bookings => {
       this.passengerService.setLoungeBookingsData(bookings);
       this.refreshChart();
+      this.cdr.detectChanges();
     });
   }
 

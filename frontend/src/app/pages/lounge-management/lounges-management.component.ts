@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -101,11 +101,12 @@ export class LoungesManagementComponent implements OnInit {
     doc.save('lounges-history.pdf');
   }
 
-  constructor(private router: Router, private loungeService: LoungeService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
+  constructor(private router: Router, private loungeService: LoungeService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService, private cdr: ChangeDetectorRef) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   ngOnInit(): void {
+    this.loungeService.loadLounges().subscribe();
     this.currentPage = 'lounges-management'; // Set currentPage to match sidebar item key
     if (this.isBrowser) {
       Chart.register(...registerables);
@@ -117,6 +118,7 @@ export class LoungesManagementComponent implements OnInit {
       if (this.isBrowser) {
         this.updateBarCharts();
       }
+      this.cdr.detectChanges();
     });
   }
 

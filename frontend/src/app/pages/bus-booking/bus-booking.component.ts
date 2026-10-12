@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -105,7 +105,7 @@ export class BusBookingComponent implements OnInit {
   // Expose Math to template
   Math = Math;
 
-  constructor(private router: Router, private svc: BusBookingService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
+  constructor(private router: Router, private svc: BusBookingService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService, private cdr: ChangeDetectorRef) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       Chart.register(...registerables);
@@ -121,6 +121,7 @@ export class BusBookingComponent implements OnInit {
       this.applyFilters();
       this.refreshCharts();
       this.updateChartData();
+      this.cdr.detectChanges();
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -55,7 +55,7 @@ export class DriverManagementComponent implements OnInit {
   barChartOptions: any;
   isBrowser: boolean;
 
-  constructor(private router: Router, private driverService: DriverService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService) {
+  constructor(private router: Router, private driverService: DriverService, @Inject(PLATFORM_ID) private platformId: Object, public notificationService: NotificationService, private cdr: ChangeDetectorRef) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
@@ -74,6 +74,7 @@ export class DriverManagementComponent implements OnInit {
       if (this.sortColumn) {
         this.applySorting();
       }
+      this.cdr.detectChanges();
     });
   }
 
