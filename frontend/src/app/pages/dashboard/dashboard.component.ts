@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -122,7 +122,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private busBookingService: BusBookingService,
     private loungeBookingService: LoungeBookingService,
     private passengerService: PassengerService,
-    public notificationService: NotificationService
+    public notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -142,20 +143,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.numBuses = buses.length;
       this.busStatusCounts = this.countBusStatus(buses);
       this.busesByRoute = this.computeBusesByRoute(buses);
+      this.cdr.detectChanges();
     });
 
     this.loungeService.lounges$.subscribe(lounges => {
       this.numLounges = lounges.length;
+      this.cdr.detectChanges();
     });
 
     this.driverService.drivers$.subscribe(drivers => {
       this.numDrivers = drivers.length;
       this.driverStatusCounts = this.countDriverStatus(drivers);
+      this.cdr.detectChanges();
     });
 
     this.conductorService.conductors$.subscribe(conductors => {
       this.numConductors = conductors.length;
       this.conductorStatusCounts = this.countConductorStatus(conductors);
+      this.cdr.detectChanges();
     });
 
     this.busBookingService.bookings$.subscribe(bookings => {
@@ -177,6 +182,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       // Update passenger service with bus bookings data for passenger growth chart
       this.passengerService.setBusBookingsData(bookings);
       this.updatePassengerGrowth();
+      this.cdr.detectChanges();
     });
 
     this.loungeBookingService.bookings$.subscribe(bookings => {
@@ -186,10 +192,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       // Update passenger service with lounge bookings data for passenger growth chart
       this.passengerService.setLoungeBookingsData(bookings);
       this.updatePassengerGrowth();
+      this.cdr.detectChanges();
     });
 
     this.passengerService.passengers$.subscribe(passengers => {
       this.updatePassengerGrowth();
+      this.cdr.detectChanges();
     });
   }
 
@@ -202,6 +210,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private refreshPendingNotifications(): void {
     this.notificationService.loadAllPendingNotifications();
+    this.cdr.detectChanges();
   }
 
   private updatePassengerGrowth(): void {
