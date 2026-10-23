@@ -70,5 +70,6 @@ export const routes: Routes = [
   { path: 'route-management', loadComponent: () => import('./pages/route-management/route-management.component').then(m => m.RouteManagementComponent) },
   { path: 'otp-management', component: OtpManagementComponent },
   { path: 'settlements', loadComponent: () => import('./pages/settlement-management/settlement-overview/settlement-overview.component').then(m => m.SettlementOverviewComponent) },
+  { path: 'refunds', loadComponent: () => import('./pages/refund-management/refund-management.component').then(m => m.RefundManagementComponent) },
   { path: '**', redirectTo: '' }
 ];

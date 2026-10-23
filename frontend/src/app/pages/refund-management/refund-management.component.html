@@ -1,0 +1,575 @@
+<div class="refund-management-container">
+  
+  <!-- TOP NAVIGATION ROW -->
+  <div class="top-navigation-row">
+    <div class="app-branding">
+      <div class="logo-circle">
+        <i class="fas fa-bus"></i>
+      </div>
+      <span class="app-name">BusLounge</span>
+    </div>
+
+    <app-navbar></app-navbar>
+
+    <div class="header-actions">
+      <button class="icon-btn notification-btn" (click)="toggleNotificationPanel()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+        <span *ngIf="notificationService.totalPendingCount > 0" class="notification-badge">{{ notificationService.totalPendingCount }}</span>
+      </button>
+
+      <div class="profile-dropdown-container">
+        <button class="icon-btn profile-btn" (click)="toggleProfileMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </button>
+        <div class="dropdown-menu" *ngIf="showProfileMenu">
+          <a routerLink="/settings" class="dropdown-item">
+            <i class="fas fa-cog"></i> Profile setting
+          </a>
+          <a (click)="logout()" class="dropdown-item">
+            <i class="fas fa-sign-out-alt"></i> Log out
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION PANEL -->
+  <app-notification-panel 
+    *ngIf="showNotificationPanel" 
+    (close)="closeNotificationPanel()">
+  </app-notification-panel>
+
+  <!-- ALERTS -->
+  <div *ngIf="successMsg" class="alert-banner alert-success">
+    <i class="fas fa-check-circle"></i>
+    <span>{{ successMsg }}</span>
+  </div>
+
+  <div *ngIf="errorMsg" class="alert-banner alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{ errorMsg }}</span>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="header-section">
+    <div class="title-area">
+      <h2>Refund Requests & Settlement Reconciliation</h2>
+      <p class="subtitle">Review passenger refund claims, assess departure criteria, and execute clawbacks seamlessly.</p>
+    </div>
+    <div class="action-area">
+      <button class="btn-refresh" (click)="loadRefunds(); loadStats();" [disabled]="isLoading">
+        <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- QUICK STATS -->
+  <div class="quick-stats-grid">
+    <div class="stat-card pending" (click)="setTab('pending')">
+      <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+      <div class="stat-info">
+        <h4>Pending Review</h4>
+        <h2>{{ stats.pending_count }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card completed" (click)="setTab('completed')">
+      <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+      <div class="stat-info">
+        <h4>Refunded / Settled</h4>
+        <h2>{{ stats.completed_count }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card rejected" (click)="setTab('failed')">
+      <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+      <div class="stat-info">
+        <h4>Rejected</h4>
+        <h2>{{ stats.failed_count }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card amount">
+      <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+      <div class="stat-info">
+        <h4>Total Disbursed</h4>
+        <h2>{{ stats.total_refunded | currency:'LKR ':'symbol':'1.2-2' }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card fees">
+      <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+      <div class="stat-info">
+        <h4>System Fees Retained</h4>
+        <h2>{{ stats.total_system_fees | currency:'LKR ':'symbol':'1.2-2' }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS ROW: TABS & SEARCH -->
+  <div class="controls-row">
+    <div class="tabs-container">
+      <button class="tab-btn" [class.active]="currentTab === 'pending'" (click)="setTab('pending')">
+        <i class="fas fa-clock"></i> Pending ({{ stats.pending_count }})
+      </button>
+      <button class="tab-btn" [class.active]="currentTab === 'completed'" (click)="setTab('completed')">
+        <i class="fas fa-check-circle"></i> Completed ({{ stats.completed_count }})
+      </button>
+      <button class="tab-btn" [class.active]="currentTab === 'failed'" (click)="setTab('failed')">
+        <i class="fas fa-ban"></i> Rejected ({{ stats.failed_count }})
+      </button>
+      <button class="tab-btn" [class.active]="currentTab === 'all'" (click)="setTab('all')">
+        <i class="fas fa-list"></i> All Requests
+      </button>
+    </div>
+
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (ngModelChange)="applyFilter()" 
+        placeholder="Search ref, passenger, booking, route..."
+      />
+      <button *ngIf="searchTerm" class="clear-search-btn" (click)="searchTerm = ''; applyFilter()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLE CONTAINER -->
+  <div class="table-card">
+    <div *ngIf="isLoading" class="loading-state">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Loading refund records...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredRefunds.length === 0" class="empty-state">
+      <i class="fas fa-inbox fa-3x"></i>
+      <h3>No Refund Requests Found</h3>
+      <p *ngIf="searchTerm">No results match your search term "{{ searchTerm }}".</p>
+      <p *ngIf="!searchTerm">There are currently no {{ currentTab }} refund requests in the system.</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredRefunds.length > 0" class="table-responsive">
+      <table class="refund-table">
+        <thead>
+          <tr>
+            <th>Refund Ref</th>
+            <th>Booking Ref</th>
+            <th>Passenger</th>
+            <th>Route & Bus</th>
+            <th>Scheduled Departure</th>
+            <th>Total Fare</th>
+            <th>Requested</th>
+            <th>Final Refund</th>
+            <th>Status</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredRefunds" [class.highlight-row]="selectedRefund?.id === item.id">
+            <td class="font-mono font-medium">{{ item.refund_reference }}</td>
+            <td class="font-mono">{{ item.booking_reference }}</td>
+            <td>
+              <div class="passenger-cell">
+                <span class="name">{{ item.passenger_name || 'Passenger' }}</span>
+                <span class="phone">{{ item.passenger_phone }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="route-cell">
+                <span class="route-title">{{ item.route_name || 'Scheduled Service' }}</span>
+                <span class="bus-badge"><i class="fas fa-bus-alt"></i> {{ item.bus_number || 'N/A' }}</span>
+              </div>
+            </td>
+            <td>
+              <div *ngIf="item.scheduled_departure" class="departure-cell">
+                <span class="time">{{ item.scheduled_departure | date:'short' }}</span>
+              </div>
+              <div *ngIf="!item.scheduled_departure" class="text-muted">Unscheduled</div>
+            </td>
+            <td>{{ item.total_fare | currency:'LKR ':'symbol':'1.2-2' }}</td>
+            <td class="text-bold">{{ item.requested_amount | currency:'LKR ':'symbol':'1.2-2' }}</td>
+            <td>
+              <span *ngIf="item.status === 'completed'" class="text-success text-bold">
+                {{ item.final_refund_amount | currency:'LKR ':'symbol':'1.2-2' }}
+              </span>
+              <span *ngIf="item.status === 'failed'" class="text-muted">—</span>
+              <span *ngIf="item.status === 'pending'" class="text-muted">Under Review</span>
+            </td>
+            <td>
+              <span class="status-pill status-{{ item.status }}">
+                <i class="fas" [ngClass]="{
+                  'fa-clock': item.status === 'pending',
+                  'fa-check': item.status === 'completed',
+                  'fa-times': item.status === 'failed'
+                }"></i>
+                {{ item.status | titlecase }}
+              </span>
+            </td>
+            <td class="text-right">
+              <button 
+                class="btn-action" 
+                [ngClass]="item.status === 'pending' ? 'btn-action-primary' : 'btn-action-outline'"
+                (click)="openReviewDrawer(item)">
+                <i class="fas" [ngClass]="item.status === 'pending' ? 'fa-clipboard-check' : 'fa-eye'"></i>
+                {{ item.status === 'pending' ? 'Audit & Settle' : 'View Details' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLIDE-OUT REVIEW DRAWER -->
+  <div class="drawer-overlay" *ngIf="showDrawer" (click)="closeDrawer()"></div>
+  <aside class="review-drawer" [class.open]="showDrawer">
+    
+    <!-- Drawer Header -->
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <h3>Refund Request Audit</h3>
+        <span class="drawer-ref" *ngIf="selectedRefund">{{ selectedRefund.refund_reference }}</span>
+      </div>
+      <button class="drawer-close-btn" (click)="closeDrawer()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Drawer Content Loading -->
+    <div *ngIf="isDetailLoading" class="drawer-loading">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Evaluating criteria & fetching settlements...</p>
+    </div>
+
+    <!-- Drawer Body -->
+    <div *ngIf="!isDetailLoading && selectedRefund" class="drawer-body">
+
+      <!-- POLICY EVALUATION HERO BANNER -->
+      <div class="policy-hero-card" [ngClass]="getDepartureBadgeClass(selectedRefund.criteria.hours_to_departure)">
+        <div class="hero-header">
+          <div class="tier-pill">
+            <i class="fas fa-shield-check"></i>
+            {{ getDepartureLabel(selectedRefund.criteria.hours_to_departure) }}
+          </div>
+          <span class="countdown-badge">
+            <i class="fas fa-stopwatch"></i>
+            {{ formatHoursCountdown(selectedRefund.criteria.hours_to_departure) }}
+          </span>
+        </div>
+        <p class="policy-desc">{{ selectedRefund.criteria.policy_description }}</p>
+      </div>
+
+      <!-- CRITERIA CHECKLIST -->
+      <div class="section-card criteria-checklist-card">
+        <h4><i class="fas fa-clipboard-list"></i> Policy Criteria Audit</h4>
+        <div class="criteria-grid">
+          
+          <div class="criteria-item" [class.passed]="selectedRefund.criteria.is_payment_paid" [class.failed]="!selectedRefund.criteria.is_payment_paid">
+            <i class="fas" [ngClass]="selectedRefund.criteria.is_payment_paid ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+            <div class="criteria-info">
+              <span class="title">Payment Status Confirmed</span>
+              <span class="sub">Booking is marked 'paid' in booking records</span>
+            </div>
+          </div>
+
+          <div class="criteria-item" [class.passed]="!selectedRefund.criteria.is_trip_departed" [class.failed]="selectedRefund.criteria.is_trip_departed">
+            <i class="fas" [ngClass]="!selectedRefund.criteria.is_trip_departed ? 'fa-check-circle text-success' : 'fa-clock text-warning'"></i>
+            <div class="criteria-info">
+              <span class="title">Pre-Trip Timeline</span>
+              <span class="sub" *ngIf="!selectedRefund.criteria.is_trip_departed">Departure in {{ selectedRefund.criteria.hours_to_departure | number:'1.1-1' }} hours</span>
+              <span class="sub" *ngIf="selectedRefund.criteria.is_trip_departed">Trip departed {{ (-selectedRefund.criteria.hours_to_departure) | number:'1.1-1' }} hours ago</span>
+            </div>
+          </div>
+
+          <div class="criteria-item" [class.passed]="!selectedRefund.criteria.has_prior_refund" [class.failed]="selectedRefund.criteria.has_prior_refund">
+            <i class="fas" [ngClass]="!selectedRefund.criteria.has_prior_refund ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+            <div class="criteria-info">
+              <span class="title">No Duplicate Refund</span>
+              <span class="sub">Single active refund claim per ticket booking</span>
+            </div>
+          </div>
+
+          <div class="criteria-item" [class.passed]="!selectedRefund.criteria.is_non_refundable" [class.failed]="selectedRefund.criteria.is_non_refundable">
+            <i class="fas" [ngClass]="!selectedRefund.criteria.is_non_refundable ? 'fa-check-circle text-success' : 'fa-ban text-danger'"></i>
+            <div class="criteria-info">
+              <span class="title">Refund Window Valid</span>
+              <span class="sub" *ngIf="!selectedRefund.criteria.is_non_refundable">Within the allowable refund window</span>
+              <span class="sub text-danger" *ngIf="selectedRefund.criteria.is_non_refundable">Over 3 days past trip: strictly non-refundable</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TRIP & BOOKING DETAILS -->
+      <div class="section-card">
+        <h4><i class="fas fa-ticket-alt"></i> Trip & Passenger Details</h4>
+        <div class="details-grid">
+          <div class="detail-group">
+            <label>Passenger</label>
+            <span class="value">{{ selectedRefund.passenger_name }}</span>
+          </div>
+          <div class="detail-group">
+            <label>Phone / Email</label>
+            <span class="value">{{ selectedRefund.passenger_phone }} <span *ngIf="selectedRefund.passenger_email">| {{ selectedRefund.passenger_email }}</span></span>
+          </div>
+          <div class="detail-group">
+            <label>Route</label>
+            <span class="value">{{ selectedRefund.route_name }}</span>
+          </div>
+          <div class="detail-group">
+            <label>Bus Registration</label>
+            <span class="value">{{ selectedRefund.bus_number }}</span>
+          </div>
+          <div class="detail-group">
+            <label>Seats Reserved</label>
+            <span class="value">{{ selectedRefund.seat_numbers.join(', ') || 'N/A' }}</span>
+          </div>
+          <div class="detail-group">
+            <label>Departure Date/Time</label>
+            <span class="value">{{ selectedRefund.scheduled_departure ? (selectedRefund.scheduled_departure | date:'medium') : 'N/A' }}</span>
+          </div>
+          <div class="detail-group full-width">
+            <label>Passenger Reason for Claim</label>
+            <div class="reason-quote">
+              <i class="fas fa-quote-left"></i>
+              <span>{{ selectedRefund.reason || 'No detailed reason provided by passenger.' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINANCIAL CALCULATION & SYSTEM COST -->
+      <div class="section-card financial-card">
+        <h4><i class="fas fa-calculator"></i> Financial Breakdown & System Cost</h4>
+        
+        <div class="calc-row">
+          <span class="calc-label">Total Booking Fare:</span>
+          <span class="calc-val">{{ selectedRefund.total_fare | currency:'LKR ':'symbol':'1.2-2' }}</span>
+        </div>
+
+        <div class="calc-row">
+          <span class="calc-label">Suggested Policy Tier:</span>
+          <span class="calc-val font-semibold text-primary">
+            {{ selectedRefund.criteria.suggested_tier | uppercase }} 
+            ({{ selectedRefund.criteria.suggested_refund_pct }}% Refund / {{ selectedRefund.criteria.suggested_fee_pct }}% Retained Fee)
+          </span>
+        </div>
+
+        <div class="calc-row fee-input-row" *ngIf="selectedRefund.status === 'pending'">
+          <div class="fee-input-label">
+            <label for="sysCostInput">System Retained Fee (LKR):</label>
+            <small>Deducted from gross fare and credited to Company Wallet</small>
+          </div>
+          <div class="input-with-currency">
+            <span class="curr-prefix">LKR</span>
+            <input 
+              id="sysCostInput" 
+              type="number" 
+              [(ngModel)]="customSystemCost" 
+              (ngModelChange)="onSystemCostChange()" 
+              min="0" 
+              [max]="selectedRefund.total_fare"
+            />
+          </div>
+        </div>
+
+        <div class="calc-row fee-input-row" *ngIf="selectedRefund.status !== 'pending'">
+          <span class="calc-label">System Cost Retained:</span>
+          <span class="calc-val text-warning">{{ selectedRefund.system_cost | currency:'LKR ':'symbol':'1.2-2' }}</span>
+        </div>
+
+        <div class="calc-total-banner">
+          <div class="total-col">
+            <span class="total-label">Net Refund to Passenger</span>
+            <span class="total-amount text-success">
+              {{ (selectedRefund.status === 'pending' ? customRefundAmount : selectedRefund.final_refund_amount) | currency:'LKR ':'symbol':'1.2-2' }}
+            </span>
+          </div>
+          <div class="total-col text-right">
+            <span class="total-label">Company Retains</span>
+            <span class="total-amount text-primary">
+              {{ (selectedRefund.status === 'pending' ? customSystemCost : selectedRefund.system_cost) | currency:'LKR ':'symbol':'1.2-2' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTLEMENT CLAWBACK NOTICE & TABLE -->
+      <div class="section-card settlement-clawback-card">
+        <div class="clawback-header">
+          <h4><i class="fas fa-undo-alt"></i> Third-Party Settlement Clawback</h4>
+          <span class="zero-payout-badge">Third Parties Receive 0 LKR</span>
+        </div>
+        
+        <p class="clawback-note">
+          <i class="fas fa-info-circle"></i>
+          Upon approval, reversing settlement records are created with a <strong>minus value flag</strong> (<code>is_deduction = true</code>) to ensure Bus Owners, Drivers, and Conductors are paid 0 LKR on refunded bookings.
+        </p>
+
+        <div *ngIf="selectedRefund.associated_settlements && selectedRefund.associated_settlements.length > 0" class="settlements-mini-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Payee Role</th>
+                <th>Original Net</th>
+                <th>Clawback Action</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of selectedRefund.associated_settlements">
+                <td class="font-medium text-capitalize">{{ s.payee_type }}</td>
+                <td>{{ s.net_amount | currency:'LKR ':'symbol':'1.2-2' }}</td>
+                <td>
+                  <span *ngIf="selectedRefund.status === 'pending'" class="text-warning">
+                    <i class="fas fa-arrow-down"></i> Will deduct -{{ s.net_amount | currency:'LKR ':'symbol':'1.2-2' }}
+                  </span>
+                  <span *ngIf="selectedRefund.status === 'completed'" class="text-danger">
+                    <i class="fas fa-check"></i> Clawback executed (Net 0)
+                  </span>
+                  <span *ngIf="selectedRefund.status === 'failed'" class="text-muted">
+                    No clawback (Rejected)
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [class.badge-pending]="!s.is_paid" [class.badge-paid]="s.is_paid">
+                    {{ s.is_paid ? 'Paid' : 'Pending' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="!selectedRefund.associated_settlements || selectedRefund.associated_settlements.length === 0" class="text-muted small py-2">
+          No third-party settlements were generated for this booking.
+        </div>
+      </div>
+
+      <!-- AUDIT LOG (If already completed or rejected) -->
+      <div *ngIf="selectedRefund.status !== 'pending'" class="section-card audit-trail-card">
+        <h4><i class="fas fa-history"></i> Resolution Audit Trail</h4>
+        <div class="audit-details">
+          <div class="audit-item">
+            <span class="label">Status:</span>
+            <span class="value status-pill status-{{ selectedRefund.status }}">{{ selectedRefund.status | uppercase }}</span>
+          </div>
+          <div class="audit-item" *ngIf="selectedRefund.processed_by_admin_name">
+            <span class="label">Audited By:</span>
+            <span class="value">{{ selectedRefund.processed_by_admin_name }}</span>
+          </div>
+          <div class="audit-item" *ngIf="selectedRefund.refunded_at">
+            <span class="label">Processed At:</span>
+            <span class="value">{{ selectedRefund.refunded_at | date:'medium' }}</span>
+          </div>
+          <div class="audit-item" *ngIf="selectedRefund.admin_notes">
+            <span class="label">Admin Notes:</span>
+            <span class="value font-mono">{{ selectedRefund.admin_notes }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPROVAL / REJECTION ACTIONS (PENDING ONLY) -->
+      <div *ngIf="selectedRefund.status === 'pending'" class="drawer-actions-card">
+
+        <!-- OVERRIDE WARNING IF POST-TRIP -->
+        <div *ngIf="selectedRefund.criteria.requires_override" class="override-alert-box">
+          <div class="override-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Post-Trip Claim (Tier 3 Notice)</strong>
+          </div>
+          <p>By default, post-departure refunds are 0% (non-refundable). If approving due to verified bus breakdown, accident, or operator fault, check the discretionary override confirmation below.</p>
+          <label class="override-checkbox-label">
+            <input type="checkbox" [(ngModel)]="overrideConfirmed" />
+            <span>I confirm this exception is verified under official breakdown / service disruption policy.</span>
+          </label>
+        </div>
+
+        <!-- STRICT NON-REFUNDABLE NOTICE (TIER 4) -->
+        <div *ngIf="selectedRefund.criteria.is_non_refundable" class="non-refundable-box">
+          <i class="fas fa-ban"></i>
+          <div>
+            <strong>Refund Window Expired</strong>
+            <p>This trip departed more than 3 days ago. Per Smart Transit System policy, approvals are strictly prohibited.</p>
+          </div>
+        </div>
+
+        <!-- ADMIN NOTES -->
+        <div class="form-group notes-group">
+          <label for="adminNotes">Admin Audit Notes (Optional / Required for Override):</label>
+          <textarea 
+            id="adminNotes" 
+            [(ngModel)]="adminNotes" 
+            rows="3" 
+            placeholder="Document verification reasons, ticket cancellation remarks, or bank transaction reference..."
+          ></textarea>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-buttons-row">
+          <button 
+            class="btn-approve" 
+            [disabled]="isActionLoading || selectedRefund.criteria.is_non_refundable || (selectedRefund.criteria.requires_override && !overrideConfirmed)" 
+            (click)="approveRefund()">
+            <i class="fas" [ngClass]="isActionLoading ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
+            {{ isActionLoading ? 'Processing Settle...' : 'Approve & Settle Refund' }}
+          </button>
+
+          <button 
+            class="btn-reject" 
+            [disabled]="isActionLoading" 
+            (click)="openRejectModal()">
+            <i class="fas fa-times-circle"></i> Reject Request
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="drawer-footer">
+      <button class="btn-drawer-close" (click)="closeDrawer()">Close Drawer</button>
+    </div>
+
+  </aside>
+
+  <!-- REJECTION CONFIRMATION MODAL -->
+  <div class="modal-backdrop" *ngIf="showRejectModal" (click)="closeRejectModal()"></div>
+  <div class="modal-container" *ngIf="showRejectModal">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <i class="fas fa-ban text-danger"></i>
+        <h3>Reject Refund Request</h3>
+      </div>
+      <button class="modal-close-btn" (click)="closeRejectModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to reject refund request <strong>{{ selectedRefund?.refund_reference }}</strong>?</p>
+      <div class="form-group">
+        <label for="rejectReason">Reason for Rejection <span class="text-danger">*</span></label>
+        <textarea 
+          id="rejectReason" 
+          [(ngModel)]="rejectReason" 
+          rows="3" 
+          placeholder="State the reason for rejection (e.g. Passenger no-show without valid cancellation, outside policy window, invalid booking)..."
+        ></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeRejectModal()" [disabled]="isActionLoading">Cancel</button>
+      <button class="btn-danger-confirm" (click)="confirmReject()" [disabled]="isActionLoading || !rejectReason.trim()">
+        <i class="fas" [ngClass]="isActionLoading ? 'fa-spinner fa-spin' : 'fa-times-circle'"></i>
+        Confirm Rejection
+      </button>
+    </div>
+  </div>
+
+</div>

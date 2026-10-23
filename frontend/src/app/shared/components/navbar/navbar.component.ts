@@ -48,6 +48,11 @@ export class NavbarComponent implements OnInit {
       route: '/settlements'
     },
     { 
+      label: 'Refunds', 
+      icon: 'fas fa-undo-alt', 
+      route: '/refunds'
+    },
+    { 
       label: 'Support', 
       icon: 'fas fa-headset', 
       route: '/support', 
