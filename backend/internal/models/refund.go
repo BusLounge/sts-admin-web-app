@@ -48,6 +48,20 @@ type CriteriaCheck struct {
 	IsNonRefundable     bool    `json:"is_non_refundable"`
 	RequiresOverride    bool    `json:"requires_override"`
 	PolicyDescription   string  `json:"policy_description"`
+
+	// Boarding & Driver/Conductor Verification
+	IsBoarded                    bool       `json:"is_boarded"`
+	BoardedAt                    *time.Time `json:"boarded_at,omitempty"`
+	BoardedByName                string     `json:"boarded_by_name"`
+	BoardedByRole                string     `json:"boarded_by_role"`
+	IsTripCancelledByOperator    bool       `json:"is_trip_cancelled_by_operator"`
+	TripCancellationReason       string     `json:"trip_cancellation_reason"`
+	TripStatus                   string     `json:"trip_status"`
+	DriverName                   string     `json:"driver_name"`
+	DriverPhone                  string     `json:"driver_phone"`
+	ConductorName                string     `json:"conductor_name"`
+	ConductorPhone               string     `json:"conductor_phone"`
+	IsRefundBlockedDueToBoarding bool       `json:"is_refund_blocked_due_to_boarding"`
 }
 
 type RefundDetail struct {
