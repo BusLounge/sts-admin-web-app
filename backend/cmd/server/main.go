@@ -250,8 +250,8 @@ func main() {
 		api.POST("/settlements/process-now", settlementHandler.ProcessNow)
 	}
 
-	// Initialize settlement scheduler (runs every 24 hours)
-	settlementScheduler := services.NewSettlementScheduler(database.DB, 24*time.Hour)
+	// Initialize settlement scheduler (aligned to Sri Lanka Midnight 00:00:00)
+	settlementScheduler := services.NewSettlementScheduler(database.DB)
 	settlementScheduler.Start()
 	log.Println("✅ Settlement scheduler started")
 

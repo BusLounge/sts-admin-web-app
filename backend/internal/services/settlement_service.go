@@ -23,6 +23,15 @@ func NewSettlementService(db *sql.DB) *SettlementService {
 	}
 }
 
+// GetSriLankaLocation returns the time.Location for Sri Lanka (Asia/Colombo UTC+5:30)
+func GetSriLankaLocation() *time.Location {
+	loc, err := time.LoadLocation("Asia/Colombo")
+	if err != nil {
+		loc = time.FixedZone("Asia/Colombo", 5*3600+30*60)
+	}
+	return loc
+}
+
 func (s *SettlementService) GetConfigValue(tx *sql.Tx, key string, defaultValue float64) float64 {
 	var val float64
 	err := tx.QueryRow("SELECT config_value FROM public.settlement_config WHERE config_key = $1", key).Scan(&val)
@@ -70,7 +79,7 @@ func (s *SettlementService) CreateBusSettlements(bookingID, scheduledTripID uuid
 		return err
 	}
 
-	today := time.Now().Truncate(24 * time.Hour)
+	today := time.Now().In(GetSriLankaLocation()).Truncate(24 * time.Hour)
 
 	// 1. Bus Owner (Receives 70% net, but we attach the company's 5% cut here for tracking)
 	if busOwnerUserID != uuid.Nil {
@@ -145,7 +154,7 @@ func (s *SettlementService) CreateLoungeSettlements(loungeBookingID uuid.UUID, l
 		return nil
 	}
 
-	today := time.Now().Truncate(24 * time.Hour)
+	today := time.Now().In(GetSriLankaLocation()).Truncate(24 * time.Hour)
 	
 	ownerGross := totalRevenue * (loungeOwnerSharePct + companyCommissionPct)
 	ownerComm := totalRevenue * companyCommissionPct
@@ -231,7 +240,8 @@ func (s *SettlementService) insertSettlement(
 
 // SyncBookingsToSettlements scans the bookings table and creates settlements for any completed bookings that haven't been settled yet.
 func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
-	log.Printf("Syncing completed bookings into settlements table...")
+	today := time.Now().In(GetSriLankaLocation()).Truncate(24 * time.Hour)
+	log.Printf("Syncing completed bookings into settlements table for date %v...", today.Format("2006-01-02"))
 
 	// Pre-fetch configs to avoid querying inside a loop
 	loungeOwnerSharePct := s.GetConfigValue(tx, "lounge_owner_share_pct", 95.00) / 100.0
@@ -242,18 +252,23 @@ func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
 	conductorSharePct := s.GetConfigValue(tx, "conductor_share_pct", 10.00) / 100.0
 	busCompanyCommissionPct := s.GetConfigValue(tx, "company_commission_pct", 5.00) / 100.0
 
-	// 1. Process Lounge Bookings
-	type LoungeBooking struct {
+	// 1. Process Lounge Bookings with JOINs (efficient batch query)
+	type LoungeBookingSync struct {
 		ID uuid.UUID
-		Name string
 		Amount float64
+		OwnerUserID sql.NullString
 	}
-	var lBookings []LoungeBooking
+	var lBookings []LoungeBookingSync
 
 	loungeRows, err := tx.Query(`
-		SELECT lb.id, lb.lounge_name, lb.total_amount
+		SELECT 
+			lb.id, 
+			lb.total_amount,
+			lo.user_id
 		FROM public.lounge_bookings lb
 		JOIN public.bookings b ON (lb.master_booking_id = b.id OR lb.bus_booking_id = b.id)
+		LEFT JOIN public.lounges l ON (lb.lounge_id = l.id OR lb.lounge_name = l.lounge_name)
+		LEFT JOIN public.lounge_owners lo ON l.owner_id = lo.id
 		WHERE b.payment_status = 'paid' 
 		  AND lb.total_amount > 0
 		  AND NOT EXISTS (
@@ -261,50 +276,58 @@ func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
 		  )
 	`)
 	if err != nil {
-		return err
-	}
-	for loungeRows.Next() {
-		var lb LoungeBooking
-		if err := loungeRows.Scan(&lb.ID, &lb.Name, &lb.Amount); err == nil {
-			lBookings = append(lBookings, lb)
+		log.Printf("Error querying lounge bookings for sync: %v", err)
+	} else {
+		for loungeRows.Next() {
+			var lb LoungeBookingSync
+			if err := loungeRows.Scan(&lb.ID, &lb.Amount, &lb.OwnerUserID); err == nil {
+				lBookings = append(lBookings, lb)
+			}
 		}
-	}
-	loungeRows.Close()
+		loungeRows.Close()
 
-	for _, lb := range lBookings {
-		var loungeOwnerUserID sql.NullString
-		err = tx.QueryRow(`
-			SELECT lo.user_id FROM public.lounges l
-			JOIN public.lounge_owners lo ON l.owner_id = lo.id
-			WHERE l.lounge_name = $1 LIMIT 1
-		`, lb.Name).Scan(&loungeOwnerUserID)
-		
-		if err == nil && loungeOwnerUserID.Valid {
-			ownerID, _ := uuid.Parse(loungeOwnerUserID.String)
-			ownerGross := lb.Amount * (loungeOwnerSharePct + loungeCommissionPct)
-			ownerComm := lb.Amount * loungeCommissionPct
-			ownerNet := lb.Amount * loungeOwnerSharePct
-			var effectiveCommRate float64 = 0
-			if ownerGross > 0 { effectiveCommRate = ownerComm / ownerGross }
-			err := s.insertSettlement(tx, models.PayeeTypeLoungeOwner, ownerID, nil, nil, &lb.ID, ownerGross, effectiveCommRate, ownerComm, ownerNet, time.Now())
-			if err != nil { log.Printf("Error inserting lounge owner settlement: %v", err) }
-		} else if err != nil {
-			log.Printf("QueryRow for lounge owner failed: %v", err)
+		for _, lb := range lBookings {
+			if lb.OwnerUserID.Valid {
+				ownerID, err := uuid.Parse(lb.OwnerUserID.String)
+				if err == nil {
+					ownerGross := lb.Amount * (loungeOwnerSharePct + loungeCommissionPct)
+					ownerComm := lb.Amount * loungeCommissionPct
+					ownerNet := lb.Amount * loungeOwnerSharePct
+					var effectiveCommRate float64 = 0
+					if ownerGross > 0 { effectiveCommRate = ownerComm / ownerGross }
+					err := s.insertSettlement(tx, models.PayeeTypeLoungeOwner, ownerID, nil, nil, &lb.ID, ownerGross, effectiveCommRate, ownerComm, ownerNet, today)
+					if err != nil { log.Printf("Error inserting lounge owner settlement: %v", err) }
+				}
+			}
 		}
 	}
 
-	// 2. Process Bus Bookings
-	type BusBooking struct {
+	// 2. Process Bus Bookings with JOINs (efficient batch query)
+	type BusBookingSync struct {
 		BookingID uuid.UUID
 		TripID uuid.UUID
 		Fare float64
+		BusOwnerUserID sql.NullString
+		DriverUserID sql.NullString
+		ConductorUserID sql.NullString
 	}
-	var bBookings []BusBooking
+	var bBookings []BusBookingSync
 
 	busRows, err := tx.Query(`
-		SELECT bb.booking_id, bb.scheduled_trip_id, bb.total_fare
+		SELECT 
+			bb.booking_id, 
+			bb.scheduled_trip_id, 
+			bb.total_fare,
+			bo.user_id as bus_owner_user_id,
+			d.user_id as driver_user_id,
+			c.user_id as conductor_user_id
 		FROM public.bus_bookings bb
 		JOIN public.bookings b ON bb.booking_id = b.id
+		JOIN public.scheduled_trips st ON bb.scheduled_trip_id = st.id
+		LEFT JOIN public.bus_owner_routes bor ON st.bus_owner_route_id = bor.id
+		LEFT JOIN public.bus_owners bo ON bor.bus_owner_id = bo.id
+		LEFT JOIN public.bus_staff d ON st.assigned_driver_id = d.id
+		LEFT JOIN public.bus_staff c ON st.assigned_conductor_id = c.id
 		WHERE b.payment_status = 'paid'
 		  AND bb.total_fare > 0
 		  AND NOT EXISTS (
@@ -312,60 +335,46 @@ func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
 		  )
 	`)
 	if err != nil {
-		return err
-	}
-	for busRows.Next() {
-		var bb BusBooking
-		if err := busRows.Scan(&bb.BookingID, &bb.TripID, &bb.Fare); err == nil {
-			bBookings = append(bBookings, bb)
+		log.Printf("Error querying bus bookings for sync: %v", err)
+	} else {
+		for busRows.Next() {
+			var bb BusBookingSync
+			if err := busRows.Scan(&bb.BookingID, &bb.TripID, &bb.Fare, &bb.BusOwnerUserID, &bb.DriverUserID, &bb.ConductorUserID); err == nil {
+				bBookings = append(bBookings, bb)
+			}
 		}
-	}
-	busRows.Close()
+		busRows.Close()
 
-	for _, bb := range bBookings {
-		var busOwnerUserID, driverUserID, conductorUserID sql.NullString
-		err = tx.QueryRow(`
-			SELECT 
-				bo.user_id as bus_owner,
-				d.user_id as driver,
-				c.user_id as conductor
-			FROM public.scheduled_trips st
-			LEFT JOIN public.bus_owner_routes bor ON st.bus_owner_route_id = bor.id
-			LEFT JOIN public.bus_owners bo ON bor.bus_owner_id = bo.id
-			LEFT JOIN public.bus_staff d ON st.assigned_driver_id = d.id
-			LEFT JOIN public.bus_staff c ON st.assigned_conductor_id = c.id
-			WHERE st.id = $1
-		`, bb.TripID).Scan(&busOwnerUserID, &driverUserID, &conductorUserID)
-		
-		if err == nil {
-			today := time.Now().Truncate(24 * time.Hour)
-			
-			if busOwnerUserID.Valid {
-				ownerID, _ := uuid.Parse(busOwnerUserID.String)
-				// The platform takes its 5% commission from the Bus Owner's record to account for it.
-				ownerGross := bb.Fare * (busOwnerSharePct + busCompanyCommissionPct) // 75%
-				ownerComm := bb.Fare * busCompanyCommissionPct                       // 5%
-				ownerNet := bb.Fare * busOwnerSharePct                               // 70%
-				
-				var effectiveCommRate float64 = 0
-				if ownerGross > 0 { effectiveCommRate = ownerComm / ownerGross }
-				err := s.insertSettlement(tx, models.PayeeTypeBusOwner, ownerID, &bb.BookingID, &bb.TripID, nil, ownerGross, effectiveCommRate, ownerComm, ownerNet, today)
-				if err != nil { log.Printf("Error inserting bus owner settlement: %v", err) }
+		for _, bb := range bBookings {
+			if bb.BusOwnerUserID.Valid {
+				ownerID, err := uuid.Parse(bb.BusOwnerUserID.String)
+				if err == nil {
+					ownerGross := bb.Fare * (busOwnerSharePct + busCompanyCommissionPct) // 75%
+					ownerComm := bb.Fare * busCompanyCommissionPct                       // 5%
+					ownerNet := bb.Fare * busOwnerSharePct                               // 70%
+					
+					var effectiveCommRate float64 = 0
+					if ownerGross > 0 { effectiveCommRate = ownerComm / ownerGross }
+					err := s.insertSettlement(tx, models.PayeeTypeBusOwner, ownerID, &bb.BookingID, &bb.TripID, nil, ownerGross, effectiveCommRate, ownerComm, ownerNet, today)
+					if err != nil { log.Printf("Error inserting bus owner settlement: %v", err) }
+				}
 			}
-			if driverUserID.Valid {
-				dID, _ := uuid.Parse(driverUserID.String)
-				driverNet := bb.Fare * driverSharePct // 15%
-				err := s.insertSettlement(tx, models.PayeeTypeDriver, dID, &bb.BookingID, &bb.TripID, nil, driverNet, 0, 0, driverNet, today)
-				if err != nil { log.Printf("Error inserting driver settlement: %v", err) }
+			if bb.DriverUserID.Valid {
+				dID, err := uuid.Parse(bb.DriverUserID.String)
+				if err == nil {
+					driverNet := bb.Fare * driverSharePct // 15%
+					err := s.insertSettlement(tx, models.PayeeTypeDriver, dID, &bb.BookingID, &bb.TripID, nil, driverNet, 0, 0, driverNet, today)
+					if err != nil { log.Printf("Error inserting driver settlement: %v", err) }
+				}
 			}
-			if conductorUserID.Valid {
-				cID, _ := uuid.Parse(conductorUserID.String)
-				conductorNet := bb.Fare * conductorSharePct // 10%
-				err := s.insertSettlement(tx, models.PayeeTypeConductor, cID, &bb.BookingID, &bb.TripID, nil, conductorNet, 0, 0, conductorNet, today)
-				if err != nil { log.Printf("Error inserting conductor settlement: %v", err) }
+			if bb.ConductorUserID.Valid {
+				cID, err := uuid.Parse(bb.ConductorUserID.String)
+				if err == nil {
+					conductorNet := bb.Fare * conductorSharePct // 10%
+					err := s.insertSettlement(tx, models.PayeeTypeConductor, cID, &bb.BookingID, &bb.TripID, nil, conductorNet, 0, 0, conductorNet, today)
+					if err != nil { log.Printf("Error inserting conductor settlement: %v", err) }
+				}
 			}
-		} else {
-			log.Printf("QueryRow for staff failed: %v", err)
 		}
 	}
 
@@ -373,7 +382,7 @@ func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
 }
 
 func (s *SettlementService) RunMidnightProcess() error {
-	today := time.Now().Truncate(24 * time.Hour)
+	today := time.Now().In(GetSriLankaLocation()).Truncate(24 * time.Hour)
 	log.Printf("Starting midnight settlement process for %v", today)
 
 	tx, err := s.db.Begin()
@@ -467,21 +476,8 @@ func (s *SettlementService) RunMidnightProcess() error {
 				continue
 			}
 
-			// Create Batch
-			var batchID uuid.UUID
-			err = tx.QueryRow(`
-				INSERT INTO public.settlement_batches (
-					payee_user_id, payee_type, period_start, period_end, total_days,
-					total_settlements, total_gross_amount, total_commission, total_net_amount
-				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id
-			`, t.PayeeUserID, t.PayeeType, periodStart, periodEnd, daysSince, recordCount, totalGross, totalComm, totalNet).Scan(&batchID)
-			if err != nil {
-				log.Printf("Error inserting batch: %v", err)
-				continue
-			}
-
 			// --- START PAYOUT PROCESS ---
-			// 1. Check Company Wallet Reserve Threshold
+			// 1. Check Company Wallet Reserve Threshold BEFORE creating batch
 			var cwID uuid.UUID
 			var cwBalance, cwReserve float64
 			err = tx.QueryRow(`SELECT id, balance, reserve_threshold FROM public.company_wallet LIMIT 1`).Scan(&cwID, &cwBalance, &cwReserve)
@@ -491,13 +487,25 @@ func (s *SettlementService) RunMidnightProcess() error {
 			}
 
 			if (cwBalance - totalNet) < cwReserve {
-				log.Printf("Safety Triggered: Cannot payout %f to %s. Wallet balance %f would fall below reserve %f", totalNet, t.PayeeUserID, cwBalance, cwReserve)
-				// We update the batch to 'pending' so it can be re-tried tomorrow or manually
-				_, _ = tx.Exec(`UPDATE public.settlement_batches SET status = 'pending' WHERE id = $1`, batchID)
-				continue // Skip payout for this user
+				log.Printf("Safety Triggered: Cannot payout %f to %s. Wallet balance %f would fall below reserve %f. Holding in accounted status.", totalNet, t.PayeeUserID, cwBalance, cwReserve)
+				// Safely hold payout: settlements remain in 'accounted' status until reserve is replenished
+				continue
 			}
 
-			// 2. Next step: Implement PayHere Automated Payouts!
+			// 2. Sufficient funds exist: Create Batch with status 'processing'
+			var batchID uuid.UUID
+			err = tx.QueryRow(`
+				INSERT INTO public.settlement_batches (
+					payee_user_id, payee_type, period_start, period_end, total_days,
+					total_settlements, total_gross_amount, total_commission, total_net_amount, status
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'processing') RETURNING id
+			`, t.PayeeUserID, t.PayeeType, periodStart, periodEnd, daysSince, recordCount, totalGross, totalComm, totalNet).Scan(&batchID)
+			if err != nil {
+				log.Printf("Error inserting batch: %v", err)
+				continue
+			}
+
+			// 3. Execute PayHere Automated Payouts!
 			var accountName, acctNo, bankCode, branchCode string
 			accountName = "Mock User"
 			acctNo = "1234567890"
@@ -510,7 +518,7 @@ func (s *SettlementService) RunMidnightProcess() error {
 			payoutID, payErr := s.payHere.ExecutePayout(accountName, acctNo, bankCode, branchCode, totalNet, batchID.String())
 			if payErr != nil {
 				log.Printf("PayHere API Failed for %s: %v", t.PayeeUserID, payErr)
-				_, _ = tx.Exec(`UPDATE public.settlement_batches SET status = 'pending' WHERE id = $1`, batchID)
+				_, _ = tx.Exec(`UPDATE public.settlement_batches SET status = 'failed' WHERE id = $1`, batchID)
 				continue
 			}
 
@@ -519,16 +527,24 @@ func (s *SettlementService) RunMidnightProcess() error {
 				UPDATE public.company_wallet 
 				SET balance = balance - $1, updated_at = now() 
 			`, totalNet)
+			if err != nil {
+				log.Printf("Error debiting company wallet: %v", err)
+				_, _ = tx.Exec(`UPDATE public.settlement_batches SET status = 'failed' WHERE id = $1`, batchID)
+				continue
+			}
 			
 			desc := fmt.Sprintf("PayHere Payout Sent to %s", t.PayeeType)
 			_, err = tx.Exec(`
 				INSERT INTO public.wallet_transactions (
 					wallet_id, amount, transaction_type, reference_type, reference_id,
 					payhere_payout_id, description, status
-				) VALUES ($1, $2, 'debit', 'payout', $3, $4, $5, 'completed')
+				) VALUES ($1, $2, 'debit', 'bank_payout', $3, $4, $5, 'completed')
 			`, cwID, totalNet, batchID, payoutID, desc)
+			if err != nil {
+				log.Printf("Error tracking company wallet transaction: %v", err)
+			}
 
-			// 3. Mark as Paid
+			// 4. Mark as Paid
 			_, err = tx.Exec(`
 				UPDATE public.settlements 
 				SET status = 'paid', is_paid = true, paid_at = now(), settlement_batch_id = $1
@@ -540,7 +556,7 @@ func (s *SettlementService) RunMidnightProcess() error {
 				continue
 			}
 
-			// Update Batch
+			// 5. Update Batch to completed
 			_, err = tx.Exec(`
 				UPDATE public.settlement_batches 
 				SET status = 'completed'
@@ -551,7 +567,7 @@ func (s *SettlementService) RunMidnightProcess() error {
 				continue
 			}
 
-			// Update Tracker
+			// 6. Update Tracker
 			nextPayoutDate := today.AddDate(0, 0, t.PayoutFrequencyDays)
 			_, err = tx.Exec(`
 				UPDATE public.payout_tracker 

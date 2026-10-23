@@ -142,6 +142,7 @@ export class SettlementOverviewComponent implements OnInit {
         this.cdr.detectChanges();
         alert('Process triggered successfully! The background engine has finished syncing bookings and updating settlements.');
         this.loadOverview(); // Refresh the data
+        this.loadWallet();
       },
       error: (err) => {
         this.isProcessing = false;
