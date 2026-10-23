@@ -182,6 +182,11 @@ export class RefundManagementComponent implements OnInit {
   approveRefund(): void {
     if (!this.selectedRefund) return;
 
+    if (this.selectedRefund.criteria.is_refund_blocked_due_to_boarding) {
+      this.showError('Refund cannot be approved: Passenger was verified as boarded on the bus.');
+      return;
+    }
+
     if (this.selectedRefund.criteria.is_non_refundable) {
       this.showError('This request is strictly non-refundable as it has passed the 3-day post-trip window.');
       return;
@@ -258,6 +263,8 @@ export class RefundManagementComponent implements OnInit {
   }
 
   getDepartureBadgeClass(hours: number): string {
+    if (this.selectedRefund?.criteria?.is_refund_blocked_due_to_boarding) return 'badge-boarded-blocked';
+    if (this.selectedRefund?.criteria?.is_trip_cancelled_by_operator) return 'badge-operator-cancelled';
     if (hours > 24) return 'badge-tier-1';
     if (hours >= 0 && hours <= 24) return 'badge-tier-2';
     if (hours < 0 && hours >= -72) return 'badge-tier-3';
@@ -265,6 +272,12 @@ export class RefundManagementComponent implements OnInit {
   }
 
   getDepartureLabel(hours: number): string {
+    if (this.selectedRefund?.criteria?.is_refund_blocked_due_to_boarding) {
+      return 'Refund Blocked: Passenger Boarded Bus (Ineligible)';
+    }
+    if (this.selectedRefund?.criteria?.is_trip_cancelled_by_operator) {
+      return 'Operator Disruption: Bus Trip Cancelled by Owner (100% Full Refund)';
+    }
     if (hours > 24) return 'Tier 1: > 24h Advance (95% Refund / 5% Fee)';
     if (hours >= 0 && hours <= 24) return 'Tier 2: Within 24h (90% Refund / 10% Fee)';
     if (hours < 0 && hours >= -72) return 'Tier 3: Post-Trip 0-3d (0% Default / Override Required)';

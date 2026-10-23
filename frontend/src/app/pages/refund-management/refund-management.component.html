@@ -237,7 +237,30 @@
         <h3>Refund Request Audit</h3>
         <span class="drawer-ref" *ngIf="selectedRefund">{{ selectedRefund.refund_reference }}</span>
       </div>
-      <button class="drawer-close-btn" (click)="closeDrawer()">
+      <div class="drawer-header-actions" *ngIf="selectedRefund">
+        <button 
+          *ngIf="selectedRefund.status === 'pending'"
+          class="btn-header-approve" 
+          [disabled]="isActionLoading || selectedRefund.criteria.is_refund_blocked_due_to_boarding || selectedRefund.criteria.is_non_refundable || (selectedRefund.criteria.requires_override && !overrideConfirmed)" 
+          (click)="approveRefund()"
+          title="Approve & Settle Refund">
+          <i class="fas" [ngClass]="isActionLoading ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
+          Approve
+        </button>
+        <button 
+          *ngIf="selectedRefund.status === 'pending'"
+          class="btn-header-reject" 
+          [disabled]="isActionLoading" 
+          (click)="openRejectModal()"
+          title="Reject Request">
+          <i class="fas fa-times-circle"></i>
+          Reject
+        </button>
+        <button class="drawer-close-btn" (click)="closeDrawer()" title="Close Drawer">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+      <button *ngIf="!selectedRefund" class="drawer-close-btn" (click)="closeDrawer()">
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -264,6 +287,90 @@
           </span>
         </div>
         <p class="policy-desc">{{ selectedRefund.criteria.policy_description }}</p>
+      </div>
+
+      <!-- BOARDING VERIFICATION CARD (Driver & Conductor App Integration) -->
+      <div class="section-card boarding-verification-card" 
+           [class.boarded-alert]="selectedRefund.criteria.is_boarded"
+           [class.cancelled-alert]="selectedRefund.criteria.is_trip_cancelled_by_operator"
+           [class.unboarded-passed]="!selectedRefund.criteria.is_boarded && !selectedRefund.criteria.is_trip_cancelled_by_operator">
+        
+        <div class="card-headline">
+          <div class="headline-title">
+            <i class="fas" [ngClass]="{
+              'fa-user-check text-danger': selectedRefund.criteria.is_boarded,
+              'fa-bus-alt text-primary': selectedRefund.criteria.is_trip_cancelled_by_operator,
+              'fa-user-slash text-success': !selectedRefund.criteria.is_boarded && !selectedRefund.criteria.is_trip_cancelled_by_operator
+            }"></i>
+            <h4>Boarding & Trip Execution Audit (Driver/Conductor App)</h4>
+          </div>
+          <span class="verification-badge" [ngClass]="{
+            'badge-danger': selectedRefund.criteria.is_boarded,
+            'badge-info': selectedRefund.criteria.is_trip_cancelled_by_operator,
+            'badge-success': !selectedRefund.criteria.is_boarded && !selectedRefund.criteria.is_trip_cancelled_by_operator
+          }">
+            <i class="fas" [ngClass]="{
+              'fa-ban': selectedRefund.criteria.is_boarded,
+              'fa-info-circle': selectedRefund.criteria.is_trip_cancelled_by_operator,
+              'fa-check-circle': !selectedRefund.criteria.is_boarded && !selectedRefund.criteria.is_trip_cancelled_by_operator
+            }"></i>
+            {{ selectedRefund.criteria.is_boarded ? 'Boarded (Ineligible)' : (selectedRefund.criteria.is_trip_cancelled_by_operator ? 'Trip Cancelled' : 'Verified Unboarded') }}
+          </span>
+        </div>
+
+        <!-- 1. Passenger Boarded Warning -->
+        <div *ngIf="selectedRefund.criteria.is_boarded" class="boarding-alert-content">
+          <div class="alert-box-danger">
+            <i class="fas fa-exclamation-triangle fa-2x"></i>
+            <div>
+              <strong>Passenger Boarded the Bus</strong>
+              <p>Conductor / Driver mobile app verified and scanned passenger onto the bus on <strong>{{ selectedRefund.criteria.boarded_at ? (selectedRefund.criteria.boarded_at | date:'medium') : 'scheduled departure' }}</strong>. Verified by: <strong>{{ selectedRefund.criteria.boarded_by_name || 'Bus Crew' }}</strong> ({{ selectedRefund.criteria.boarded_by_role || 'Staff' }}).</p>
+              <span class="block-flag">🚨 Policy Block: Passengers who boarded and completed the bus trip cannot receive refunds.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Trip Operator Cancelled Notice -->
+        <div *ngIf="selectedRefund.criteria.is_trip_cancelled_by_operator" class="boarding-alert-content">
+          <div class="alert-box-info">
+            <i class="fas fa-info-circle fa-2x"></i>
+            <div>
+              <strong>Bus Trip Cancelled by Bus Owner / Authority</strong>
+              <p>Trip was officially marked as cancelled. Reason: <em>"{{ selectedRefund.criteria.trip_cancellation_reason || 'Service cancelled by operator' }}"</em>.</p>
+              <span class="full-refund-flag">✅ Entitled to 100% full refund with 0 LKR fee retained.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Verified Unboarded (Legitimate No-Show or Advance Cancellation) -->
+        <div *ngIf="!selectedRefund.criteria.is_boarded && !selectedRefund.criteria.is_trip_cancelled_by_operator" class="boarding-alert-content">
+          <div class="alert-box-success">
+            <i class="fas fa-check-circle fa-2x"></i>
+            <div>
+              <strong>Verified Unboarded Passenger</strong>
+              <p>Conductor / Driver mobile app records confirm this ticket was <strong>never scanned</strong> and the customer <strong>did not travel</strong> on this bus run.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operating Bus Crew Information -->
+        <div class="crew-details-strip">
+          <div class="crew-member">
+            <span class="crew-role"><i class="fas fa-user-tie"></i> Assigned Driver:</span>
+            <span class="crew-val">{{ selectedRefund.criteria.driver_name || 'Unassigned' }}</span>
+            <a *ngIf="selectedRefund.criteria.driver_phone" [href]="'tel:' + selectedRefund.criteria.driver_phone" class="phone-link">
+              <i class="fas fa-phone-alt"></i> {{ selectedRefund.criteria.driver_phone }}
+            </a>
+          </div>
+          <div class="crew-member">
+            <span class="crew-role"><i class="fas fa-user-secret"></i> Assigned Conductor:</span>
+            <span class="crew-val">{{ selectedRefund.criteria.conductor_name || 'Unassigned' }}</span>
+            <a *ngIf="selectedRefund.criteria.conductor_phone" [href]="'tel:' + selectedRefund.criteria.conductor_phone" class="phone-link">
+              <i class="fas fa-phone-alt"></i> {{ selectedRefund.criteria.conductor_phone }}
+            </a>
+          </div>
+        </div>
+
       </div>
 
       <!-- CRITERIA CHECKLIST -->
@@ -492,8 +599,17 @@
           </label>
         </div>
 
+        <!-- BOARDED PASSENGER BLOCKED NOTICE -->
+        <div *ngIf="selectedRefund.criteria.is_refund_blocked_due_to_boarding" class="non-refundable-box boarded-block-box">
+          <i class="fas fa-ban"></i>
+          <div>
+            <strong>Passenger Travelled / Boarded Bus</strong>
+            <p>Conductor/Driver ticket scan confirmed passenger boarded the bus. In accordance with anti-fraud policies, refund approvals are blocked.</p>
+          </div>
+        </div>
+
         <!-- STRICT NON-REFUNDABLE NOTICE (TIER 4) -->
-        <div *ngIf="selectedRefund.criteria.is_non_refundable" class="non-refundable-box">
+        <div *ngIf="!selectedRefund.criteria.is_refund_blocked_due_to_boarding && selectedRefund.criteria.is_non_refundable" class="non-refundable-box">
           <i class="fas fa-ban"></i>
           <div>
             <strong>Refund Window Expired</strong>
@@ -516,7 +632,7 @@
         <div class="action-buttons-row">
           <button 
             class="btn-approve" 
-            [disabled]="isActionLoading || selectedRefund.criteria.is_non_refundable || (selectedRefund.criteria.requires_override && !overrideConfirmed)" 
+            [disabled]="isActionLoading || selectedRefund.criteria.is_refund_blocked_due_to_boarding || selectedRefund.criteria.is_non_refundable || (selectedRefund.criteria.requires_override && !overrideConfirmed)" 
             (click)="approveRefund()">
             <i class="fas" [ngClass]="isActionLoading ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
             {{ isActionLoading ? 'Processing Settle...' : 'Approve & Settle Refund' }}
@@ -536,7 +652,26 @@
 
     <!-- Drawer Footer -->
     <div class="drawer-footer">
-      <button class="btn-drawer-close" (click)="closeDrawer()">Close Drawer</button>
+      <div class="footer-actions">
+        <button 
+          *ngIf="selectedRefund?.status === 'pending'"
+          class="btn-approve btn-footer-approve" 
+          [disabled]="isActionLoading || selectedRefund?.criteria?.is_refund_blocked_due_to_boarding || selectedRefund?.criteria?.is_non_refundable || (selectedRefund?.criteria?.requires_override && !overrideConfirmed)" 
+          (click)="approveRefund()">
+          <i class="fas" [ngClass]="isActionLoading ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
+          Approve & Settle
+        </button>
+        <button 
+          *ngIf="selectedRefund?.status === 'pending'"
+          class="btn-reject btn-footer-reject" 
+          [disabled]="isActionLoading" 
+          (click)="openRejectModal()">
+          <i class="fas fa-times-circle"></i> Reject
+        </button>
+        <button class="btn-drawer-close" (click)="closeDrawer()">
+          <i class="fas fa-times"></i> Close Drawer
+        </button>
+      </div>
     </div>
 
   </aside>

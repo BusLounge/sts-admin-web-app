@@ -34,6 +34,20 @@ export interface CriteriaCheck {
   is_non_refundable: boolean;
   requires_override: boolean;
   policy_description: string;
+
+  // Boarding & Driver/Conductor Verification
+  is_boarded: boolean;
+  boarded_at?: string;
+  boarded_by_name?: string;
+  boarded_by_role?: string;
+  is_trip_cancelled_by_operator: boolean;
+  trip_cancellation_reason?: string;
+  trip_status?: string;
+  driver_name?: string;
+  driver_phone?: string;
+  conductor_name?: string;
+  conductor_phone?: string;
+  is_refund_blocked_due_to_boarding: boolean;
 }
 
 export interface SettlementRecord {
