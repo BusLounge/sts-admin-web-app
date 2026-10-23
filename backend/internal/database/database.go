@@ -427,6 +427,15 @@ func Init(cfg *config.Config) {
 		INSERT INTO system_settings (setting_key, setting_value)
 		VALUES ('admin_notification_phones', '{"lounge_owner": ["94715342627"], "lounge": ["94715342627"], "bus_owner": ["94715342627"], "driver": ["94715342627"], "conductor": ["94715342627"]}'::jsonb)
 		ON CONFLICT (setting_key) DO NOTHING;
+
+		-- Refund & Settlement Clawback support
+		ALTER TABLE public.settlements ADD COLUMN IF NOT EXISTS is_deduction BOOLEAN NOT NULL DEFAULT false;
+		CREATE INDEX IF NOT EXISTS idx_settlements_deduction ON public.settlements(is_deduction);
+
+		ALTER TABLE public.refunds ADD COLUMN IF NOT EXISTS system_cost NUMERIC DEFAULT 0;
+		ALTER TABLE public.refunds ADD COLUMN IF NOT EXISTS tier_applied VARCHAR(30) DEFAULT 'tier_1';
+		ALTER TABLE public.refunds ADD COLUMN IF NOT EXISTS processed_by_admin_id UUID REFERENCES public.admin_users(id);
+		ALTER TABLE public.refunds ADD COLUMN IF NOT EXISTS admin_notes TEXT;
 	`)
 	if err != nil {
 		log.Printf("Error creating/updating tables: %v", err)

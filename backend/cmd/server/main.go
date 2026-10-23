@@ -248,6 +248,14 @@ func main() {
 		api.GET("/settlements/overview", settlementHandler.GetOverview)
 		api.GET("/settlements/wallet", settlementHandler.GetWallet)
 		api.POST("/settlements/process-now", settlementHandler.ProcessNow)
+
+		// Refunds Management
+		refundHandler := handlers.NewRefundHandler(database.DB)
+		api.GET("/refunds", refundHandler.GetRefunds)
+		api.GET("/refunds/stats", refundHandler.GetRefundStats)
+		api.GET("/refunds/:id", refundHandler.GetRefundByID)
+		api.POST("/refunds/:id/approve", refundHandler.ApproveRefund)
+		api.POST("/refunds/:id/reject", refundHandler.RejectRefund)
 	}
 
 	// Initialize settlement scheduler (aligned to Sri Lanka Midnight 00:00:00)

@@ -466,7 +466,10 @@ func (s *SettlementService) RunMidnightProcess() error {
 			var totalGross, totalComm, totalNet float64
 			var recordCount int
 			err := tx.QueryRow(`
-				SELECT COALESCE(SUM(gross_amount), 0), COALESCE(SUM(commission_amount), 0), COALESCE(SUM(net_amount), 0), COUNT(id)
+				SELECT COALESCE(SUM(CASE WHEN is_deduction THEN -gross_amount ELSE gross_amount END), 0), 
+				       COALESCE(SUM(CASE WHEN is_deduction THEN -commission_amount ELSE commission_amount END), 0), 
+				       COALESCE(SUM(CASE WHEN is_deduction THEN -net_amount ELSE net_amount END), 0), 
+				       COUNT(id)
 				FROM public.settlements
 				WHERE payee_user_id = $1 AND payee_type = $2 AND status = 'accounted'
 				AND earning_date >= $3 AND earning_date <= $4
@@ -592,8 +595,8 @@ func (s *SettlementService) GetSettlementOverview() (map[string]interface{}, err
 	var totalPending, paidThisMonth, companyProfit float64
 	var nextPayoutDate sql.NullTime
 
-	// Total Pending (sum of net_amount where status = pending or accounted)
-	s.db.QueryRow(`SELECT COALESCE(SUM(net_amount), 0) FROM public.settlements WHERE status IN ('pending', 'accounted')`).Scan(&totalPending)
+	// Total Pending (sum of net_amount where status = pending or accounted, subtracting deductions)
+	s.db.QueryRow(`SELECT COALESCE(SUM(CASE WHEN is_deduction THEN -net_amount ELSE net_amount END), 0) FROM public.settlements WHERE status IN ('pending', 'accounted')`).Scan(&totalPending)
 	
 	// Paid This Month (sum of total_net_amount from batches created this month)
 	s.db.QueryRow(`
@@ -618,7 +621,7 @@ func (s *SettlementService) GetSettlementOverview() (map[string]interface{}, err
 			t.days_accumulated,
 			t.payout_frequency_days as frequency_days,
 			COALESCE(t.next_payout_date, current_date + interval '14 days') as expected_payout_date,
-			(SELECT COALESCE(SUM(net_amount), 0) FROM public.settlements s WHERE s.payee_user_id = t.payee_user_id AND s.status IN ('pending', 'accounted')) as amount_accumulated
+			(SELECT COALESCE(SUM(CASE WHEN is_deduction THEN -net_amount ELSE net_amount END), 0) FROM public.settlements s WHERE s.payee_user_id = t.payee_user_id AND s.status IN ('pending', 'accounted')) as amount_accumulated
 		FROM public.payout_tracker t
 		JOIN public.users u ON t.payee_user_id = u.id
 		WHERE t.is_active = true

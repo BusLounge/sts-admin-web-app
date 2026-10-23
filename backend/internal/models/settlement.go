@@ -40,6 +40,7 @@ type Settlement struct {
 	EarningDate         time.Time        `json:"earning_date"`
 	Status              SettlementStatus `json:"status"`
 	IsPaid              bool             `json:"is_paid"`
+	IsDeduction         bool             `json:"is_deduction"`
 	PaidAt              *time.Time       `json:"paid_at,omitempty"`
 	SettlementBatchID   *uuid.UUID       `json:"settlement_batch_id,omitempty"`
 	Notes               *string          `json:"notes,omitempty"`
