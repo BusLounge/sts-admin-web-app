@@ -41,6 +41,11 @@ func (s *RefundService) ApproveRefund(
 		return errors.New("only pending refund requests can be approved")
 	}
 
+	// Safety check: Cannot approve if passenger boarded the bus
+	if detail.Criteria.IsRefundBlockedDueToBoarding {
+		return errors.New("cannot approve refund: passenger boarded the bus and consumed the transit service")
+	}
+
 	// Safety check: Cannot approve Tier 4 (expired) refunds
 	if detail.Criteria.IsNonRefundable {
 		return errors.New("this refund request has exceeded the 3-day post-trip window and is strictly non-refundable")
@@ -72,6 +77,10 @@ func (s *RefundService) ApproveRefund(
 		}
 	} else {
 		switch tier {
+		case "operator_cancelled":
+			// Full 100% refund on operator cancellation
+			systemCost = 0
+			finalRefundAmount = baseFare
 		case "tier_1_advance":
 			// Passenger gets 95%, Company gets 5%
 			systemCost = baseFare * 0.05

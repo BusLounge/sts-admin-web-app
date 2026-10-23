@@ -138,7 +138,17 @@ func (r *RefundRepository) GetRefundByID(id uuid.UUID) (*models.RefundDetail, er
 			COALESCE(b.total_amount, 0),
 			COALESCE(mr.route_name, mr.origin_city || ' - ' || mr.destination_city, ''),
 			COALESCE(rp.bus_registration_number, ''),
-			st.departure_datetime
+			st.departure_datetime,
+			bb.boarded_at,
+			COALESCE(bb.status, '') as bus_booking_status,
+			COALESCE(st.status, 'scheduled') as trip_status,
+			COALESCE(st.cancellation_reason, '') as trip_cancellation_reason,
+			COALESCE(TRIM(CONCAT(du.first_name, ' ', du.last_name)), '') as driver_name,
+			COALESCE(du.phone, '') as driver_phone,
+			COALESCE(TRIM(CONCAT(cu.first_name, ' ', cu.last_name)), '') as conductor_name,
+			COALESCE(cu.phone, '') as conductor_phone,
+			COALESCE(TRIM(CONCAT(bu.first_name, ' ', bu.last_name)), '') as boarded_by_name,
+			COALESCE(bu.roles::text, 'Staff') as boarded_by_role
 		FROM public.refunds r
 		LEFT JOIN public.bookings b ON r.booking_id = b.id
 		LEFT JOIN public.bus_bookings bb ON bb.booking_id = b.id
@@ -146,6 +156,9 @@ func (r *RefundRepository) GetRefundByID(id uuid.UUID) (*models.RefundDetail, er
 		LEFT JOIN public.route_permits rp ON st.permit_id = rp.id
 		LEFT JOIN public.master_routes mr ON rp.master_route_id = mr.id
 		LEFT JOIN public.admin_users u ON r.processed_by_admin_id = u.id
+		LEFT JOIN public.users du ON st.assigned_driver_id = du.id
+		LEFT JOIN public.users cu ON st.assigned_conductor_id = cu.id
+		LEFT JOIN public.users bu ON bb.boarded_by_user_id = bu.id
 		WHERE r.id = $1
 	`
 
@@ -154,7 +167,9 @@ func (r *RefundRepository) GetRefundByID(id uuid.UUID) (*models.RefundDetail, er
 	var bookingRef, pName, pPhone, pEmail, bType, payStatus, bStatus, routeName, busNumber string
 	var adminNotes sql.NullString
 	var adminID *uuid.UUID
-	var refundedAt, depTime sql.NullTime
+	var refundedAt, depTime, boardedAt sql.NullTime
+	var busBookingStatus, tripStatus, tripCancellationReason string
+	var driverName, driverPhone, conductorName, conductorPhone, boardedByName, boardedByRole string
 
 	err := r.db.QueryRow(query, id).Scan(
 		&detail.ID, &detail.BookingID, &detail.RequestedAmount, &reason, &refundRef,
@@ -163,6 +178,11 @@ func (r *RefundRepository) GetRefundByID(id uuid.UUID) (*models.RefundDetail, er
 		&adminNotes, &adminID, &adminName,
 		&bookingRef, &pName, &pPhone, &pEmail, &bType, &payStatus, &bStatus, &detail.TotalFare,
 		&routeName, &busNumber, &depTime,
+		&boardedAt, &busBookingStatus,
+		&tripStatus, &tripCancellationReason,
+		&driverName, &driverPhone,
+		&conductorName, &conductorPhone,
+		&boardedByName, &boardedByRole,
 	)
 	if err != nil {
 		return nil, err
@@ -199,6 +219,21 @@ func (r *RefundRepository) GetRefundByID(id uuid.UUID) (*models.RefundDetail, er
 	if depTime.Valid {
 		detail.ScheduledDeparture = &depTime.Time
 	}
+
+	// Populate boarding and crew criteria
+	detail.Criteria.IsBoarded = boardedAt.Valid || busBookingStatus == "boarded" || busBookingStatus == "completed"
+	if boardedAt.Valid {
+		detail.Criteria.BoardedAt = &boardedAt.Time
+	}
+	detail.Criteria.BoardedByName = boardedByName
+	detail.Criteria.BoardedByRole = boardedByRole
+	detail.Criteria.IsTripCancelledByOperator = tripStatus == "cancelled" || tripCancellationReason != ""
+	detail.Criteria.TripCancellationReason = tripCancellationReason
+	detail.Criteria.TripStatus = tripStatus
+	detail.Criteria.DriverName = driverName
+	detail.Criteria.DriverPhone = driverPhone
+	detail.Criteria.ConductorName = conductorName
+	detail.Criteria.ConductorPhone = conductorPhone
 
 	// Fetch booked seats
 	seatRows, err := r.db.Query(`
@@ -250,8 +285,46 @@ func (r *RefundRepository) GetRefundByID(id uuid.UUID) (*models.RefundDetail, er
 
 // evaluateCriteria performs the automated time-based criteria calculation
 func evaluateCriteria(detail models.RefundDetail) models.CriteriaCheck {
-	check := models.CriteriaCheck{
-		IsPaymentPaid: detail.PaymentStatus == "paid",
+	check := detail.Criteria
+	check.IsPaymentPaid = detail.PaymentStatus == "paid"
+
+	baseAmount := detail.TotalFare
+	if baseAmount <= 0 {
+		baseAmount = detail.RequestedAmount
+	}
+
+	// 1. Boarding Check (Driver / Conductor Mobile App Scan)
+	if check.IsBoarded {
+		check.IsRefundBlockedDueToBoarding = true
+		check.IsNonRefundable = true
+		check.SuggestedTier = "boarded_ineligible"
+		check.SuggestedRefundPct = 0.0
+		check.SuggestedFeePct = 100.0
+		check.SuggestedRefundAmt = 0.0
+		check.SuggestedFeeAmt = baseAmount
+		timeStr := ""
+		if check.BoardedAt != nil {
+			timeStr = check.BoardedAt.Format("Jan 02, 2006 03:04 PM")
+		} else {
+			timeStr = "during trip run"
+		}
+		check.PolicyDescription = fmt.Sprintf("REFUND BLOCKED: Passenger boarded the bus (%s, verified via Driver/Conductor App). Passengers who consumed the transit service are ineligible for ticket refund.", timeStr)
+		return check
+	}
+
+	// 2. Bus Operator Trip Cancellation Check
+	if check.IsTripCancelledByOperator {
+		check.SuggestedTier = "operator_cancelled"
+		check.SuggestedRefundPct = 100.0
+		check.SuggestedFeePct = 0.0
+		check.SuggestedRefundAmt = baseAmount
+		check.SuggestedFeeAmt = 0.0
+		reasonStr := check.TripCancellationReason
+		if reasonStr == "" {
+			reasonStr = "Service cancelled by bus operator"
+		}
+		check.PolicyDescription = fmt.Sprintf("100%% FULL REFUND (0 LKR FEE): Bus trip was cancelled by the bus operator (%s). Passenger is entitled to a full refund.", reasonStr)
+		return check
 	}
 
 	now := time.Now()
@@ -266,11 +339,6 @@ func evaluateCriteria(detail models.RefundDetail) models.CriteriaCheck {
 	diffHours := departureTime.Sub(now).Hours()
 	check.HoursToDeparture = diffHours
 	check.IsTripDeparted = diffHours <= 0
-
-	baseAmount := detail.TotalFare
-	if baseAmount <= 0 {
-		baseAmount = detail.RequestedAmount
-	}
 
 	switch {
 	case diffHours > 24:
