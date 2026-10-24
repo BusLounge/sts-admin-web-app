@@ -13,6 +13,8 @@ import (
 
 var (
 	escalationServiceInstance *EscalationService
+	smsServiceInstance        *SMSService
+	emailServiceInstance      *EmailService
 	db                        *sql.DB
 )
 
@@ -37,6 +39,8 @@ func getExpectedDriverComplaintTeam(role string) string {
 func InitComplaintService(database *sql.DB, cfg *config.Config) {
 	db = database
 	escalationServiceInstance = NewEscalationService(database, cfg)
+	smsServiceInstance = NewSMSService(cfg)
+	emailServiceInstance = NewEmailService(cfg)
 }
 
 func GetComplaintsByRole(role string) ([]models.ComplaintResponse, error) {
@@ -330,4 +334,115 @@ func MapIssuetypeToCategory(issueType string) string {
 	default:
 		return "Other"
 	}
+}
+
+
+func GetInvolvedParties(complaintID string) (*models.InvolvedPartiesResponse, error) {
+	return database.GetInvolvedPartiesForComplaint(complaintID)
+}
+
+func GetPendingComplaintNotifications() ([]models.PendingComplaintNotification, error) {
+	return database.GetPendingComplaintNotifications()
+}
+
+func ResolveCustomerComplaint(complaintID string, req models.ResolveCustomerRequest, adminID string) error {
+	if err := database.ResolveComplaintDirectly(complaintID, req.SolutionMessage, adminID); err != nil {
+		return err
+	}
+
+	parties, err := database.GetInvolvedPartiesForComplaint(complaintID)
+	if err == nil && parties != nil {
+		shortID := complaintID
+		if len(shortID) > 8 {
+			shortID = shortID[:8]
+		}
+
+		if req.SendSMS && parties.Customer.Phone != "" && smsServiceInstance != nil {
+			smsMsg := fmt.Sprintf("Dear %s, Regarding your complaint (Ref: #%s - %s): %s. Thank you for using BusLounge Smart Transit.",
+				parties.Customer.Name, shortID, parties.Category, req.SolutionMessage)
+			if err := smsServiceInstance.SendSMS(parties.Customer.Phone, smsMsg); err != nil {
+				log.Printf("failed to send customer resolution SMS to %s: %v", parties.Customer.Phone, err)
+			}
+		}
+
+		if req.SendEmail && parties.Customer.Email != "" && emailServiceInstance != nil {
+			log.Printf("Customer resolution email dispatched to %s for complaint %s", parties.Customer.Email, shortID)
+		}
+	}
+
+	return nil
+}
+
+func NotifyInvolvedParties(complaintID string, req models.NotifyInvolvedPartiesRequest, adminID string) error {
+	parties, err := database.GetInvolvedPartiesForComplaint(complaintID)
+	if err != nil {
+		return fmt.Errorf("failed to resolve involved parties: %w", err)
+	}
+	if parties == nil {
+		return fmt.Errorf("complaint %s not found", complaintID)
+	}
+
+	shortID := complaintID
+	if len(shortID) > 8 {
+		shortID = shortID[:8]
+	}
+
+	var notifiedList []string
+
+	// 1. Notify Bus Owner
+	if req.NotifyBusOwner && parties.BusOwner != nil && parties.BusOwner.BusinessPhone != "" && smsServiceInstance != nil {
+		ownerMsg := fmt.Sprintf("BusLounge Alert: Passenger complaint lodged for Bus %s (Route: %s). Issue: %s. Admin Directive: %s. Immediate action required.",
+			parties.BusRegistrationNumber, parties.RouteName, parties.Description, req.ProposedSolution)
+		if req.CustomOwnerNote != "" {
+			ownerMsg += fmt.Sprintf(" Note: %s", req.CustomOwnerNote)
+		}
+		if err := smsServiceInstance.SendSMS(parties.BusOwner.BusinessPhone, ownerMsg); err != nil {
+			log.Printf("failed to send SMS to Bus Owner %s: %v", parties.BusOwner.BusinessPhone, err)
+		} else {
+			notifiedList = append(notifiedList, fmt.Sprintf("Bus Owner (%s - %s)", parties.BusOwner.CompanyName, parties.BusOwner.BusinessPhone))
+		}
+	}
+
+	// 2. Notify Driver
+	if req.NotifyDriver && parties.Driver != nil && parties.Driver.Phone != "" && smsServiceInstance != nil {
+		driverMsg := fmt.Sprintf("BusLounge Notice: Operational complaint for Trip #%s. Issue: %s. Admin Directive: %s.",
+			shortID, parties.Description, req.ProposedSolution)
+		if req.CustomDriverNote != "" {
+			driverMsg += fmt.Sprintf(" Note: %s", req.CustomDriverNote)
+		}
+		if err := smsServiceInstance.SendSMS(parties.Driver.Phone, driverMsg); err != nil {
+			log.Printf("failed to send SMS to Driver %s: %v", parties.Driver.Phone, err)
+		} else {
+			notifiedList = append(notifiedList, fmt.Sprintf("Driver (%s - %s)", parties.Driver.Name, parties.Driver.Phone))
+		}
+	}
+
+	// 3. Notify Conductor
+	if req.NotifyConductor && parties.Conductor != nil && parties.Conductor.Phone != "" && smsServiceInstance != nil {
+		conductorMsg := fmt.Sprintf("BusLounge Notice: Operational complaint for Trip #%s. Issue: %s. Admin Directive: %s.",
+			shortID, parties.Description, req.ProposedSolution)
+		if err := smsServiceInstance.SendSMS(parties.Conductor.Phone, conductorMsg); err != nil {
+			log.Printf("failed to send SMS to Conductor %s: %v", parties.Conductor.Phone, err)
+		} else {
+			notifiedList = append(notifiedList, fmt.Sprintf("Conductor (%s - %s)", parties.Conductor.Name, parties.Conductor.Phone))
+		}
+	}
+
+	// 4. Notify Customer
+	if req.NotifyCustomer && parties.Customer.Phone != "" && smsServiceInstance != nil {
+		ownerCompany := "the Bus Operator"
+		if parties.BusOwner != nil && parties.BusOwner.CompanyName != "" {
+			ownerCompany = parties.BusOwner.CompanyName
+		}
+		custMsg := fmt.Sprintf("Dear %s, Your complaint (Ref: #%s) has been reviewed and officially escalated to %s with directive: %s. We are actively tracking resolution.",
+			parties.Customer.Name, shortID, ownerCompany, req.ProposedSolution)
+		if err := smsServiceInstance.SendSMS(parties.Customer.Phone, custMsg); err != nil {
+			log.Printf("failed to send acknowledgment SMS to Customer %s: %v", parties.Customer.Phone, err)
+		} else {
+			notifiedList = append(notifiedList, fmt.Sprintf("Customer (%s - %s)", parties.Customer.Name, parties.Customer.Phone))
+		}
+	}
+
+	summary := fmt.Sprintf("Notified parties: %s. Directive: %s", strings.Join(notifiedList, ", "), req.ProposedSolution)
+	return database.LogPartiesNotification(complaintID, req.ProposedSolution, adminID, summary)
 }

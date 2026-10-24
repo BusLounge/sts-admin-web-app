@@ -173,7 +173,11 @@ func main() {
 
 		// Complaint routes
 		api.GET("/complaints", handlers.GetComplaints)
+		api.GET("/complaints/pending-notifications", handlers.GetPendingComplaintNotifications)
 		api.GET("/complaints/:id", handlers.GetComplaintById)
+		api.GET("/complaints/:id/involved-parties", handlers.GetInvolvedParties)
+		api.POST("/complaints/:id/resolve-customer", handlers.ResolveCustomerComplaint)
+		api.POST("/complaints/:id/notify-parties", handlers.NotifyInvolvedParties)
 		api.PUT("/complaints/:id/status", handlers.UpdateComplaintStatus)
 		api.POST("/complaints/:id/escalate", handlers.RequireAdminPermission("complaints.escalate"), handlers.ManualEscalateComplaint)
 		api.GET("/complaints/:id/escalation", handlers.GetComplaintEscalation)

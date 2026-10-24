@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sts-backend/internal/models"
 	"sts-backend/internal/services"
 
 	"github.com/gin-gonic/gin"
@@ -347,4 +348,98 @@ func getAuthenticatedAdminClaims(c *gin.Context) (*authAdminClaims, error) {
 	}
 
 	return &authAdminClaims{AdminID: adminID, Role: role, AppScope: appScope}, nil
+}
+
+
+func GetPendingComplaintNotifications(c *gin.Context) {
+	_, err := getAuthenticatedAdminClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	notifications, err := services.GetPendingComplaintNotifications()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, notifications)
+}
+
+func GetInvolvedParties(c *gin.Context) {
+	_, err := getAuthenticatedAdminClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	id := c.Param("id")
+	parties, err := services.GetInvolvedParties(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if parties == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Complaint not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, parties)
+}
+
+func ResolveCustomerComplaint(c *gin.Context) {
+	claims, err := getAuthenticatedAdminClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	id := c.Param("id")
+	var req models.ResolveCustomerRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if strings.TrimSpace(req.SolutionMessage) == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Solution message is required"})
+		return
+	}
+
+	err = services.ResolveCustomerComplaint(id, req, claims.AdminID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Complaint resolved and customer notified successfully"})
+}
+
+func NotifyInvolvedParties(c *gin.Context) {
+	claims, err := getAuthenticatedAdminClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	id := c.Param("id")
+	var req models.NotifyInvolvedPartiesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if strings.TrimSpace(req.ProposedSolution) == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Proposed solution is required"})
+		return
+	}
+
+	err = services.NotifyInvolvedParties(id, req, claims.AdminID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Involved parties notified and complaint updated successfully"})
 }

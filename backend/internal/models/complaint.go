@@ -69,3 +69,69 @@ type ComplaintWithEscalation struct {
 	NextEscalationDue    *time.Time `json:"next_escalation_due"`
 	DaysUntilEscalation  *int       `json:"days_until_escalation"`
 }
+
+
+type InvolvedPartyPerson struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Phone string `json:"phone"`
+	Email string `json:"email,omitempty"`
+	Role  string `json:"role"`
+}
+
+type InvolvedBusOwner struct {
+	ID            string `json:"id"`
+	CompanyName   string `json:"company_name"`
+	ContactPerson string `json:"contact_person"`
+	BusinessPhone string `json:"business_phone"`
+	BusinessEmail string `json:"business_email"`
+}
+
+type InvolvedPartiesResponse struct {
+	ComplaintID           string               `json:"complaint_id"`
+	ScheduledTripID       *string              `json:"scheduled_trip_id,omitempty"`
+	ActiveTripID          *string              `json:"active_trip_id,omitempty"`
+	IssueType             string               `json:"issue_type"`
+	Category              string               `json:"category"`
+	Priority              string               `json:"priority"`
+	Description           string               `json:"description"`
+	Status                string               `json:"status"`
+	CreatedAt             string               `json:"created_at"`
+	RouteName             string               `json:"route_name"`
+	BusRegistrationNumber string               `json:"bus_registration_number"`
+	DepartureDatetime     *string              `json:"departure_datetime,omitempty"`
+	Customer              InvolvedPartyPerson  `json:"customer"`
+	BusOwner              *InvolvedBusOwner    `json:"bus_owner,omitempty"`
+	Driver                *InvolvedPartyPerson `json:"driver,omitempty"`
+	Conductor             *InvolvedPartyPerson `json:"conductor,omitempty"`
+}
+
+type ResolveCustomerRequest struct {
+	SolutionMessage string `json:"solution_message" binding:"required"`
+	SendSMS         bool   `json:"send_sms"`
+	SendEmail       bool   `json:"send_email"`
+}
+
+type NotifyInvolvedPartiesRequest struct {
+	ProposedSolution string `json:"proposed_solution" binding:"required"`
+	NotifyBusOwner   bool   `json:"notify_bus_owner"`
+	NotifyDriver     bool   `json:"notify_driver"`
+	NotifyConductor  bool   `json:"notify_conductor"`
+	NotifyCustomer   bool   `json:"notify_customer"`
+	CustomOwnerNote  string `json:"custom_owner_note"`
+	CustomDriverNote string `json:"custom_driver_note"`
+}
+
+type PendingComplaintNotification struct {
+	ID            string `json:"id"`
+	Type          string `json:"type"`
+	CustomerName  string `json:"customer_name"`
+	CustomerPhone string `json:"customer_phone"`
+	Category      string `json:"category"`
+	Priority      string `json:"priority"`
+	Description   string `json:"description"`
+	Status        string `json:"status"`
+	CreatedAt     string `json:"created_at"`
+	BusNumber     string `json:"bus_number"`
+	RouteName     string `json:"route_name"`
+}
