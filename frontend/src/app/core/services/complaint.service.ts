@@ -1,7 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { Complaint, ComplaintEscalation, PaginatedComplaintsResponse } from '../models/complaint.model';
+import { 
+  Complaint, 
+  ComplaintEscalation, 
+  PaginatedComplaintsResponse,
+  InvolvedPartiesResponse,
+  ResolveCustomerRequest,
+  NotifyInvolvedPartiesRequest,
+  PendingComplaintNotification
+} from '../models/complaint.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -54,6 +62,27 @@ export class ComplaintService {
     }).pipe(
       tap(() => this.loadComplaints(1, 20).subscribe())
     );
+  }
+
+  // Involved parties and customer direct resolution
+  getInvolvedParties(id: string): Observable<InvolvedPartiesResponse> {
+    return this.http.get<InvolvedPartiesResponse>(`${this.apiUrl}/${id}/involved-parties`);
+  }
+
+  resolveCustomerComplaint(id: string, req: ResolveCustomerRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/resolve-customer`, req).pipe(
+      tap(() => this.loadComplaints(1, 20).subscribe())
+    );
+  }
+
+  notifyInvolvedParties(id: string, req: NotifyInvolvedPartiesRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/notify-parties`, req).pipe(
+      tap(() => this.loadComplaints(1, 20).subscribe())
+    );
+  }
+
+  getPendingNotifications(): Observable<PendingComplaintNotification[]> {
+    return this.http.get<PendingComplaintNotification[]>(`${this.apiUrl}/pending-notifications`);
   }
 
   // Escalation methods

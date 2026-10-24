@@ -1,8 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { Complaint } from '../../core/models/complaint.model';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { TextareaModule } from 'primeng/textarea';
+import { InputTextModule } from 'primeng/inputtext';
+import { Complaint, InvolvedPartiesResponse } from '../../core/models/complaint.model';
 import { ComplaintService } from '../../core/services/complaint.service';
 import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
@@ -11,7 +16,17 @@ import { finalize } from 'rxjs';
 @Component({
   selector: 'app-assigned-complaints',
   standalone: true,
-  imports: [CommonModule, TableModule, TagModule, NavbarComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    TableModule, 
+    TagModule, 
+    DialogModule, 
+    ButtonModule, 
+    TextareaModule, 
+    InputTextModule, 
+    NavbarComponent
+  ],
   templateUrl: './assigned-complaints.component.html',
   styleUrls: ['./assigned-complaints.component.scss']
 })
@@ -27,6 +42,28 @@ export class AssignedComplaintsComponent implements OnInit {
   currentAdminTeam = '';
   isLoading = false;
   solvingComplaintId = '';
+
+  // Solve Dialog & Action State
+  displaySolveModal = false;
+  selectedComplaint: Complaint | null = null;
+  resolutionMode: 'direct' | 'parties' = 'direct';
+  involvedParties: InvolvedPartiesResponse | null = null;
+  isLoadingParties = false;
+  isSubmittingAction = false;
+
+  // Direct Resolution State
+  directSolutionText = '';
+  sendCustomerSMS = true;
+  sendCustomerEmail = false;
+
+  // Involved Parties Escalation State
+  proposedSolutionText = '';
+  notifyBusOwner = true;
+  notifyDriver = true;
+  notifyConductor = true;
+  notifyCustomerOnEscalation = true;
+  customOwnerNote = '';
+  customDriverNote = '';
 
   constructor(
     private complaintService: ComplaintService,
@@ -109,35 +146,103 @@ export class AssignedComplaintsComponent implements OnInit {
   }
 
   solveComplaint(complaint: Complaint): void {
-    if (!complaint?.id || !this.canSolveComplaint(complaint) || this.solvingComplaintId) {
+    if (!complaint?.id || !this.canSolveComplaint(complaint)) {
+      return;
+    }
+    this.selectedComplaint = complaint;
+    this.directSolutionText = '';
+    this.proposedSolutionText = '';
+    this.customOwnerNote = '';
+    this.customDriverNote = '';
+    this.resolutionMode = 'direct';
+    this.loadInvolvedParties(complaint.id);
+    this.displaySolveModal = true;
+  }
+
+  closeSolveModal(): void {
+    this.displaySolveModal = false;
+    this.selectedComplaint = null;
+    this.involvedParties = null;
+  }
+
+  setResolutionMode(mode: 'direct' | 'parties'): void {
+    this.resolutionMode = mode;
+  }
+
+  applyTemplate(templateText: string): void {
+    this.directSolutionText = templateText;
+  }
+
+  loadInvolvedParties(complaintId: string): void {
+    this.isLoadingParties = true;
+    this.involvedParties = null;
+    this.complaintService.getInvolvedParties(complaintId).subscribe({
+      next: (data) => {
+        this.involvedParties = data;
+        this.notifyDriver = !!data.driver?.phone;
+        this.notifyConductor = !!data.conductor?.phone;
+        this.notifyBusOwner = !!data.bus_owner?.business_phone;
+        this.isLoadingParties = false;
+      },
+      error: (err) => {
+        console.error('Failed to load involved parties:', err);
+        this.isLoadingParties = false;
+      }
+    });
+  }
+
+  resolveCustomerComplaint(): void {
+    if (!this.selectedComplaint?.id || !this.directSolutionText.trim()) {
+      alert('Please enter a resolution message for the customer.');
       return;
     }
 
-    const resolutionNote = window.prompt('Enter solution note for this complaint:');
-    if (resolutionNote === null) {
-      return;
-    }
-
-    const trimmedNote = resolutionNote.trim();
-    if (!trimmedNote) {
-      alert('Solution note is required to solve the complaint.');
-      return;
-    }
-
-    this.solvingComplaintId = complaint.id;
-    this.complaintService.updateComplaintStatus(complaint.id, 'resolved', trimmedNote)
-      .pipe(finalize(() => {
-        this.solvingComplaintId = '';
-      }))
-      .subscribe({
+    this.isSubmittingAction = true;
+    this.complaintService.resolveCustomerComplaint(this.selectedComplaint.id, {
+      solution_message: this.directSolutionText.trim(),
+      send_sms: this.sendCustomerSMS,
+      send_email: this.sendCustomerEmail
+    }).subscribe({
       next: () => {
-        alert('Complaint solved successfully.');
+        alert('Complaint successfully resolved! Customer has been notified.');
+        this.isSubmittingAction = false;
+        this.closeSolveModal();
         this.loadAssignedComplaints();
       },
       error: (err) => {
-        console.error('Failed to solve complaint:', err);
-        const backendMessage = err?.error?.error || err?.error?.message || err?.message || 'Please try again.';
-        alert(`Failed to solve complaint: ${backendMessage}`);
+        console.error('Failed to resolve complaint:', err);
+        alert('Failed to resolve complaint: ' + (err?.error?.error || err?.message || 'Server error'));
+        this.isSubmittingAction = false;
+      }
+    });
+  }
+
+  dispatchPartiesEscalation(): void {
+    if (!this.selectedComplaint?.id || !this.proposedSolutionText.trim()) {
+      alert('Please provide a proposed solution and required action directive for the parties.');
+      return;
+    }
+
+    this.isSubmittingAction = true;
+    this.complaintService.notifyInvolvedParties(this.selectedComplaint.id, {
+      proposed_solution: this.proposedSolutionText.trim(),
+      notify_bus_owner: this.notifyBusOwner,
+      notify_driver: this.notifyDriver,
+      notify_conductor: this.notifyConductor,
+      notify_customer: this.notifyCustomerOnEscalation,
+      custom_owner_note: this.customOwnerNote.trim(),
+      custom_driver_note: this.customDriverNote.trim()
+    }).subscribe({
+      next: () => {
+        alert('Directives dispatched successfully! All selected involved parties have been notified.');
+        this.isSubmittingAction = false;
+        this.closeSolveModal();
+        this.loadAssignedComplaints();
+      },
+      error: (err) => {
+        console.error('Failed to notify involved parties:', err);
+        alert('Failed to dispatch escalation: ' + (err?.error?.error || err?.message || 'Server error'));
+        this.isSubmittingAction = false;
       }
     });
   }

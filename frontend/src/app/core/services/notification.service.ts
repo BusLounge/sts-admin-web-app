@@ -98,13 +98,28 @@ export interface BusOwnerNotification {
   updated_at: string;
 }
 
+export interface ComplaintNotification {
+  id: string;
+  type: string;
+  customer_name: string;
+  customer_phone: string;
+  category: string;
+  priority: string;
+  description: string;
+  status: string;
+  created_at: string;
+  bus_number: string;
+  route_name: string;
+}
+
 export type AllNotifications =
   | BusNotification
   | DriverNotification
   | ConductorNotification
   | LoungeNotification
   | BusOwnerNotification
-  | LoungeOwnerNotification;
+  | LoungeOwnerNotification
+  | ComplaintNotification;
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -115,6 +130,7 @@ export class NotificationService {
   private readonly _pendingLounges$ = new BehaviorSubject<LoungeNotification[]>([]);
   private readonly _pendingBusOwners$ = new BehaviorSubject<BusOwnerNotification[]>([]);
   private readonly _pendingLoungeOwners$ = new BehaviorSubject<LoungeOwnerNotification[]>([]);
+  private readonly _pendingComplaints$ = new BehaviorSubject<ComplaintNotification[]>([]);
 
   readonly pendingBuses$ = this._pendingBuses$.asObservable();
   readonly pendingDrivers$ = this._pendingDrivers$.asObservable();
@@ -122,6 +138,7 @@ export class NotificationService {
   readonly pendingLounges$ = this._pendingLounges$.asObservable();
   readonly pendingBusOwners$ = this._pendingBusOwners$.asObservable();
   readonly pendingLoungeOwners$ = this._pendingLoungeOwners$.asObservable();
+  readonly pendingComplaints$ = this._pendingComplaints$.asObservable();
 
   private pollingInterval: any;
 
@@ -149,7 +166,8 @@ export class NotificationService {
            this._pendingConductors$.getValue().length +
            this._pendingLounges$.getValue().length +
            this._pendingBusOwners$.getValue().length +
-           this._pendingLoungeOwners$.getValue().length;
+           this._pendingLoungeOwners$.getValue().length +
+           this._pendingComplaints$.getValue().length;
   }
 
   loadAllPendingNotifications(): void {
@@ -189,6 +207,12 @@ export class NotificationService {
           console.error('Error loading pending lounge owners:', err);
           return of([] as LoungeOwnerNotification[]);
         })
+      ),
+      complaints: this.http.get<ComplaintNotification[]>(`${this.apiUrl}/complaints/pending-notifications`).pipe(
+        catchError((err) => {
+          console.error('Error loading pending complaints:', err);
+          return of([] as ComplaintNotification[]);
+        })
       )
     }).subscribe({
       next: (data) => {
@@ -198,6 +222,7 @@ export class NotificationService {
         this._pendingLounges$.next(data.lounges);
         this._pendingBusOwners$.next(data.busOwners);
         this._pendingLoungeOwners$.next(data.loungeOwners);
+        this._pendingComplaints$.next(data.complaints);
         console.log('Loaded pending notifications:', {
           buses: data.buses.length,
           drivers: data.drivers.length,

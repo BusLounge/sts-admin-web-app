@@ -14,7 +14,7 @@ import { NavbarComponent } from '../../shared/components/navbar/navbar.component
 import { NotificationPanelComponent } from '../../shared/components/notification-panel/notification-panel.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { ComplaintService } from '../../core/services/complaint.service';
-import { Complaint } from '../../core/models/complaint.model';
+import { Complaint, InvolvedPartiesResponse } from '../../core/models/complaint.model';
 import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { forkJoin, Observable } from 'rxjs';
 
@@ -148,6 +148,26 @@ export class ComplaintManagementComponent implements OnInit {
   escalationInfo: any = null;
   isEscalating: boolean = false;
 
+  // Workflow / Resolution mode: 'direct' | 'parties'
+  resolutionMode: 'direct' | 'parties' = 'direct';
+  involvedParties: InvolvedPartiesResponse | null = null;
+  isLoadingParties: boolean = false;
+  isSubmittingAction: boolean = false;
+
+  // Direct Resolution State
+  directSolutionText: string = '';
+  sendCustomerSMS: boolean = true;
+  sendCustomerEmail: boolean = false;
+
+  // Involved Parties Escalation State
+  proposedSolutionText: string = '';
+  notifyBusOwner: boolean = true;
+  notifyDriver: boolean = true;
+  notifyConductor: boolean = true;
+  notifyCustomerOnEscalation: boolean = true;
+  customOwnerNote: string = '';
+  customDriverNote: string = '';
+
   constructor(
     private router: Router, 
     public notificationService: NotificationService,
@@ -179,9 +199,97 @@ export class ComplaintManagementComponent implements OnInit {
   viewComplaint(complaint: any) {
     this.selectedComplaint = { ...complaint };
     this.solutionText = ''; 
+    this.directSolutionText = '';
+    this.proposedSolutionText = '';
+    this.customOwnerNote = '';
+    this.customDriverNote = '';
+    this.resolutionMode = 'direct';
     this.selectedAssigneeRole = complaint?.escalation?.current_team ?? '';
     this.loadEscalationInfo(complaint.id);
+    this.loadInvolvedParties(complaint.id);
     this.displayViewModal = true;
+  }
+
+  setResolutionMode(mode: 'direct' | 'parties') {
+    this.resolutionMode = mode;
+  }
+
+  applyTemplate(templateText: string) {
+    this.directSolutionText = templateText;
+  }
+
+  loadInvolvedParties(complaintId: string) {
+    this.isLoadingParties = true;
+    this.involvedParties = null;
+    this.complaintService.getInvolvedParties(complaintId).subscribe({
+      next: (data) => {
+        this.involvedParties = data;
+        this.notifyDriver = !!data.driver?.phone;
+        this.notifyConductor = !!data.conductor?.phone;
+        this.notifyBusOwner = !!data.bus_owner?.business_phone;
+        this.isLoadingParties = false;
+      },
+      error: (err) => {
+        console.error('Failed to load involved parties:', err);
+        this.isLoadingParties = false;
+      }
+    });
+  }
+
+  resolveCustomerComplaint() {
+    if (!this.selectedComplaint?.id || !this.directSolutionText.trim()) {
+      alert('Please enter a resolution message for the customer.');
+      return;
+    }
+
+    this.isSubmittingAction = true;
+    this.complaintService.resolveCustomerComplaint(this.selectedComplaint.id, {
+      solution_message: this.directSolutionText.trim(),
+      send_sms: this.sendCustomerSMS,
+      send_email: this.sendCustomerEmail
+    }).subscribe({
+      next: () => {
+        alert('Complaint successfully resolved! Customer has been notified.');
+        this.isSubmittingAction = false;
+        this.closeViewModal();
+        this.loadComplaints();
+      },
+      error: (err) => {
+        console.error('Failed to resolve complaint:', err);
+        alert('Failed to resolve complaint: ' + (err?.error?.error || err?.message || 'Server error'));
+        this.isSubmittingAction = false;
+      }
+    });
+  }
+
+  dispatchPartiesEscalation() {
+    if (!this.selectedComplaint?.id || !this.proposedSolutionText.trim()) {
+      alert('Please provide a proposed solution and required action directive for the parties.');
+      return;
+    }
+
+    this.isSubmittingAction = true;
+    this.complaintService.notifyInvolvedParties(this.selectedComplaint.id, {
+      proposed_solution: this.proposedSolutionText.trim(),
+      notify_bus_owner: this.notifyBusOwner,
+      notify_driver: this.notifyDriver,
+      notify_conductor: this.notifyConductor,
+      notify_customer: this.notifyCustomerOnEscalation,
+      custom_owner_note: this.customOwnerNote.trim(),
+      custom_driver_note: this.customDriverNote.trim()
+    }).subscribe({
+      next: () => {
+        alert('Directives dispatched successfully! All selected involved parties have been notified.');
+        this.isSubmittingAction = false;
+        this.closeViewModal();
+        this.loadComplaints();
+      },
+      error: (err) => {
+        console.error('Failed to notify involved parties:', err);
+        alert('Failed to dispatch escalation: ' + (err?.error?.error || err?.message || 'Server error'));
+        this.isSubmittingAction = false;
+      }
+    });
   }
 
   closeViewModal() {

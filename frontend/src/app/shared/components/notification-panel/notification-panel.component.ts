@@ -10,7 +10,8 @@ import {
   ConductorNotification,
   LoungeNotification,
   BusOwnerNotification,
-  LoungeOwnerNotification
+  LoungeOwnerNotification,
+  ComplaintNotification
 } from '../../../core/services/notification.service';
 import { BusService } from '../../../core/services/bus.service';
 import { DriverService } from '../../../core/services/driver.service';
@@ -25,7 +26,7 @@ export interface Notification {
   title: string;
   message: string;
   time: string;
-  type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking' | 'bus-owner' | 'lounge-owner';
+  type: 'bus' | 'driver' | 'conductor' | 'passenger' | 'lounge' | 'booking' | 'bus-owner' | 'lounge-owner' | 'complaint';
   data?: any;
   timestamp: Date;
 }
@@ -55,7 +56,8 @@ export class NotificationPanelComponent implements OnInit {
     { value: 'conductor', label: 'Conductor', icon: 'fas fa-user-secret' },
     { value: 'lounge', label: 'Lounge', icon: 'fas fa-couch' },
     { value: 'bus-owner', label: 'Bus Owner', icon: 'fas fa-building' },
-    { value: 'lounge-owner', label: 'Lounge Owner', icon: 'fas fa-user-check' }
+    { value: 'lounge-owner', label: 'Lounge Owner', icon: 'fas fa-user-check' },
+    { value: 'complaint', label: 'Complaints', icon: 'fas fa-exclamation-circle' }
   ];
 
   constructor(
@@ -90,15 +92,17 @@ export class NotificationPanelComponent implements OnInit {
       this.notificationService.pendingConductors$,
       this.notificationService.pendingLounges$,
       this.notificationService.pendingBusOwners$,
-      this.notificationService.pendingLoungeOwners$
-    ]).subscribe(([buses, drivers, conductors, lounges, busOwners, loungeOwners]) => {
+      this.notificationService.pendingLoungeOwners$,
+      this.notificationService.pendingComplaints$
+    ]).subscribe(([buses, drivers, conductors, lounges, busOwners, loungeOwners, complaints]) => {
       this.notifications = [
         ...buses.map(bus => this.mapBusToNotification(bus)),
         ...drivers.map(driver => this.mapDriverToNotification(driver)),
         ...conductors.map(conductor => this.mapConductorToNotification(conductor)),
         ...lounges.map(lounge => this.mapLoungeToNotification(lounge)),
         ...busOwners.map(busOwner => this.mapBusOwnerToNotification(busOwner)),
-        ...loungeOwners.map(loungeOwner => this.mapLoungeOwnerToNotification(loungeOwner))
+        ...loungeOwners.map(loungeOwner => this.mapLoungeOwnerToNotification(loungeOwner)),
+        ...complaints.map(complaint => this.mapComplaintToNotification(complaint))
       ];
       
       // Sort by timestamp - newest first
@@ -237,6 +241,21 @@ export class NotificationPanelComponent implements OnInit {
     };
   }
 
+  private mapComplaintToNotification(complaint: ComplaintNotification): Notification {
+    const timestamp = complaint.created_at ? new Date(complaint.created_at) : new Date();
+    const formattedTime = this.formatDateTime(timestamp);
+    return {
+      id: complaint.id,
+      icon: 'fas fa-exclamation-circle text-danger',
+      title: `Customer Complaint: ${complaint.category}`,
+      message: `${complaint.customer_name} (${complaint.customer_phone}): "${complaint.description}" [Route: ${complaint.route_name || 'N/A'}]`,
+      time: formattedTime,
+      type: 'complaint',
+      data: complaint,
+      timestamp: timestamp
+    };
+  }
+
   private mapLoungeOwnerToNotification(loungeOwner: LoungeOwnerNotification): Notification {
     console.log('LoungeOwner notification data:', { id: loungeOwner.id, created_at: loungeOwner.created_at, manager: loungeOwner.manager_full_name });
     const timestamp = loungeOwner.created_at ? new Date(loungeOwner.created_at) : new Date();
@@ -298,6 +317,11 @@ export class NotificationPanelComponent implements OnInit {
   }
 
   viewFullNotification(notification: Notification): void {
+    if (notification.type === 'complaint') {
+      this.close.emit();
+      this.router.navigate(['/complaints']);
+      return;
+    }
     if (notification.type === 'lounge-owner') {
       this.notificationService.getLoungeOwnerById(notification.id).subscribe({
         next: (loungeOwner) => {
