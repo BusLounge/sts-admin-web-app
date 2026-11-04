@@ -15,7 +15,8 @@ FROM alpine:3.22
 
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk update && apk upgrade --no-cache && \
+    apk add --no-cache ca-certificates tzdata
 
 # Create non-root user for Choreo (UID 10014 is required by Choreo security policy)
 RUN addgroup -g 10014 choreo && \

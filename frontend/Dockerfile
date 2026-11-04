@@ -25,6 +25,9 @@ WORKDIR /usr/share/nginx/html
 # Switch to root for setup operations
 USER root
 
+# Upgrade Alpine OS packages to patch critical CVEs (fixes brotli-libs CVE-2026-111497)
+RUN apk update && apk upgrade --no-cache
+
 # Remove default nginx static content
 RUN rm -rf /usr/share/nginx/html/*
 
