@@ -145,6 +145,8 @@ export class RefundManagementComponent implements OnInit {
 
     this.refundService.getRefundById(item.id).subscribe({
       next: (detail) => {
+        detail.seat_numbers = detail.seat_numbers || [];
+        detail.associated_settlements = detail.associated_settlements || [];
         this.selectedRefund = detail;
         this.customSystemCost = detail.criteria?.suggested_fee_amt ?? 0;
         this.customRefundAmount = detail.criteria?.suggested_refund_amt ?? 0;
@@ -182,17 +184,17 @@ export class RefundManagementComponent implements OnInit {
   approveRefund(): void {
     if (!this.selectedRefund) return;
 
-    if (this.selectedRefund.criteria.is_refund_blocked_due_to_boarding) {
+    if (this.selectedRefund.criteria?.is_refund_blocked_due_to_boarding) {
       this.showError('Refund cannot be approved: Passenger was verified as boarded on the bus.');
       return;
     }
 
-    if (this.selectedRefund.criteria.is_non_refundable) {
+    if (this.selectedRefund.criteria?.is_non_refundable) {
       this.showError('This request is strictly non-refundable as it has passed the 3-day post-trip window.');
       return;
     }
 
-    if (this.selectedRefund.criteria.requires_override && !this.overrideConfirmed) {
+    if (this.selectedRefund.criteria?.requires_override && !this.overrideConfirmed) {
       this.showError('Please check the discretionary override confirmation to approve post-trip refund.');
       return;
     }
@@ -201,7 +203,7 @@ export class RefundManagementComponent implements OnInit {
     this.cdr.detectChanges();
 
     const payload = {
-      tier_applied: this.selectedRefund.criteria.suggested_tier,
+      tier_applied: this.selectedRefund.criteria?.suggested_tier || 'tier_1_advance',
       system_cost: Number(this.customSystemCost),
       admin_notes: this.adminNotes,
       override: this.overrideConfirmed

@@ -236,11 +236,14 @@ func (r *RefundRepository) GetRefundByID(id uuid.UUID) (*models.RefundDetail, er
 	detail.Criteria.ConductorPhone = conductorPhone
 
 	// Fetch booked seats
+	detail.SeatNumbers = []string{}
 	seatRows, err := r.db.Query(`
-		SELECT COALESCE(bbs.seat_number, '')
+		SELECT COALESCE(ts.seat_number, '')
 		FROM public.bus_booking_seats bbs
+		JOIN public.trip_seats ts ON bbs.trip_seat_id = ts.id
 		JOIN public.bus_bookings bb ON bbs.bus_booking_id = bb.id
-		WHERE bb.booking_id = $1
+		WHERE bb.booking_id = $1 AND ts.seat_number IS NOT NULL
+		ORDER BY ts.seat_number ASC
 	`, detail.BookingID)
 	if err == nil {
 		defer seatRows.Close()
@@ -253,6 +256,7 @@ func (r *RefundRepository) GetRefundByID(id uuid.UUID) (*models.RefundDetail, er
 	}
 
 	// Fetch associated settlements
+	detail.AssociatedSettlements = []models.Settlement{}
 	settlementRows, err := r.db.Query(`
 		SELECT 
 			id, payee_type, payee_user_id, gross_amount, commission_rate, commission_amount,

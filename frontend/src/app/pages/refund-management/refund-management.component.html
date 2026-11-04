@@ -437,7 +437,7 @@
           </div>
           <div class="detail-group">
             <label>Seats Reserved</label>
-            <span class="value">{{ selectedRefund.seat_numbers.join(', ') || 'N/A' }}</span>
+            <span class="value">{{ selectedRefund.seat_numbers?.join(', ') || 'N/A' }}</span>
           </div>
           <div class="detail-group">
             <label>Departure Date/Time</label>

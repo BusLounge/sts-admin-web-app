@@ -92,9 +92,9 @@ export interface RefundDetail {
   scheduled_departure?: string;
   route_name: string;
   bus_number: string;
-  seat_numbers: string[];
+  seat_numbers?: string[] | null;
   criteria: CriteriaCheck;
-  associated_settlements: SettlementRecord[];
+  associated_settlements?: SettlementRecord[] | null;
 }
 
 export interface ApproveRefundRequest {
