@@ -439,16 +439,35 @@ func (r *RefundRepository) ApproveRefund(
 		return fmt.Errorf("failed to update refund record: %w", err)
 	}
 
-	// 3. Update bookings table
+	// 3. Update bookings and associated booking tables
 	_, err = tx.Exec(`
 		UPDATE public.bookings
-		SET payment_status = 'refunded', booking_status = 'cancelled', 
-		    refund_amount = $1, refunded_at = now(), cancelled_at = now()
-		WHERE id = $2
-	`, finalRefundAmount, bookingID)
+		SET payment_status = 'refunded', 
+		    booking_status = 'cancelled', 
+		    cancelled_at = now(),
+		    cancellation_reason = COALESCE(NULLIF(cancellation_reason, ''), 'Refund approved and settled'),
+		    updated_at = now()
+		WHERE id = $1
+	`, bookingID)
 	if err != nil {
 		return fmt.Errorf("failed to update booking record: %w", err)
 	}
+
+	_, _ = tx.Exec(`
+		UPDATE public.bus_bookings
+		SET status = 'cancelled', 
+		    cancelled_at = now(),
+		    cancellation_reason = COALESCE(NULLIF(cancellation_reason, ''), 'Refund approved and settled'),
+		    updated_at = now()
+		WHERE booking_id = $1
+	`, bookingID)
+
+	_, _ = tx.Exec(`
+		UPDATE public.lounge_bookings
+		SET status = 'cancelled', 
+		    payment_status = 'refunded'
+		WHERE master_booking_id = $1
+	`, bookingID)
 
 	// 4. Update settlements table with Minus Value Flag (is_deduction = true)
 	// Fetch any existing settlements for this booking that are NOT already deductions
@@ -530,6 +549,7 @@ func (r *RefundRepository) ApproveRefund(
 		err = tx.QueryRow(`
 			UPDATE public.company_wallet 
 			SET balance = balance + $1, updated_at = now() 
+			WHERE id = (SELECT id FROM public.company_wallet LIMIT 1)
 			RETURNING id, balance - $1, balance
 		`, systemCost).Scan(&cwID, &balBefore, &balAfter)
 
