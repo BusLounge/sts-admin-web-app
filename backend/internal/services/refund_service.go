@@ -30,7 +30,7 @@ func (s *RefundService) GetRefundByID(id uuid.UUID) (*models.RefundDetail, error
 func (s *RefundService) ApproveRefund(
 	refundID uuid.UUID,
 	req models.ApproveRefundRequest,
-	adminID uuid.UUID,
+	adminID *uuid.UUID,
 ) error {
 	detail, err := s.repo.GetRefundByID(refundID)
 	if err != nil {
@@ -107,7 +107,7 @@ func (s *RefundService) ApproveRefund(
 	return s.repo.ApproveRefund(refundID, finalRefundAmount, systemCost, tier, adminID, req.AdminNotes)
 }
 
-func (s *RefundService) RejectRefund(refundID uuid.UUID, adminID uuid.UUID, reason string) error {
+func (s *RefundService) RejectRefund(refundID uuid.UUID, adminID *uuid.UUID, reason string) error {
 	if reason == "" {
 		return errors.New("rejection reason is required")
 	}

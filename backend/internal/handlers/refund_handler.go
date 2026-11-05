@@ -91,12 +91,20 @@ func (h *RefundHandler) ApproveRefund(c *gin.Context) {
 	}
 
 	// Extract admin ID if present in token claims
-	var adminID uuid.UUID
+	var adminID *uuid.UUID
 	if claims, err := getJWTClaimsFromRequest(c); err == nil {
-		if idVal, ok := claims["id"].(string); ok {
-			adminID, _ = uuid.Parse(idVal)
-		} else if subVal, ok := claims["sub"].(string); ok {
-			adminID, _ = uuid.Parse(subVal)
+		var rawID string
+		if idVal, ok := claims["admin_id"].(string); ok && idVal != "" {
+			rawID = idVal
+		} else if idVal, ok := claims["id"].(string); ok && idVal != "" {
+			rawID = idVal
+		} else if subVal, ok := claims["sub"].(string); ok && subVal != "" {
+			rawID = subVal
+		}
+		if rawID != "" {
+			if parsed, err := uuid.Parse(rawID); err == nil && parsed != uuid.Nil {
+				adminID = &parsed
+			}
 		}
 	}
 
@@ -126,12 +134,20 @@ func (h *RefundHandler) RejectRefund(c *gin.Context) {
 		return
 	}
 
-	var adminID uuid.UUID
+	var adminID *uuid.UUID
 	if claims, err := getJWTClaimsFromRequest(c); err == nil {
-		if idVal, ok := claims["id"].(string); ok {
-			adminID, _ = uuid.Parse(idVal)
-		} else if subVal, ok := claims["sub"].(string); ok {
-			adminID, _ = uuid.Parse(subVal)
+		var rawID string
+		if idVal, ok := claims["admin_id"].(string); ok && idVal != "" {
+			rawID = idVal
+		} else if idVal, ok := claims["id"].(string); ok && idVal != "" {
+			rawID = idVal
+		} else if subVal, ok := claims["sub"].(string); ok && subVal != "" {
+			rawID = subVal
+		}
+		if rawID != "" {
+			if parsed, err := uuid.Parse(rawID); err == nil && parsed != uuid.Nil {
+				adminID = &parsed
+			}
 		}
 	}
 

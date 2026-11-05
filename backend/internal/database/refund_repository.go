@@ -392,7 +392,7 @@ func (r *RefundRepository) ApproveRefund(
 	refundID uuid.UUID,
 	finalRefundAmount, systemCost float64,
 	tierApplied string,
-	adminID uuid.UUID,
+	adminID *uuid.UUID,
 	adminNotes string,
 ) error {
 	tx, err := r.db.Begin()
@@ -418,13 +418,23 @@ func (r *RefundRepository) ApproveRefund(
 		return errors.New("refund request has already been processed")
 	}
 
+	// Verify admin ID exists in admin_users to avoid FK constraint failure
+	var validAdminID interface{} = nil
+	if adminID != nil && *adminID != uuid.Nil {
+		var exists bool
+		_ = tx.QueryRow(`SELECT EXISTS(SELECT 1 FROM public.admin_users WHERE id = $1)`, *adminID).Scan(&exists)
+		if exists {
+			validAdminID = *adminID
+		}
+	}
+
 	// 2. Update refunds table
 	_, err = tx.Exec(`
 		UPDATE public.refunds
 		SET amount = $1, system_cost = $2, status = 'completed', refunded_at = now(),
 		    tier_applied = $3, processed_by_admin_id = $4, admin_notes = $5
 		WHERE id = $6
-	`, finalRefundAmount, systemCost, tierApplied, adminID, adminNotes, refundID)
+	`, finalRefundAmount, systemCost, tierApplied, validAdminID, adminNotes, refundID)
 	if err != nil {
 		return fmt.Errorf("failed to update refund record: %w", err)
 	}
@@ -538,12 +548,21 @@ func (r *RefundRepository) ApproveRefund(
 }
 
 // RejectRefund updates refund status to failed with rejection reason
-func (r *RefundRepository) RejectRefund(refundID uuid.UUID, adminID uuid.UUID, reason string) error {
+func (r *RefundRepository) RejectRefund(refundID uuid.UUID, adminID *uuid.UUID, reason string) error {
+	var validAdminID interface{} = nil
+	if adminID != nil && *adminID != uuid.Nil {
+		var exists bool
+		_ = r.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM public.admin_users WHERE id = $1)`, *adminID).Scan(&exists)
+		if exists {
+			validAdminID = *adminID
+		}
+	}
+
 	res, err := r.db.Exec(`
 		UPDATE public.refunds
 		SET status = 'failed', processed_by_admin_id = $1, admin_notes = $2
 		WHERE id = $3 AND status = 'pending'
-	`, adminID, reason, refundID)
+	`, validAdminID, reason, refundID)
 	if err != nil {
 		return err
 	}

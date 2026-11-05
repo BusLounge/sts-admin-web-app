@@ -238,24 +238,6 @@
         <span class="drawer-ref" *ngIf="selectedRefund">{{ selectedRefund.refund_reference }}</span>
       </div>
       <div class="drawer-header-actions" *ngIf="selectedRefund">
-        <button 
-          *ngIf="selectedRefund.status === 'pending'"
-          class="btn-header-approve" 
-          [disabled]="isActionLoading || selectedRefund.criteria.is_refund_blocked_due_to_boarding || selectedRefund.criteria.is_non_refundable || (selectedRefund.criteria.requires_override && !overrideConfirmed)" 
-          (click)="approveRefund()"
-          title="Approve & Settle Refund">
-          <i class="fas" [ngClass]="isActionLoading ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
-          Approve
-        </button>
-        <button 
-          *ngIf="selectedRefund.status === 'pending'"
-          class="btn-header-reject" 
-          [disabled]="isActionLoading" 
-          (click)="openRejectModal()"
-          title="Reject Request">
-          <i class="fas fa-times-circle"></i>
-          Reject
-        </button>
         <button class="drawer-close-btn" (click)="closeDrawer()" title="Close Drawer">
           <i class="fas fa-times"></i> Close
         </button>
@@ -628,24 +610,6 @@
           ></textarea>
         </div>
 
-        <!-- ACTION BUTTONS -->
-        <div class="action-buttons-row">
-          <button 
-            class="btn-approve" 
-            [disabled]="isActionLoading || selectedRefund.criteria.is_refund_blocked_due_to_boarding || selectedRefund.criteria.is_non_refundable || (selectedRefund.criteria.requires_override && !overrideConfirmed)" 
-            (click)="approveRefund()">
-            <i class="fas" [ngClass]="isActionLoading ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
-            {{ isActionLoading ? 'Processing Settle...' : 'Approve & Settle Refund' }}
-          </button>
-
-          <button 
-            class="btn-reject" 
-            [disabled]="isActionLoading" 
-            (click)="openRejectModal()">
-            <i class="fas fa-times-circle"></i> Reject Request
-          </button>
-        </div>
-
       </div>
 
     </div>
@@ -659,7 +623,7 @@
           [disabled]="isActionLoading || selectedRefund?.criteria?.is_refund_blocked_due_to_boarding || selectedRefund?.criteria?.is_non_refundable || (selectedRefund?.criteria?.requires_override && !overrideConfirmed)" 
           (click)="approveRefund()">
           <i class="fas" [ngClass]="isActionLoading ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
-          Approve & Settle
+          {{ isActionLoading ? 'Processing Settle...' : 'Approve & Settle' }}
         </button>
         <button 
           *ngIf="selectedRefund?.status === 'pending'"
