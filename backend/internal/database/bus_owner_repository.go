@@ -381,7 +381,7 @@ func VerifyBusOwner(id string, status string, documents interface{}) error {
 			verification_documents = $2,
 			updated_at = now()
 		WHERE id = $3
-		RETURNING id
+		RETURNING id, COALESCE(user_id::text, '')
 	`
 
 	var verificationDocsJSON []byte
@@ -391,8 +391,14 @@ func VerifyBusOwner(id string, status string, documents interface{}) error {
 		verificationDocsJSON = []byte("null")
 	}
 
-	var returnedID string
-	err := DB.QueryRow(query, status, verificationDocsJSON, id).Scan(&returnedID)
+	tx, err := DB.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	var returnedID, userID string
+	err = tx.QueryRow(query, status, verificationDocsJSON, id).Scan(&returnedID, &userID)
 
 	if err == sql.ErrNoRows {
 		return fmt.Errorf("bus owner not found")
@@ -401,5 +407,10 @@ func VerifyBusOwner(id string, status string, documents interface{}) error {
 		return fmt.Errorf("error verifying bus owner: %w", err)
 	}
 
-	return nil
+	// Synchronize user role in users table
+	if err := SyncUserRoleWithVerificationStatus(tx, userID, "bus_owner", status); err != nil {
+		return fmt.Errorf("error updating bus owner user role: %w", err)
+	}
+
+	return tx.Commit()
 }

@@ -174,13 +174,20 @@ func (r *StaffRepository) UpdateDriverVerification(id string, status string, doc
 	}
 
 	// Update bus_staff table with both verification_status and is_verified
-	_, err = tx.Exec(`
+	var userID string
+	err = tx.QueryRow(`
 		UPDATE bus_staff 
-		SET verification_status = $1, verification_notes = $2, is_verified = $3 
+		SET verification_status = $1, verification_notes = $2, is_verified = $3, updated_at = now() 
 		WHERE id = $4 AND staff_type = 'driver'
-	`, status, documents, isVerified, id)
+		RETURNING COALESCE(user_id::text, '')
+	`, status, documents, isVerified, id).Scan(&userID)
 	if err != nil {
 		return fmt.Errorf("error updating driver verification: %v", err)
+	}
+
+	// Synchronize user role in users table
+	if err := SyncUserRoleWithVerificationStatus(tx, userID, "driver", status); err != nil {
+		return fmt.Errorf("error updating driver user role: %v", err)
 	}
 
 	return tx.Commit()
@@ -478,13 +485,20 @@ func (r *StaffRepository) UpdateConductorVerification(id string, status string, 
 	}
 
 	// Update bus_staff table with both verification_status and is_verified
-	_, err = tx.Exec(`
+	var userID string
+	err = tx.QueryRow(`
 		UPDATE bus_staff 
-		SET verification_status = $1, verification_notes = $2, is_verified = $3 
+		SET verification_status = $1, verification_notes = $2, is_verified = $3, updated_at = now() 
 		WHERE id = $4 AND staff_type = 'conductor'
-	`, status, documents, isVerified, id)
+		RETURNING COALESCE(user_id::text, '')
+	`, status, documents, isVerified, id).Scan(&userID)
 	if err != nil {
 		return fmt.Errorf("error updating conductor verification: %v", err)
+	}
+
+	// Synchronize user role in users table
+	if err := SyncUserRoleWithVerificationStatus(tx, userID, "conductor", status); err != nil {
+		return fmt.Errorf("error updating conductor user role: %v", err)
 	}
 
 	return tx.Commit()

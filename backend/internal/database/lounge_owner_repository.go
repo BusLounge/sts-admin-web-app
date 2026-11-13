@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"sts-backend/internal/models"
 )
 
@@ -125,11 +126,17 @@ func VerifyLoungeOwner(id string, status string, notes string) error {
 		SET verification_status = $1,
 			verification_notes = $2
 		WHERE id = $3
-		RETURNING id
+		RETURNING id, COALESCE(user_id::text, '')
 	`
 
-	var returnedID string
-	err := DB.QueryRow(query, status, notes, id).Scan(&returnedID)
+	tx, err := DB.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	var returnedID, userID string
+	err = tx.QueryRow(query, status, notes, id).Scan(&returnedID, &userID)
 	if err == sql.ErrNoRows {
 		return fmt.Errorf("lounge owner not found")
 	}
@@ -137,7 +144,23 @@ func VerifyLoungeOwner(id string, status string, notes string) error {
 		return fmt.Errorf("error verifying lounge owner: %w", err)
 	}
 
-	return nil
+	// Fallback to finding user by contact_number or email if user_id was null
+	if strings.TrimSpace(userID) == "" {
+		_ = tx.QueryRow(`
+			SELECT u.id::text FROM users u
+			JOIN lounge_owners lo ON lo.id = $1
+			WHERE (u.email IS NOT NULL AND u.email != '' AND u.email = lo.email)
+			   OR (u.phone IS NOT NULL AND u.phone != '' AND u.phone = lo.contact_number)
+			LIMIT 1
+		`, id).Scan(&userID)
+	}
+
+	// Synchronize user role in users table
+	if err := SyncUserRoleWithVerificationStatus(tx, userID, "lounge_owner", status); err != nil {
+		return fmt.Errorf("error updating lounge owner user role: %w", err)
+	}
+
+	return tx.Commit()
 }
 
 func CreateLoungeOwner(owner *models.LoungeOwner) error {
