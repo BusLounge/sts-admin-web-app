@@ -55,6 +55,9 @@
     <button class="tab-btn" [class.active]="activeTab === 'wallet'" (click)="switchTab('wallet')">
       <i class="fas fa-wallet"></i> Company Wallet
     </button>
+    <button class="tab-btn" [class.active]="activeTab === 'pricing'" (click)="switchTab('pricing')">
+      <i class="fas fa-sliders-h"></i> Pricing & Revenue Split
+    </button>
   </div>
 
   <!-- OVERVIEW TAB -->
@@ -98,15 +101,38 @@
     <!-- 4. Special Requests Alert -->
     <div class="alert-box" *ngIf="overview.special_requests_count > 0">
       <i class="fas fa-bell"></i>
-      <span>You have <strong>{{ overview.special_requests_count }}</strong> pending requests for 7-day payout cycles.</span>
-      <button class="btn-secondary">Review Requests</button>
+      <span>You have <strong>{{ overview.special_requests_count }}</strong> pending request(s) for 7-day payout cycles.</span>
+      <button class="btn-secondary" (click)="openSpecialRequestsModal()">Review Requests</button>
+    </div>
+
+    <!-- Dynamic Feedback Banner -->
+    <div *ngIf="feedbackAlert" class="feedback-banner" [ngClass]="feedbackAlert.type">
+      <div class="feedback-content">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle': feedbackAlert.type === 'success',
+          'fa-info-circle': feedbackAlert.type === 'info',
+          'fa-exclamation-triangle': feedbackAlert.type === 'error'
+        }"></i>
+        <div>
+          <h4>{{ feedbackAlert.title }}</h4>
+          <p>{{ feedbackAlert.message }}</p>
+          <ul *ngIf="feedbackAlert.details && feedbackAlert.details.length > 0" class="feedback-details-list">
+            <li *ngFor="let detail of feedbackAlert.details">
+              <i class="fas fa-arrow-right"></i> {{ detail }}
+            </li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn-close-feedback" (click)="dismissFeedback()" aria-label="Close notification">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
     <div class="tables-grid">
       <!-- 2. Upcoming Payouts -->
       <div class="table-card">
         <h3>Upcoming Payouts</h3>
-        <p class="subtitle">Payees nearing their 14-day cycle</p>
+        <p class="subtitle">Payees nearing their payout cycle</p>
         
         <table class="dashboard-table">
           <thead>
@@ -120,12 +146,12 @@
           </thead>
           <tbody>
             <tr *ngFor="let item of overview.upcoming_payouts">
-              <td>{{ item.payee_name }}</td>
+              <td><strong>{{ item.payee_name }}</strong></td>
               <td><span class="badge">{{ item.role }}</span></td>
               <td><strong>{{ item.amount_accumulated | currency:'LKR ':'symbol':'1.2-2' }}</strong></td>
               <td>
                 <div class="progress-container">
-                  <div class="progress-bar" [style.width]="(item.days_accumulated / item.frequency_days) * 100 + '%'"></div>
+                  <div class="progress-bar" [style.width]="(item.days_accumulated / (item.frequency_days || 14)) * 100 + '%'"></div>
                 </div>
                 <small>{{ item.days_accumulated }} / {{ item.frequency_days }} days</small>
               </td>
@@ -141,14 +167,15 @@
       <!-- 3. Recent Payouts -->
       <div class="table-card">
         <h3>Recent Payout Batches</h3>
-        <p class="subtitle">History of midnight process executions</p>
+        <p class="subtitle">History of midnight process executions & fund disbursements</p>
         
         <table class="dashboard-table">
           <thead>
             <tr>
               <th>Batch ID</th>
+              <th>Payee Recipient</th>
               <th>Date Paid</th>
-              <th>Total People Paid</th>
+              <th>Settlements</th>
               <th>Total Amount</th>
               <th>Action</th>
             </tr>
@@ -156,13 +183,23 @@
           <tbody>
             <tr *ngFor="let batch of overview.recent_payouts">
               <td class="batch-id">#{{ batch.batch_id | slice:0:8 }}</td>
+              <td>
+                <div class="payee-cell">
+                  <strong>{{ batch.payee_name || 'Payee' }}</strong>
+                  <span class="badge" *ngIf="batch.payee_type">{{ batch.payee_type }}</span>
+                </div>
+              </td>
               <td>{{ batch.date_paid | date:'medium' }}</td>
-              <td>{{ batch.total_people }} payees</td>
+              <td>{{ batch.total_people }} bookings</td>
               <td class="success-text"><strong>{{ batch.total_amount | currency:'LKR ':'symbol':'1.2-2' }}</strong></td>
-              <td><button class="btn-text">View</button></td>
+              <td>
+                <button class="btn-text" (click)="openBatchDetails(batch.batch_id)">
+                  <i class="fas fa-eye"></i> View
+                </button>
+              </td>
             </tr>
             <tr *ngIf="overview.recent_payouts.length === 0">
-              <td colspan="5" class="empty-state">No payouts have been processed yet.</td>
+              <td colspan="6" class="empty-state">No payouts have been processed yet.</td>
             </tr>
           </tbody>
         </table>
@@ -173,6 +210,22 @@
   <!-- WALLET TAB -->
   <div *ngIf="activeTab === 'wallet' && walletData" class="dashboard-content">
     
+    <!-- Wallet Header Actions -->
+    <div class="wallet-header-toolbar">
+      <div class="wallet-title">
+        <h3>Company Treasury & Automated Settlement Account</h3>
+        <p>Manage funds, reserve thresholds, and audit operator payout flows.</p>
+      </div>
+      <div class="wallet-actions">
+        <button class="btn-primary" (click)="openTopUpModal()">
+          <i class="fas fa-plus-circle"></i> Top Up Balance
+        </button>
+        <button class="btn-secondary" (click)="openReserveModal()">
+          <i class="fas fa-sliders-h"></i> Adjust Reserve Threshold
+        </button>
+      </div>
+    </div>
+
     <!-- Wallet Metrics -->
     <div class="quick-stats-grid">
       <div class="stat-card pending">
@@ -210,7 +263,9 @@
     <!-- Warning if reserve is threatened -->
     <div *ngIf="walletData.available_balance < walletData.pending_payouts && walletData.pending_payouts > 0" class="alert-banner warning">
       <i class="fas fa-exclamation-triangle"></i> 
-      <strong>Warning:</strong> You do not have enough available balance to cover the pending payouts without dipping into the reserve threshold. The Midnight Process will automatically halt these payouts until the balance increases.
+      <div>
+        <strong>Reserve Threshold Protected:</strong> Available balance ({{ walletData.available_balance | currency:'LKR ':'symbol':'1.2-2' }}) is below pending payouts ({{ walletData.pending_payouts | currency:'LKR ':'symbol':'1.2-2' }}) while keeping the reserve threshold intact. Click <strong>Top Up Balance</strong> or <strong>Adjust Reserve Threshold</strong> to fund payouts.
+      </div>
     </div>
 
     <!-- Income Analytics Chart -->
@@ -266,9 +321,685 @@
     </div>
   </div>
 
-  <div *ngIf="activeTab === 'overview' && !overview || activeTab === 'wallet' && !walletData" class="loading-state">
+  <!-- PRICING & REVENUE SPLIT TAB -->
+  <div *ngIf="activeTab === 'pricing' && pricingConfig" class="dashboard-content">
+    
+    <!-- Pricing Header Toolbar -->
+    <div class="pricing-header-toolbar">
+      <div class="toolbar-title">
+        <h3><i class="fas fa-sliders-h"></i> Ticket Pricing & Revenue Split Configuration</h3>
+        <p>Set standard passenger ticket prices and configure revenue splits. The Company Commission automatically adjusts to balance the total to 100%.</p>
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn-secondary" (click)="resetPricingToDefaults()">
+          <i class="fas fa-undo"></i> Reset to Defaults
+        </button>
+        <button class="btn-primary" [disabled]="!canSavePricing" (click)="savePricingConfig()">
+          <i class="fas" [ngClass]="{'fa-save': !isSavingPricing, 'fa-spinner fa-spin': isSavingPricing}"></i>
+          {{ isSavingPricing ? 'Saving...' : 'Save Configuration' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Validation Banner -->
+    <div *ngIf="!isBusSplitValid || !isLoungeSplitValid" class="alert-banner warning mb-4">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div>
+        <strong>Validation Alert:</strong> 
+        <span *ngIf="!isBusSplitValid">Bus revenue split currently totals <strong>{{ busSplitTotal }}%</strong> (must equal 100.00%). </span>
+        <span *ngIf="!isLoungeSplitValid">Lounge revenue split currently totals <strong>{{ loungeSplitTotal }}%</strong> (must equal 100.00%). </span>
+        Please adjust percentages so the sum equals 100%.
+      </div>
+    </div>
+
+    <div class="pricing-cards-grid">
+      <!-- 1. BUS TICKET & REVENUE SPLIT -->
+      <div class="pricing-card">
+        <div class="card-header-row">
+          <div class="header-icon bus-icon">
+            <i class="fas fa-bus"></i>
+          </div>
+          <div>
+            <h3>Bus Ticket Pricing & Revenue Split</h3>
+            <p>Customer fare per seat and distribution among Bus Owner, Driver, Conductor & Company.</p>
+          </div>
+        </div>
+
+        <!-- Ticket Price Input -->
+        <div class="form-section">
+          <label class="section-label">Global Standard Ticket Price (Per Seat)</label>
+          <div class="price-input-wrapper">
+            <span class="currency-tag">LKR</span>
+            <input type="number" 
+                   class="price-input" 
+                   [(ngModel)]="pricingConfig.default_ticket_price" 
+                   min="100" 
+                   step="50" 
+                   placeholder="1000">
+          </div>
+          <div class="quick-chips">
+            <button type="button" class="btn-chip" (click)="pricingConfig.default_ticket_price = 500">LKR 500</button>
+            <button type="button" class="btn-chip" (click)="pricingConfig.default_ticket_price = 1000">LKR 1,000</button>
+            <button type="button" class="btn-chip" (click)="pricingConfig.default_ticket_price = 1500">LKR 1,500</button>
+            <button type="button" class="btn-chip" (click)="pricingConfig.default_ticket_price = 2000">LKR 2,000</button>
+          </div>
+        </div>
+
+        <hr class="card-divider">
+
+        <!-- Split Percentages Sliders -->
+        <div class="form-section">
+          <div class="split-header-row">
+            <label class="section-label">Revenue Split Percentages</label>
+            <span class="split-status-badge" [ngClass]="{'valid': isBusSplitValid, 'invalid': !isBusSplitValid}">
+              <i class="fas" [ngClass]="{'fa-check-circle': isBusSplitValid, 'fa-exclamation-circle': !isBusSplitValid}"></i>
+              Total: {{ busSplitTotal }}%
+            </span>
+          </div>
+
+          <!-- Segment Progress Bar -->
+          <div class="split-progress-bar">
+            <div class="bar-segment bus-owner" 
+                 [style.width]="pricingConfig.bus_owner_share_pct + '%'" 
+                 [title]="'Bus Owner: ' + pricingConfig.bus_owner_share_pct + '%'"></div>
+            <div class="bar-segment driver" 
+                 [style.width]="pricingConfig.driver_share_pct + '%'" 
+                 [title]="'Driver: ' + pricingConfig.driver_share_pct + '%'"></div>
+            <div class="bar-segment conductor" 
+                 [style.width]="pricingConfig.conductor_share_pct + '%'" 
+                 [title]="'Conductor: ' + pricingConfig.conductor_share_pct + '%'"></div>
+            <div class="bar-segment company" 
+                 [style.width]="pricingConfig.company_commission_pct + '%'" 
+                 [title]="'Company Commission: ' + pricingConfig.company_commission_pct + '%'"></div>
+          </div>
+
+          <!-- Slider 1: Bus Owner -->
+          <div class="slider-row">
+            <div class="slider-info">
+              <span class="dot-indicator bus-owner"></span>
+              <span class="role-name">Bus Owner Share</span>
+              <span class="role-calc">({{ busOwnerSeatAmount | currency:'LKR ':'symbol':'1.2-2' }} / seat)</span>
+            </div>
+            <div class="slider-controls">
+              <input type="range" 
+                     min="0" 
+                     max="100" 
+                     step="0.5" 
+                     [(ngModel)]="pricingConfig.bus_owner_share_pct" 
+                     (ngModelChange)="onBusShareChange('owner')"
+                     class="range-slider owner-slider">
+              <div class="percent-input-wrapper">
+                <input type="number" 
+                       min="0" 
+                       max="100" 
+                       step="0.5" 
+                       [(ngModel)]="pricingConfig.bus_owner_share_pct" 
+                       (ngModelChange)="onBusShareChange('owner')"
+                       class="percent-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider 2: Driver -->
+          <div class="slider-row">
+            <div class="slider-info">
+              <span class="dot-indicator driver"></span>
+              <span class="role-name">Driver Share</span>
+              <span class="role-calc">({{ driverSeatAmount | currency:'LKR ':'symbol':'1.2-2' }} / seat)</span>
+            </div>
+            <div class="slider-controls">
+              <input type="range" 
+                     min="0" 
+                     max="100" 
+                     step="0.5" 
+                     [(ngModel)]="pricingConfig.driver_share_pct" 
+                     (ngModelChange)="onBusShareChange('driver')"
+                     class="range-slider driver-slider">
+              <div class="percent-input-wrapper">
+                <input type="number" 
+                       min="0" 
+                       max="100" 
+                       step="0.5" 
+                       [(ngModel)]="pricingConfig.driver_share_pct" 
+                       (ngModelChange)="onBusShareChange('driver')"
+                       class="percent-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider 3: Conductor -->
+          <div class="slider-row">
+            <div class="slider-info">
+              <span class="dot-indicator conductor"></span>
+              <span class="role-name">Conductor Share</span>
+              <span class="role-calc">({{ conductorSeatAmount | currency:'LKR ':'symbol':'1.2-2' }} / seat)</span>
+            </div>
+            <div class="slider-controls">
+              <input type="range" 
+                     min="0" 
+                     max="100" 
+                     step="0.5" 
+                     [(ngModel)]="pricingConfig.conductor_share_pct" 
+                     (ngModelChange)="onBusShareChange('conductor')"
+                     class="range-slider conductor-slider">
+              <div class="percent-input-wrapper">
+                <input type="number" 
+                       min="0" 
+                       max="100" 
+                       step="0.5" 
+                       [(ngModel)]="pricingConfig.conductor_share_pct" 
+                       (ngModelChange)="onBusShareChange('conductor')"
+                       class="percent-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider 4: Company Commission (Auto-balanced) -->
+          <div class="slider-row auto-balanced-row">
+            <div class="slider-info">
+              <span class="dot-indicator company"></span>
+              <span class="role-name">Company Commission</span>
+              <span class="auto-badge"><i class="fas fa-magic"></i> Auto-Balanced</span>
+              <span class="role-calc">({{ companyCommissionSeatAmount | currency:'LKR ':'symbol':'1.2-2' }} / seat)</span>
+            </div>
+            <div class="slider-controls">
+              <input type="range" 
+                     min="0" 
+                     max="100" 
+                     step="0.5" 
+                     [(ngModel)]="pricingConfig.company_commission_pct" 
+                     (ngModelChange)="onBusShareChange('commission')"
+                     class="range-slider company-slider">
+              <div class="percent-input-wrapper">
+                <input type="number" 
+                       min="0" 
+                       max="100" 
+                       step="0.5" 
+                       [(ngModel)]="pricingConfig.company_commission_pct" 
+                       (ngModelChange)="onBusShareChange('commission')"
+                       class="percent-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="card-divider">
+
+        <!-- Live Trip Simulator -->
+        <div class="simulator-box">
+          <div class="sim-header">
+            <h4><i class="fas fa-calculator"></i> Live Trip Revenue Simulator</h4>
+            <div class="capacity-selector">
+              <label>Bus Capacity:</label>
+              <button type="button" class="cap-btn" [class.active]="simulationSeats === 30" (click)="simulationSeats = 30">30 Seats</button>
+              <button type="button" class="cap-btn" [class.active]="simulationSeats === 40" (click)="simulationSeats = 40">40 Seats</button>
+              <button type="button" class="cap-btn" [class.active]="simulationSeats === 54" (click)="simulationSeats = 54">54 Seats</button>
+            </div>
+          </div>
+
+          <div class="sim-total-banner">
+            <span>Total Bus Revenue ({{ simulationSeats }} passengers &times; {{ pricingConfig.default_ticket_price | currency:'LKR ':'symbol':'1.0-0' }}):</span>
+            <h3>{{ tripTotalRevenue | currency:'LKR ':'symbol':'1.2-2' }}</h3>
+          </div>
+
+          <div class="sim-grid">
+            <div class="sim-card bus-owner">
+              <span class="label">Bus Owner ({{ pricingConfig.bus_owner_share_pct }}%)</span>
+              <h4>{{ tripBusOwnerRevenue | currency:'LKR ':'symbol':'1.2-2' }}</h4>
+            </div>
+            <div class="sim-card driver">
+              <span class="label">Driver ({{ pricingConfig.driver_share_pct }}%)</span>
+              <h4>{{ tripDriverRevenue | currency:'LKR ':'symbol':'1.2-2' }}</h4>
+            </div>
+            <div class="sim-card conductor">
+              <span class="label">Conductor ({{ pricingConfig.conductor_share_pct }}%)</span>
+              <h4>{{ tripConductorRevenue | currency:'LKR ':'symbol':'1.2-2' }}</h4>
+            </div>
+            <div class="sim-card company">
+              <span class="label">Company Profit ({{ pricingConfig.company_commission_pct }}%)</span>
+              <h4>{{ tripCompanyRevenue | currency:'LKR ':'symbol':'1.2-2' }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. LOUNGE BOOKING & REVENUE SPLIT -->
+      <div class="pricing-card">
+        <div class="card-header-row">
+          <div class="header-icon lounge-icon">
+            <i class="fas fa-couch"></i>
+          </div>
+          <div>
+            <h3>Lounge Access Pricing & Revenue Split</h3>
+            <p>Customer fee per lounge booking and distribution between Lounge Owner & Company.</p>
+          </div>
+        </div>
+
+        <!-- Lounge Fee Input -->
+        <div class="form-section">
+          <label class="section-label">Global Standard Lounge Fee (Per Guest)</label>
+          <div class="price-input-wrapper">
+            <span class="currency-tag">LKR</span>
+            <input type="number" 
+                   class="price-input" 
+                   [(ngModel)]="pricingConfig.default_lounge_fee" 
+                   min="100" 
+                   step="50" 
+                   placeholder="1500">
+          </div>
+          <div class="quick-chips">
+            <button type="button" class="btn-chip" (click)="pricingConfig.default_lounge_fee = 1000">LKR 1,000</button>
+            <button type="button" class="btn-chip" (click)="pricingConfig.default_lounge_fee = 1500">LKR 1,500</button>
+            <button type="button" class="btn-chip" (click)="pricingConfig.default_lounge_fee = 2000">LKR 2,000</button>
+            <button type="button" class="btn-chip" (click)="pricingConfig.default_lounge_fee = 2500">LKR 2,500</button>
+          </div>
+        </div>
+
+        <hr class="card-divider">
+
+        <!-- Lounge Split Percentages -->
+        <div class="form-section">
+          <div class="split-header-row">
+            <label class="section-label">Lounge Revenue Split Percentages</label>
+            <span class="split-status-badge" [ngClass]="{'valid': isLoungeSplitValid, 'invalid': !isLoungeSplitValid}">
+              <i class="fas" [ngClass]="{'fa-check-circle': isLoungeSplitValid, 'fa-exclamation-circle': !isLoungeSplitValid}"></i>
+              Total: {{ loungeSplitTotal }}%
+            </span>
+          </div>
+
+          <!-- Segment Progress Bar -->
+          <div class="split-progress-bar">
+            <div class="bar-segment bus-owner" 
+                 [style.width]="pricingConfig.lounge_owner_share_pct + '%'" 
+                 [title]="'Lounge Owner: ' + pricingConfig.lounge_owner_share_pct + '%'"></div>
+            <div class="bar-segment company" 
+                 [style.width]="pricingConfig.lounge_commission_pct + '%'" 
+                 [title]="'Company Commission: ' + pricingConfig.lounge_commission_pct + '%'"></div>
+          </div>
+
+          <!-- Slider 1: Lounge Owner -->
+          <div class="slider-row">
+            <div class="slider-info">
+              <span class="dot-indicator bus-owner"></span>
+              <span class="role-name">Lounge Owner Share</span>
+              <span class="role-calc">({{ loungeOwnerAmount | currency:'LKR ':'symbol':'1.2-2' }} / guest)</span>
+            </div>
+            <div class="slider-controls">
+              <input type="range" 
+                     min="0" 
+                     max="100" 
+                     step="0.5" 
+                     [(ngModel)]="pricingConfig.lounge_owner_share_pct" 
+                     (ngModelChange)="onLoungeShareChange('owner')"
+                     class="range-slider owner-slider">
+              <div class="percent-input-wrapper">
+                <input type="number" 
+                       min="0" 
+                       max="100" 
+                       step="0.5" 
+                       [(ngModel)]="pricingConfig.lounge_owner_share_pct" 
+                       (ngModelChange)="onLoungeShareChange('owner')"
+                       class="percent-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider 2: Company Commission (Auto-balanced) -->
+          <div class="slider-row auto-balanced-row">
+            <div class="slider-info">
+              <span class="dot-indicator company"></span>
+              <span class="role-name">Company Commission</span>
+              <span class="auto-badge"><i class="fas fa-magic"></i> Auto-Balanced</span>
+              <span class="role-calc">({{ loungeCompanyAmount | currency:'LKR ':'symbol':'1.2-2' }} / guest)</span>
+            </div>
+            <div class="slider-controls">
+              <input type="range" 
+                     min="0" 
+                     max="100" 
+                     step="0.5" 
+                     [(ngModel)]="pricingConfig.lounge_commission_pct" 
+                     (ngModelChange)="onLoungeShareChange('commission')"
+                     class="range-slider company-slider">
+              <div class="percent-input-wrapper">
+                <input type="number" 
+                       min="0" 
+                       max="100" 
+                       step="0.5" 
+                       [(ngModel)]="pricingConfig.lounge_commission_pct" 
+                       (ngModelChange)="onLoungeShareChange('commission')"
+                       class="percent-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="card-divider">
+
+        <!-- Single Guest Breakdown Card -->
+        <div class="simulator-box">
+          <div class="sim-header">
+            <h4><i class="fas fa-coins"></i> Per-Booking Revenue Breakdown</h4>
+          </div>
+
+          <div class="sim-total-banner">
+            <span>Customer Booking Fee:</span>
+            <h3>{{ pricingConfig.default_lounge_fee | currency:'LKR ':'symbol':'1.2-2' }}</h3>
+          </div>
+
+          <div class="sim-grid two-cols">
+            <div class="sim-card bus-owner">
+              <span class="label">Lounge Owner ({{ pricingConfig.lounge_owner_share_pct }}%)</span>
+              <h4>{{ loungeOwnerAmount | currency:'LKR ':'symbol':'1.2-2' }}</h4>
+            </div>
+            <div class="sim-card company">
+              <span class="label">Company Profit ({{ pricingConfig.lounge_commission_pct }}%)</span>
+              <h4>{{ loungeCompanyAmount | currency:'LKR ':'symbol':'1.2-2' }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="(activeTab === 'overview' && !overview) || (activeTab === 'wallet' && !walletData) || (activeTab === 'pricing' && isLoadingPricing)" class="loading-state">
     <div class="spinner"></div>
     <p>Loading settlement data...</p>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 1. SPECIAL REQUESTS MODAL (7-DAY CYCLE REVIEW) -->
+<!-- ============================================================== -->
+<div class="modal-backdrop" *ngIf="showSpecialRequestsModal" (click)="closeSpecialRequestsModal()">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div>
+          <h3>7-Day Payout Cycle Requests</h3>
+          <p>Review expedited payout cycle requests submitted by bus and lounge owners.</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeSpecialRequestsModal()" aria-label="Close modal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="isLoadingRequests" class="modal-loading">
+        <div class="spinner"></div>
+        <p>Loading pending requests...</p>
+      </div>
+
+      <div *ngIf="!isLoadingRequests && specialRequests.length === 0" class="modal-empty-state">
+        <i class="fas fa-clipboard-check"></i>
+        <h4>All Caught Up!</h4>
+        <p>There are currently no pending 7-day payout cycle requests.</p>
+      </div>
+
+      <div *ngIf="!isLoadingRequests && specialRequests.length > 0" class="requests-list">
+        <div *ngFor="let req of specialRequests" class="request-card">
+          <div class="request-main-info">
+            <div class="request-avatar">
+              <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="request-details">
+              <h4>{{ req.payee_name }}</h4>
+              <p class="request-meta">
+                <span class="badge">{{ req.payee_type }}</span>
+                <span *ngIf="req.payee_email" class="email-text">{{ req.payee_email }}</span>
+                <span *ngIf="req.special_request_date" class="date-text">
+                  Requested: {{ req.special_request_date | date:'mediumDate' }}
+                </span>
+              </p>
+              <div class="cycle-comparison">
+                <span class="current-cycle">Current: <strong>{{ req.current_frequency_days }} days</strong></span>
+                <i class="fas fa-arrow-right"></i>
+                <span class="requested-cycle">Requested: <strong>{{ req.requested_frequency_days }} days (Weekly)</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="request-stats">
+            <div class="stat-pill">
+              <span class="label">Accumulated</span>
+              <span class="value">{{ req.amount_accumulated | currency:'LKR ':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="stat-pill">
+              <span class="label">Days in Cycle</span>
+              <span class="value">{{ req.days_accumulated }} days</span>
+            </div>
+          </div>
+
+          <div class="request-actions">
+            <button class="btn-approve" 
+                    [disabled]="requestActionLoading === req.tracker_id" 
+                    (click)="approveRequest(req)">
+              <i class="fas" [ngClass]="{'fa-check': requestActionLoading !== req.tracker_id, 'fa-spinner fa-spin': requestActionLoading === req.tracker_id}"></i>
+              Approve 7-Day Cycle
+            </button>
+            <button class="btn-reject" 
+                    [disabled]="requestActionLoading === req.tracker_id" 
+                    (click)="rejectRequest(req)">
+              <i class="fas fa-times"></i>
+              Decline
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeSpecialRequestsModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 2. BATCH DETAILS MODAL (VIEW RECIPIENT & SETTLED BOOKINGS) -->
+<!-- ============================================================== -->
+<div class="modal-backdrop" *ngIf="showBatchDetailsModal" (click)="closeBatchDetails()">
+  <div class="modal-dialog modal-xl" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge success">
+          <i class="fas fa-receipt"></i>
+        </div>
+        <div>
+          <h3>Payout Batch Details</h3>
+          <p *ngIf="selectedBatch">Batch ID: #{{ selectedBatch.batch_id }} &bull; Processed on {{ selectedBatch.processed_at | date:'medium' }}</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeBatchDetails()" aria-label="Close modal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="isLoadingBatch">
+      <div class="modal-loading">
+        <div class="spinner"></div>
+        <p>Loading payout batch breakdown...</p>
+      </div>
+    </div>
+
+    <div class="modal-body" *ngIf="!isLoadingBatch && selectedBatch">
+      <!-- 3-Column Summary Cards -->
+      <div class="batch-summary-cards">
+        <!-- Card 1: Payee Info -->
+        <div class="summary-card">
+          <div class="card-icon"><i class="fas fa-user-circle"></i></div>
+          <div class="card-text">
+            <span class="label">Payee Recipient</span>
+            <h4>{{ selectedBatch.payee_name }}</h4>
+            <span class="badge">{{ selectedBatch.payee_type }}</span>
+            <small>Period: {{ selectedBatch.period_start | date:'shortDate' }} - {{ selectedBatch.period_end | date:'shortDate' }} ({{ selectedBatch.total_days }} days)</small>
+          </div>
+        </div>
+
+        <!-- Card 2: Bank Destination -->
+        <div class="summary-card">
+          <div class="card-icon info"><i class="fas fa-university"></i></div>
+          <div class="card-text">
+            <span class="label">Disbursement Destination</span>
+            <h4>{{ selectedBatch.bank_account_info?.['bank_name'] || 'Bank of Ceylon' }}</h4>
+            <p>A/C: <strong>{{ selectedBatch.bank_account_info?.['account_number'] || '1234567890' }}</strong></p>
+            <p class="sub-text">PayHere Ref: <code>{{ selectedBatch.payhere_payout_id }}</code></p>
+          </div>
+        </div>
+
+        <!-- Card 3: Financial Total -->
+        <div class="summary-card highlight">
+          <div class="card-icon success"><i class="fas fa-money-check-alt"></i></div>
+          <div class="card-text">
+            <span class="label">Net Amount Disbursed</span>
+            <h3 class="success-text">{{ selectedBatch.total_net_amount | currency:'LKR ':'symbol':'1.2-2' }}</h3>
+            <p class="sub-text">Gross: {{ selectedBatch.total_gross_amount | currency:'LKR ':'symbol':'1.2-2' }} &bull; Comm: {{ selectedBatch.total_commission | currency:'LKR ':'symbol':'1.2-2' }}</p>
+            <span class="status-pill completed"><i class="fas fa-check"></i> {{ selectedBatch.status | uppercase }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Itemized Settlements Table -->
+      <div class="batch-settlements-section">
+        <h4><i class="fas fa-list"></i> Itemized Bookings in This Payout ({{ selectedBatch.total_settlements }})</h4>
+        <div class="table-container modal-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Booking Ref</th>
+                <th>Earning Date</th>
+                <th>Gross Fare</th>
+                <th>Commission</th>
+                <th>Net Paid</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of selectedBatch.settlements">
+                <td>
+                  <strong>{{ s.booking_reference || (s.id | slice:0:8) }}</strong>
+                  <span *ngIf="s.is_deduction" class="badge badge-danger ml-1">Clawback</span>
+                </td>
+                <td>{{ s.earning_date | date:'mediumDate' }}</td>
+                <td>{{ s.gross_amount | currency:'LKR ':'symbol':'1.2-2' }}</td>
+                <td class="text-muted">{{ s.commission_amount | currency:'LKR ':'symbol':'1.2-2' }} ({{ (s.commission_rate * 100) | number:'1.0-1' }}%)</td>
+                <td class="success-text"><strong>{{ s.net_amount | currency:'LKR ':'symbol':'1.2-2' }}</strong></td>
+                <td><span class="badge badge-success">{{ s.status | uppercase }}</span></td>
+              </tr>
+              <tr *ngIf="!selectedBatch.settlements || selectedBatch.settlements.length === 0">
+                <td colspan="6" class="empty-state">No individual itemized records linked.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeBatchDetails()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 3. TOP UP WALLET MODAL -->
+<!-- ============================================================== -->
+<div class="modal-backdrop" *ngIf="showTopUpModal" (click)="closeTopUpModal()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge success">
+          <i class="fas fa-wallet"></i>
+        </div>
+        <div>
+          <h3>Top Up Company Wallet</h3>
+          <p>Deposit funds into company treasury to back operator payouts.</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeTopUpModal()" aria-label="Close modal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="topUpAmt">Deposit Amount (LKR) *</label>
+        <input type="number" id="topUpAmt" class="form-control" [(ngModel)]="topUpAmount" placeholder="e.g. 50000" min="1000" step="1000">
+        <div class="quick-amounts">
+          <button type="button" class="btn-chip" (click)="topUpAmount = 25000">LKR 25,000</button>
+          <button type="button" class="btn-chip" (click)="topUpAmount = 50000">LKR 50,000</button>
+          <button type="button" class="btn-chip" (click)="topUpAmount = 100000">LKR 100,000</button>
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label for="topUpDesc">Transaction Description</label>
+        <input type="text" id="topUpDesc" class="form-control" [(ngModel)]="topUpDescription" placeholder="Description for ledger">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeTopUpModal()">Cancel</button>
+      <button class="btn-primary" [disabled]="isSubmittingTopUp || !topUpAmount || topUpAmount <= 0" (click)="submitTopUp()">
+        <i class="fas" [ngClass]="{'fa-check': !isSubmittingTopUp, 'fa-spinner fa-spin': isSubmittingTopUp}"></i>
+        Confirm Deposit
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 4. ADJUST RESERVE THRESHOLD MODAL -->
+<!-- ============================================================== -->
+<div class="modal-backdrop" *ngIf="showReserveModal" (click)="closeReserveModal()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge warning">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div>
+          <h3>Adjust Reserve Threshold</h3>
+          <p>Set the minimum balance protected from automated payout disbursements.</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeReserveModal()" aria-label="Close modal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="reserveAmt">Reserve Threshold (LKR) *</label>
+        <input type="number" id="reserveAmt" class="form-control" [(ngModel)]="reserveAmount" placeholder="e.g. 10000" min="0" step="5000">
+        <div class="quick-amounts">
+          <button type="button" class="btn-chip" (click)="reserveAmount = 0">LKR 0 (No Reserve)</button>
+          <button type="button" class="btn-chip" (click)="reserveAmount = 10000">LKR 10,000</button>
+          <button type="button" class="btn-chip" (click)="reserveAmount = 50000">LKR 50,000</button>
+        </div>
+      </div>
+
+      <div class="alert-banner warning mt-3" style="margin-bottom: 0;">
+        <i class="fas fa-info-circle"></i>
+        <small>The automated midnight engine checks that <code>(Balance - Payout Amount) &ge; Reserve Threshold</code>. Setting this to 0 allows all payouts to disburse as long as balance covers them.</small>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeReserveModal()">Cancel</button>
+      <button class="btn-primary" [disabled]="isSubmittingReserve || reserveAmount < 0" (click)="submitReserve()">
+        <i class="fas" [ngClass]="{'fa-save': !isSubmittingReserve, 'fa-spinner fa-spin': isSubmittingReserve}"></i>
+        Save Reserve Threshold
+      </button>
+    </div>
   </div>
 </div>
 

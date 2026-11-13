@@ -38,7 +38,7 @@ func (s *SettlementScheduler) Start() {
 			select {
 			case <-timer.C:
 				log.Println("🌙 Triggering scheduled midnight settlement process (Sri Lanka Time)...")
-				err := s.service.RunMidnightProcess()
+				_, err := s.service.RunMidnightProcess(false)
 				if err != nil {
 					log.Printf("Error running midnight settlement process: %v", err)
 				}

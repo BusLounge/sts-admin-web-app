@@ -252,6 +252,14 @@ func main() {
 		api.GET("/settlements/overview", settlementHandler.GetOverview)
 		api.GET("/settlements/wallet", settlementHandler.GetWallet)
 		api.POST("/settlements/process-now", settlementHandler.ProcessNow)
+		api.GET("/settlements/special-requests", settlementHandler.GetSpecialRequests)
+		api.POST("/settlements/special-requests/:id/action", settlementHandler.HandleSpecialRequestAction)
+		api.GET("/settlements/batches/:id", settlementHandler.GetBatchDetails)
+		api.POST("/settlements/wallet/top-up", settlementHandler.TopUpWallet)
+		api.POST("/settlements/wallet/reserve", settlementHandler.UpdateReserve)
+		api.GET("/settlements/pricing-config", settlementHandler.GetPricingConfig)
+		api.PUT("/settlements/pricing-config", settlementHandler.UpdatePricingConfig)
+		api.GET("/public/ticket-pricing", settlementHandler.GetPublicTicketPricing)
 
 		// Refunds Management
 		refundHandler := handlers.NewRefundHandler(database.DB)

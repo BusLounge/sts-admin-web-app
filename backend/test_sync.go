@@ -26,10 +26,11 @@ func main() {
 	fmt.Printf("🚀 RUNNING MIDNIGHT PROCESS (WITH BOOKING SYNC) \n")
 	fmt.Println("================================================")
 
-	err = settlementService.RunMidnightProcess()
+	result, err := settlementService.RunMidnightProcess(true)
 	if err != nil {
 		log.Fatalf("❌ Failed to run midnight process: %v", err)
 	}
+	fmt.Printf("Midnight Result: %s (Batches created: %d, Total paid: %.2f LKR)\n", result.Message, result.BatchesCreated, result.TotalAmountPaid)
 
 	var count int
 	db.QueryRow("SELECT count(*) FROM public.settlements").Scan(&count)
