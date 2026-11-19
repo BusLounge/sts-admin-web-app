@@ -118,16 +118,23 @@ export class OtpManagementComponent implements OnInit, OnDestroy {
 
       if (!this.filter) return true;
       const lowerFilter = this.filter.toLowerCase();
+      const otpStr = this.formatOtp(item.otp);
       return (
         item.app_name?.toLowerCase().includes(lowerFilter) ||
         item.phone?.includes(lowerFilter) ||
-        item.otp?.toString().includes(lowerFilter)
+        otpStr.includes(lowerFilter)
       );
     });
   }
 
+  formatOtp(otp: string | number): string {
+    if (!otp) return '';
+    return otp.toString().padStart(6, '0');
+  }
+
   copyToClipboard(text: string, id: string) {
-    navigator.clipboard.writeText(text);
+    const formatted = this.formatOtp(text);
+    navigator.clipboard.writeText(formatted);
     this.copiedId = id;
     setTimeout(() => (this.copiedId = null), 2000);
   }

@@ -390,6 +390,7 @@ func Init(cfg *config.Config) {
 			app_name TEXT,
 			created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 		);
+		ALTER TABLE otp_master ALTER COLUMN otp TYPE TEXT;
 		CREATE INDEX IF NOT EXISTS idx_otp_master_created_at ON otp_master(created_at DESC);
 
 		-- Master Routes Table (for route management)

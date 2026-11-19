@@ -23,7 +23,7 @@ func GetOTPMasterData(c *gin.Context) {
 			-- 1. Direct otp_master entries
 			SELECT 
 				id::text, 
-				otp::text, 
+				LPAD(otp::text, 6, '0') as otp, 
 				COALESCE(phone, '') as phone, 
 				COALESCE(app_name, 'unknown') as app_name, 
 				created_at
@@ -34,7 +34,7 @@ func GetOTPMasterData(c *gin.Context) {
 			-- 2. otp_verifications joined with users and bus_owners
 			SELECT 
 				ov.id::text,
-				ov.otp_code as otp,
+				LPAD(ov.otp_code::text, 6, '0') as otp,
 				COALESCE(ov.phone, '') as phone,
 				CASE 
 					WHEN 'bus_owner' = ANY(u.roles) OR bo.id IS NOT NULL THEN 'bus_owner'
@@ -48,7 +48,9 @@ func GetOTPMasterData(c *gin.Context) {
 			LEFT JOIN public.users u ON (ov.phone = u.phone OR RIGHT(ov.phone, 9) = RIGHT(u.phone, 9))
 			LEFT JOIN public.bus_owners bo ON (bo.user_id = u.id OR ov.phone = bo.business_phone OR RIGHT(ov.phone, 9) = RIGHT(bo.business_phone, 9))
 			WHERE NOT EXISTS (
-				SELECT 1 FROM public.otp_master om WHERE om.otp::text = ov.otp_code::text AND om.phone = ov.phone::text
+				SELECT 1 FROM public.otp_master om 
+				WHERE LPAD(om.otp::text, 6, '0') = LPAD(ov.otp_code::text, 6, '0') 
+				AND (om.phone = ov.phone::text OR RIGHT(om.phone, 9) = RIGHT(ov.phone, 9))
 			)
 		)
 		SELECT id, otp, phone, app_name, created_at

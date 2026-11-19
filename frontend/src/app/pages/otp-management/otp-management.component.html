@@ -79,7 +79,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let row of filteredData">
-        <td><span class="otp-badge">{{ row.otp }}</span></td>
+        <td><span class="otp-badge">{{ formatOtp(row.otp) }}</span></td>
         <td>{{ row.phone || "-" }}</td>
         <td>{{ row.app_name || "-" }}</td>
         <td>{{ formatDate(row.created_at) }}</td>
