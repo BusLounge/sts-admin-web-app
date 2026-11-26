@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { NotificationPanelComponent } from '../notification-panel/notification-panel.component';
 import { NotificationService } from '../../../core/services/notification.service';
+import { AdminAuthService } from '../../../core/services/admin-auth.service';
 
 interface MenuItem {
   label: string;
@@ -69,7 +70,11 @@ export class NavbarComponent implements OnInit {
   showProfileMenu = false;
   showNotificationPanel = false;
 
-  constructor(private router: Router, public notificationService: NotificationService) {}
+  constructor(
+    private router: Router, 
+    public notificationService: NotificationService,
+    private authService: AdminAuthService
+  ) {}
 
   ngOnInit() {}
 
@@ -86,8 +91,7 @@ export class NavbarComponent implements OnInit {
   }
 
   logout() {
-    // Add logout logic here
-    this.router.navigate(['/login']);
+    this.authService.performLogout();
   }
 
   isActive(route: string): boolean {

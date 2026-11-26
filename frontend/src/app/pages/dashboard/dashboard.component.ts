@@ -1,3 +1,4 @@
+import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -114,6 +115,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   busesByRoute: { label: string; count: number }[] = [];
 
   constructor(
+    private authService: AdminAuthService,
     private router: Router,
     private busService: BusService,
     private loungeService: LoungeService,
@@ -377,10 +379,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_user');
-    this.router.navigate(['/login']);
+    this.authService.performLogout();
   }
 
   // Search functionality methods

@@ -1,3 +1,4 @@
+import { AdminAuthService } from '../../../core/services/admin-auth.service';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -95,7 +96,8 @@ export class SettlementOverviewComponent implements OnInit {
     private settlementService: SettlementService,
     public notificationService: NotificationService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AdminAuthService
   ) {}
 
   ngOnInit(): void {
@@ -115,10 +117,7 @@ export class SettlementOverviewComponent implements OnInit {
   }
 
   logout() {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('adminRole');
-    this.router.navigate(['/login']);
+    this.authService.performLogout();
   }
 
   loadOverview() {

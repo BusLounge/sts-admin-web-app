@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, catchError, of, tap } from 'rxjs';
 import { AdminUser, AdminLoginRequest, AdminLoginResponse, AdminChangePasswordRequest } from '../models/admin-user.model';
 import { environment } from '../../../environments/environment';
 
@@ -12,8 +13,21 @@ export class AdminAuthService {
   private currentAdminSubject = new BehaviorSubject<AdminUser | null>(null);
   public currentAdmin$ = this.currentAdminSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     this.loadAdminFromStorage();
+    this.initStorageEventListener();
+  }
+
+  private initStorageEventListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event: StorageEvent) => {
+        // If access_token was removed in another tab, log out this tab immediately
+        if (event.key === 'access_token' && !event.newValue) {
+          this.currentAdminSubject.next(null);
+          this.router.navigate(['/login']);
+        }
+      });
+    }
   }
 
   private loadAdminFromStorage(): void {
@@ -53,14 +67,33 @@ export class AdminAuthService {
       .pipe(
         tap(() => {
           this.clearSession();
+        }),
+        catchError(() => {
+          this.clearSession();
+          return of(null);
         })
       );
   }
 
-  private clearSession(): void {
+  performLogout(): void {
+    this.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.clearSession();
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
+  clearSession(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('admin_user');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('adminRole');
     this.currentAdminSubject.next(null);
   }
 

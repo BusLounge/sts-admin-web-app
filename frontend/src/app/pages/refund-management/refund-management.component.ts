@@ -1,3 +1,4 @@
+import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -51,6 +52,7 @@ export class RefundManagementComponent implements OnInit {
   showProfileMenu: boolean = false;
 
   constructor(
+    private authService: AdminAuthService,
     private refundService: RefundService,
     public notificationService: NotificationService,
     private router: Router,
@@ -73,10 +75,7 @@ export class RefundManagementComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_user');
-    this.router.navigate(['/login']);
+    this.authService.performLogout();
   }
 
   ngOnInit(): void {
