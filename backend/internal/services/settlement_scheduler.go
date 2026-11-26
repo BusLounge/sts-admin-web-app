@@ -24,6 +24,9 @@ func (s *SettlementScheduler) Start() {
 	log.Println("Starting Sri Lanka Clock-Aligned Settlement Scheduler...")
 
 	go func() {
+		// Run immediate catch-up on startup to handle cold starts and server restarts
+		s.service.RunCatchUpIfNeeded()
+
 		for {
 			loc := GetSriLankaLocation()
 			nowSL := time.Now().In(loc)
@@ -38,7 +41,7 @@ func (s *SettlementScheduler) Start() {
 			select {
 			case <-timer.C:
 				log.Println("🌙 Triggering scheduled midnight settlement process (Sri Lanka Time)...")
-				_, err := s.service.RunMidnightProcess(false)
+				_, err := s.service.RunMidnightProcess(true)
 				if err != nil {
 					log.Printf("Error running midnight settlement process: %v", err)
 				}

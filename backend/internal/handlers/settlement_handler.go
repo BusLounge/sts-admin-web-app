@@ -33,6 +33,9 @@ func (h *SettlementHandler) ProcessNow(c *gin.Context) {
 
 // GetOverview returns stats for dashboard
 func (h *SettlementHandler) GetOverview(c *gin.Context) {
+	// Reconcile any missed settlements or pending completed trips in the background
+	go h.service.RunCatchUpIfNeeded()
+
 	overview, err := h.service.GetSettlementOverview()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

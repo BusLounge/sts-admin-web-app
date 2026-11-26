@@ -8,14 +8,17 @@ import (
 	"log"
 	"math"
 	"sts-backend/internal/models"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type SettlementService struct {
-	db *sql.DB
-	payHere *PayHereService
+	db           *sql.DB
+	payHere      *PayHereService
+	mu           sync.Mutex
+	isProcessing bool
 }
 
 func NewSettlementService(db *sql.DB) *SettlementService {
@@ -384,6 +387,59 @@ func (s *SettlementService) SyncBookingsToSettlements(tx *sql.Tx) error {
 	}
 
 	return nil
+}
+
+// RunCatchUpIfNeeded verifies if completed bookings, pending settlements, or due payout trackers
+// were missed while the server was asleep or offline, and automatically executes them.
+func (s *SettlementService) RunCatchUpIfNeeded() {
+	s.mu.Lock()
+	if s.isProcessing {
+		s.mu.Unlock()
+		return
+	}
+	s.isProcessing = true
+	s.mu.Unlock()
+
+	defer func() {
+		s.mu.Lock()
+		s.isProcessing = false
+		s.mu.Unlock()
+	}()
+
+	loc := GetSriLankaLocation()
+	today := time.Now().In(loc).Truncate(24 * time.Hour)
+
+	var pendingCount int
+	_ = s.db.QueryRow(`
+		SELECT COUNT(*) FROM public.settlements 
+		WHERE status = 'pending' AND earning_date <= $1
+	`, today).Scan(&pendingCount)
+
+	var dueTrackersCount int
+	_ = s.db.QueryRow(`
+		SELECT COUNT(*) FROM public.payout_tracker 
+		WHERE is_active = true AND days_accumulated >= payout_frequency_days
+	`).Scan(&dueTrackersCount)
+
+	var unsyncedBookingsCount int
+	_ = s.db.QueryRow(`
+		SELECT COUNT(*) FROM public.bookings b
+		WHERE b.status = 'completed' AND NOT EXISTS (
+			SELECT 1 FROM public.settlements s WHERE s.booking_id = b.id
+		)
+	`).Scan(&unsyncedBookingsCount)
+
+	if pendingCount > 0 || dueTrackersCount > 0 || unsyncedBookingsCount > 0 {
+		log.Printf("⏰ Catch-Up Triggered: Detected %d pending settlements, %d due trackers, %d unsynced bookings. Executing settlement recovery...",
+			pendingCount, dueTrackersCount, unsyncedBookingsCount)
+		res, err := s.RunMidnightProcess(true)
+		if err != nil {
+			log.Printf("Error during settlement catch-up recovery: %v", err)
+		} else {
+			log.Printf("✅ Settlement catch-up recovery completed: %d batches created, %d skipped, total: LKR %.2f",
+				res.BatchesCreated, res.BatchesSkipped, res.TotalAmountPaid)
+		}
+	}
 }
 
 func (s *SettlementService) RunMidnightProcess(bypassReserve ...bool) (*models.MidnightProcessResult, error) {
